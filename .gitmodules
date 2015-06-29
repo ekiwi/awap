@@ -1,0 +1,6 @@
+[submodule "ext/xpcc"]
+	path = ext/xpcc
+	url = git@github.com:roboterclubaachen/xpcc.git
+[submodule "ext/ostfriesentee"]
+	path = ext/ostfriesentee
+	url = git@github.com:RWTH-OS/ostfriesentee.git
