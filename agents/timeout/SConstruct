@@ -1,0 +1,9 @@
+import os
+
+env = Environment(toolpath = [os.path.join('..', '..', 'scons')], tools = ['awap'])
+
+agent = env.Agent('TimeoutAgent', ['TimeoutAgent.java'])
+
+env.Alias('agent', agent)
+env.Alias('run', env.RunAgent(agent))
+env.Default('agent')
