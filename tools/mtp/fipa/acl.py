@@ -7,9 +7,14 @@
 	This library provides an incomplete subset of the FIPA ACL
 	Message Representation in String Specification (SC00070I)
 	http://www.fipa.org/specs/fipa00070/SC00070I.html
+	Ass well as the FIPA Agent Message Transport Envelope
+	Representation in XML Specification
+	http://www.fipa.org/specs/fipa00085/SC00085J.html
 """
 
 from enum import Enum
+import xml.etree.ElementTree as ET
+from datetime import datetime
 
 class Performative(Enum):
 	ACCEPT_PROPOSAL = 0
@@ -50,17 +55,54 @@ class AgentIdentifier(object):
 		s += '))'
 		return s
 
+	def xml(self):
+		root = ET.Element('agent-identifier')
+		ET.SubElement(root, 'name').text = self.name
+		addr = ET.SubElement(root, 'addresses')
+		for address in self.addresses:
+			ET.SubElement(addr, 'url').text = address
+		return root
+
 class ACLMessage(object):
+	"""
+		See http://www.fipa.org/specs/fipa00070/SC00070I.html
+	"""
+
 	def __init__(self, performative):
 		self.mime_type = "application/text"
 		self.performative = performative
 		self.sender = None
-		self.receiver = []
+		self.receivers = []
 		self.content = None
 		self.reply_with = None
 		self.language = None
 		self.ontology = None
 		self.protocol = None
+
+	def generateEnvelope(self):
+		"""
+		See http://www.fipa.org/specs/fipa00085/SC00085J.html
+		"""
+		root = ET.Element('envelope')
+		param = ET.SubElement(root, 'params')
+		param.set('index', '1')
+		to = ET.SubElement(param, 'to')
+		for receiver in self.receivers:
+			to.append(receiver.xml())
+		ET.SubElement(param, 'from').append(self.sender.xml())
+		# TODO: what is this for? do we not intent to send our message to
+		#       all receivers?
+		intended = ET.SubElement(param, 'intended-receiver')
+		for receiver in self.receivers:
+			intended.append(receiver.xml())
+		# FIXME: this is a little bit inefficient, since we prob. generate the string twice
+		ET.SubElement(param, 'payload-length').text = str(len(str(self)))
+		# currently string representation is hard coded
+		ET.SubElement(param, 'acl-representation').text = 'fipa.acl.rep.string.std'
+		now = datetime.utcnow()
+		ts = "{0}{1:03d}".format(now.strftime("%Y%m%dZ%H%M%S"), int(now.microsecond / 1000))
+		ET.SubElement(param, 'date').text = ts
+		return ET.tostring(root, encoding='unicode', method='xml')
 
 	def __str__(self):
 		FIPA_PARAMETERS = ['sender', 'receiver', 'content', 'reply-with', 'language', 'ontology', 'protocol']
@@ -85,8 +127,8 @@ class ACLMessage(object):
 
 if __name__ == "__main__":
 	acl_msg = ACLMessage(Performative.INFORM)
-	acl_msg.sender    = AgentIdentifier("ams@192.168.122.1:1099/JADE", "http://ip2-127.halifax.rwth-aachen.de:7778/acc")
-	acl_msg.receiver += [AgentIdentifier("ams@192.168.122.1:5000/JADE", "http://ip2-127.halifax.rwth-aachen.de:57727/acc")]
+	acl_msg.sender     = AgentIdentifier("ams@192.168.122.1:1099/JADE", "http://ip2-127.halifax.rwth-aachen.de:7778/acc")
+	acl_msg.receivers += [AgentIdentifier("ams@192.168.122.1:5000/JADE", "http://ip2-127.halifax.rwth-aachen.de:57727/acc")]
 	acl_msg.content = '"((result (action (agent-identifier :name ams@192.168.122.1:1099/JADE :addresses (sequence http://ip2-127.halifax.rwth-aachen.de:7778/acc)) (get-description)) (sequence (ap-description :name \"\\"192.168.122.1:1099/JADE\\"\" :ap-services (sequence (ap-service :name fipa.mts.mtp.http.std :type fipa.mts.mtp.http.std :addresses (sequence http://ip2-127.halifax.rwth-aachen.de:7778/acc)))))))"'
 	acl_msg.reply_with = "rma@192.168.122.1:5000/JADE1435662093800"
 	acl_msg.language = "fipa-sl0"
@@ -94,3 +136,7 @@ if __name__ == "__main__":
 	acl_msg.protocol = "fipa-request"
 
 	print(acl_msg)
+
+	print(acl_msg.generateEnvelope())
+
+	print(ET.dump(acl_msg.sender.xml()))
