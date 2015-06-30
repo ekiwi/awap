@@ -8,6 +8,8 @@ import urllib.parse
 import queue, threading
 from fipa.acl import ACLMessage, Performative, AgentIdentifier
 
+from http.server import HTTPServer, BaseHTTPRequestHandler
+
 msg_frmt = """
 This is not part of the MIME multipart encoded message.
 --a1723f6311bdcdc73e4145537302b33
@@ -56,6 +58,27 @@ class Mtp(object):
 			self.tx_msgs.task_done()
 		self.tx.close()
 
+	def receiver(self):
+		""" Thread that is responsible for receiving ACLMessages
+		"""
+		pass
+
+
+class CustomHTTPHandler(BaseHTTPRequestHandler):
+	def do_POST(self):
+		print("POST")
+		print(self.requestline)
+		print(self.headers)
+		print(self.headers.get_payload())
+		length = int(self.headers.get('content-length'))
+		print(self.rfile.read(length).decode('utf8'))
+
+
+	def do_GET(self):
+		print("GET")
+		print(self.headers)
+
+
 
 if __name__ == "__main__":
 #	boundary = "a1723f6311bdcdc73e4145537302b33"
@@ -69,10 +92,20 @@ if __name__ == "__main__":
 	acl_msg.ontology = "FIPA-Agent-Management"
 	acl_msg.protocol = "fipa-request"
 
-	mtp = Mtp("ip2-127.halifax.rwth-aachen.de:7778")
-	mtp.send(acl_msg)
+#	mtp = Mtp("ip2-127.halifax.rwth-aachen.de:7778")
+#	mtp.send(acl_msg)
 
-	# TODO: implement in Mtp method
-	mtp.tx_msgs.join()
-	print("done")
-	mtp.tx_msgs.put(None)
+#	# TODO: implement in Mtp method
+#	mtp.tx_msgs.join()
+#	print("done")
+#	mtp.tx_msgs.put(None)
+
+
+	httpd = HTTPServer(('', 9000), CustomHTTPHandler)
+	httpd.serve_forever()
+
+
+
+
+
+
