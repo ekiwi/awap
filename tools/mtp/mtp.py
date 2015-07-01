@@ -5,7 +5,7 @@
 
 import http.client
 import urllib.parse
-import queue, threading
+import queue, threading, re
 from fipa.acl import ACLMessage, Performative, AgentIdentifier
 
 from http.server import HTTPServer, BaseHTTPRequestHandler
@@ -65,14 +65,36 @@ class Mtp(object):
 
 
 class CustomHTTPHandler(BaseHTTPRequestHandler):
-	def do_POST(self):
-		print("POST")
-		print(self.requestline)
-		print(self.headers)
-		print(self.headers.get_payload())
-		length = int(self.headers.get('content-length'))
-		print(self.rfile.read(length).decode('utf8'))
 
+	def do_POST(self):
+		length = int(self.headers.get('content-length'))
+		ct = self.headers.get('content-type')
+		boundary = re.search(r'boundary=-*"*(?P<b>[a-z0-9]+)', ct).group("b")
+		body = self.rfile.read(length).decode('utf8')
+		# initialize regex matchers
+		self.re_bd = re.compile(r'--{}\s*'.format(boundary))
+		self.re_ct = re.compile(r'content-type:\s+(?P<ct>[a-z]+/[a-z]+)', re.IGNORECASE)
+		(envelope, env_mime, pos) = self.parse_multipart(body, 0)
+		(message,  msg_mime, pos) = self.parse_multipart(body, pos)
+		if env_mime != "application/xml" or msg_mime != "application/text":
+			print("Error: did not receive the correct mime type")
+		print("Envelope:")
+		print(envelope)
+		print("Message")
+		print(message)
+
+	def parse_multipart(self, body, pos):
+		pos = self.re_bd.search(body, pos).end(0)
+		m = self.re_ct.match(body, pos)
+		if m is None:
+			print('Error: failed to find content-type in multipart message."')
+			return (None, None, pos)
+		mime = m.group("ct")
+		pos = m.end("ct")
+		next_bound = self.re_bd.search(body, pos)
+		content = body[pos:next_bound.start(0)]
+		pos = next_bound.start()	# return start of boundary so that next call can find it again
+		return (content, mime, pos)
 
 	def do_GET(self):
 		print("GET")
