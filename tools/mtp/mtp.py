@@ -78,10 +78,19 @@ class CustomHTTPHandler(BaseHTTPRequestHandler):
 		(message,  msg_mime, pos) = self.parse_multipart(body, pos)
 		if env_mime != "application/xml" or msg_mime != "application/text":
 			print("Error: did not receive the correct mime type")
-		print("Envelope:")
-		print(envelope)
-		print("Message")
-		print(message)
+			self.send_error(406)	# TODO: what is the correct code?
+		else:
+			print("Envelope:")
+			print(envelope)
+			print("Message")
+			print(message)
+			self.send_ok()
+
+	def send_ok(self):
+		self.send_response(200)
+		self.send_header("Content-type", "text/html")
+		self.end_headers()
+		self.wfile.write(b"<html><body><h1>200 OK</h1></body></html>")
 
 	def parse_multipart(self, body, pos):
 		pos = self.re_bd.search(body, pos).end(0)
@@ -114,7 +123,7 @@ if __name__ == "__main__":
 	acl_msg.ontology = "FIPA-Agent-Management"
 	acl_msg.protocol = "fipa-request"
 
-#	mtp = Mtp("ip2-127.halifax.rwth-aachen.de:7778")
+#	mtp = Mtp("130-000.eduroam.rwth-aachen.de:7778")
 #	mtp.send(acl_msg)
 
 #	# TODO: implement in Mtp method
