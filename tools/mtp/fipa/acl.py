@@ -131,8 +131,16 @@ class ACLMessage(object):
 		r'\s*(?P<sign>[\+-])?(?P<year>\d{4})(?P<month>\d{2})(?P<day>\d{2})' +
 		r'(T|Z)(?P<hour>\d{2})(?P<minute>\d{2})(?P<second>\d{2})' +
 		r'(?P<millisecond>\d{3})([a-zA-Z])?')
-	RE_INTEGER = re.compile(r'\s*(?P<int>[\+-]?[0-9]+)')
-	RE_STRINGLITERAL = re.compile(r'\s*"(?P<string>(([^"])|(\"))+)"')
+	RE_INTEGER             = re.compile(r'\s*(?P<int>[\+-]?[0-9]+)')
+	RE_STRINGLITERAL       = re.compile(r'\s*"(?P<string>(([^"])|(\"))+)"')
+	RE_URL_SEQUENCE_START  = re.compile(r'\s*\(\s*sequence')
+	RE_URL_SEQUENCE_MEMBER = re.compile(r'\s*(?P<url>http://\S+)')
+	RE_AGENT_IDENTIFIER    = re.compile(r'\s*\(\s*agent-identifier')
+	RE_FIPA_PARAM          = re.compile(r'\s*:(?P<param>' +
+		'|'.join([str(p) for p in FIPA_PARAMETERS]) +r') ')
+	RE_AGENT_ID_PARAM      = re.compile(r'\s*:(?P<param>name|addresses|resolvers) ')
+	RE_CLOSING_BRACKET     = re.compile(r'\s*\)')
+	RE_SET_START           = re.compile(r'\s*\(\s*set')
 
 	def __init__(self, performative=None):
 		self.mime_type = "application/text"
@@ -196,12 +204,10 @@ class ACLMessage(object):
 		m = re.search(r'\s*\((?P<perf>{})'.format(performatives), message)
 		self.performative = Performative[m.group('perf')]
 		# find parameters
-		parameters = '|'.join([str(p) for p in ACLMessage.FIPA_PARAMETERS])
-		re_param = re.compile(r'\s*:(?P<param>{}) '.format(parameters))
 		pos = m.end(0)
 		max_pos = len(message)
 		while pos < max_pos:
-			m = re_param.match(message, pos)
+			m = ACLMessage.RE_FIPA_PARAM.match(message, pos)
 			pos = m.end(0)
 			param = m.group('param')
 			key = param.replace('-', '_')
@@ -223,6 +229,23 @@ class ACLMessage(object):
 				int(m.group('second')),
 				int(m.group('millisecond')) * 1000)
 			return (ts, m.end(0))
+		m = ACLMessage.RE_URL_SEQUENCE_START.match(message, pos)
+		if m:
+			pos = m.end(0)
+			urls = []
+			while ACLMessage.RE_CLOSING_BRACKET.match(message, pos) is None:
+				m = ACLMessage.RE_URL_SEQUENCE_MEMBER.match(message, pos)
+				urls.append(m.group('url'))
+				pos = m.end(0)
+			return (urls, ACLMessage.RE_CLOSING_BRACKET.match(message, pos).end())
+		m = ACLMessage.RE_SET_START.match(message, pos)
+		if m:
+			pos = m.end(0)
+			set_members = []
+			while ACLMessage.RE_CLOSING_BRACKET.match(message, pos) is None:
+				(member, pos) = self.parse_expression(message, pos)
+				set_members.append(member)
+			return (set_members, ACLMessage.RE_CLOSING_BRACKET.match(message, pos).end())
 		m = ACLMessage.RE_STRINGLITERAL.match(message, pos)
 		if m:
 			return (m.group('string'), m.end(0))
@@ -232,7 +255,22 @@ class ACLMessage(object):
 		m = ACLMessage.RE_WORD.match(message, pos)
 		if m:
 			return (m.group('word'), m.end(0))
+		m = ACLMessage.RE_AGENT_IDENTIFIER.match(message, pos)
+		if m:
+			return self.parse_agent_identifier(message, m.end(0))
 		print("Unkown expression @ pos={}:\n{}".format(pos, message[pos:]))
+
+	def parse_agent_identifier(self, message, pos):
+		agent_id = AgentIdentifier()
+		while ACLMessage.RE_CLOSING_BRACKET.match(message, pos) is None:
+			m = ACLMessage.RE_AGENT_ID_PARAM.match(message, pos)
+			pos = m.end(0)
+			param = m.group('param')
+			if param == 'name':
+				(agent_id.name, pos) = self.parse_expression(message, pos)
+			elif param == 'addresses':
+				(agent_id.addresses, pos) = self.parse_expression(message, pos)
+		return(agent_id, ACLMessage.RE_CLOSING_BRACKET.match(message, pos).end())
 
 	def __str__(self):
 		s = '(' + self.performative.name + ' '
@@ -284,6 +322,31 @@ class TestACLMessageParsing(unittest.TestCase):
 		(string, pos) = self.acl.parse_expression(' "str\\"ing"', 0)
 		self.assertEqual(string, 'str\\"ing')
 
+	TEST_ENVELOPE = """
+
+<?xml version="1.0"?>
+<envelope><params index="1"><to><agent-identifier><name>test</name><addresses><url>http://localhost:9000</url></addresses></agent-identifier></to><from><agent-identifier><name>rma@192.168.122.1:1099/JADE</name><addresses><url>http://130-000.eduroam.rwth-aachen.de:7778/acc</url></addresses></agent-identifier></from><acl-representation>fipa.acl.rep.string.std</acl-representation><payload-length>483</payload-length><date>20150701Z143941567</date><intended-receiver><agent-identifier><name>test</name><addresses><url>http://localhost:9000</url></addresses></agent-identifier></intended-receiver></params></envelope>
+
+"""
+
+	TEST_STRING_MSG = """
+
+
+(REQUEST
+ :language  fipa-sl0  :ontology  FIPA-Agent-Management  :protocol  fipa-request
+ :sender  ( agent-identifier :name rma@192.168.122.1:1099/JADE  :addresses (sequence http://130-000.eduroam.rwth-aachen.de:7778/acc ))
+ :receiver  (set ( agent-identifier :name test  :addresses (sequence http://localhost:9000 )) )
+ :content  "((action (agent-identifier :name test :addresses (sequence http://localhost:9000)) (get-description)))" 
+ :language  fipa-sl0  :ontology  FIPA-Agent-Management  :protocol  fipa-request
+ :conversation-id  C1438784720_1435754381566 )
+
+"""
+
+	def test_msg_from_mtp(self):
+		acl_msg = ACLMessage.from_mtp(
+			TestACLMessageParsing.TEST_ENVELOPE,
+			TestACLMessageParsing.TEST_STRING_MSG)
+
 if __name__ == "__main__":
 	unittest.main()
 #	acl_msg = ACLMessage(Performative.INFORM)
@@ -301,27 +364,3 @@ if __name__ == "__main__":
 
 #	print(ET.dump(acl_msg.sender.xml()))
 
-#	envelope = """
-
-#<?xml version="1.0"?>
-#<envelope><params index="1"><to><agent-identifier><name>test</name><addresses><url>http://localhost:9000</url></addresses></agent-identifier></to><from><agent-identifier><name>rma@192.168.122.1:1099/JADE</name><addresses><url>http://130-000.eduroam.rwth-aachen.de:7778/acc</url></addresses></agent-identifier></from><acl-representation>fipa.acl.rep.string.std</acl-representation><payload-length>483</payload-length><date>20150701Z143941567</date><intended-receiver><agent-identifier><name>test</name><addresses><url>http://localhost:9000</url></addresses></agent-identifier></intended-receiver></params></envelope>
-
-#"""
-
-#	msg = """
-
-
-#(REQUEST
-# :language  fipa-sl0  :ontology  FIPA-Agent-Management  :protocol  fipa-request
-# :sender  ( agent-identifier :name rma@192.168.122.1:1099/JADE  :addresses (sequence http://130-000.eduroam.rwth-aachen.de:7778/acc ))
-# :receiver  (set ( agent-identifier :name test  :addresses (sequence http://localhost:9000 )) )
-# :content  "((action (agent-identifier :name test :addresses (sequence http://localhost:9000)) (get-description)))" 
-# :language  fipa-sl0  :ontology  FIPA-Agent-Management  :protocol  fipa-request
-# :conversation-id  C1438784720_1435754381566 )
-
-#"""
-#	print("-----------------------------")
-#	print("Testing from_mtp")
-
-#	acl_msg = ACLMessage.from_mtp(envelope, msg)
-#	print(acl_msg)
