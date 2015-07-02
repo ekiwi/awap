@@ -1,8 +1,0 @@
-[package]
-name = "mts"
-version = "0.1.0"
-authors = ["Kevin Laeufer <kevin.laeufer@rwth-aachen.de>"]
-
-[dependencies]
-getopts = "0.2.11"
-regex = "0.1.38"
