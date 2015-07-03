@@ -11,157 +11,163 @@ class TestObjectFactory(object):
 	def create_AgentIdentifier(self, name, addresses):
 		return {'name': name, 'addresses': list(addresses) }
 
-obj_factory = TestObjectFactory()
+class Parser(object):
+	def __init__(self, obj_factory = TestObjectFactory()):
+		self.obj_factory = obj_factory
 
-def parse_DateTime(source, location, tokens):
-	tok = tokens[0]
-	# ignore sign for now
-	if tok[:1] in ['+', '-']:
-		tok = tok[1:]
-	ts = datetime.datetime(
-		year = int(tok[0:4]),
-		month = int(tok[4:6]),
-		day = int(tok[6:8]),
-		hour = int(tok[9:11]),
-		minute = int(tok[11:13]),
-		second = int(tok[13:15]),
-		microsecond = int(tok[15:18]) * 1000)
-	return ts
+		self.DateTime = Regex(r'([\+-])?\d{8}T\d{9}([a-zA-Z])?')
+		self.DateTime.setParseAction(self.parse_DateTime)
 
-def parse_StringLiteral(source, location, tokens):
-	tok = tokens[0][1:-1]
-	tok = tok.replace('\\"', '"')
-	return tok
+		self.StringLiteral = Regex(r'"(([^"])|(\"))+"')
+		self.StringLiteral.setParseAction(self.parse_StringLiteral)
 
-def parse_Integer(source, location, tokens):
-	return obj_factory.create_int(tokens[0])
+		# 1.) FIPA ACL allows Word to start with " or +, we don't in order to make
+		#     it possible to destinguish Integer and StringLiteral from Word
+		self.Word = Regex(r'\s*[^\(\)#0-9-@ "+][^\(\)\s]*')
 
-def parse_AgentIdentifier(source, location, tokens):
-	name = tokens['name']
-	addresses = tokens['addresses']
-	return obj_factory.create_AgentIdentifier(name, addresses)
+		self.Integer = Regex(r'[\+-]?[0-9]+')
+		self.Integer.setParseAction(self.parse_Integer)
 
-DateTime = Regex(r'([\+-])?\d{8}T\d{9}([a-zA-Z])?')
-DateTime.setParseAction(parse_DateTime)
+		self.Number = self.Integer
 
-StringLiteral = Regex(r'"(([^"])|(\"))+"')
-StringLiteral.setParseAction(parse_StringLiteral)
+		self.String = self.StringLiteral
 
-# 1.) FIPA ACL allows Word to start with " or +, we don't in order to make
-#     it possible to destinguish Integer and StringLiteral from Word
-Word = Regex(r'\s*[^\(\)#0-9-@ "+][^\(\)\s]*')
+		# inspired by: https://stackoverflow.com/questions/6883049/regex-to-find-urls-in-string-in-python
+		# TODO: this is not correct, as any URL, not only http urls should be accepted...
+		self.URL = Regex(r'http[s]?://(?:[a-zA-Z]|[0-9]|[$-&*-_@.&+]|[!*,]|(?:%[0-9a-fA-F][0-9a-fA-F]))+')
 
-Integer = Regex(r'[\+-]?[0-9]+')
-Integer.setParseAction(parse_Integer)
+		self.URLSequence = Suppress("(") + Suppress("sequence") + ZeroOrMore(self.URL) + Suppress(")")
 
-Number = Integer
+		self.AgentIdentifier = (
+			Suppress("(") + Suppress("agent-identifier") + Suppress(":name") +
+			self.Word.setResultsName('name') + Optional(Suppress(":addresses") +
+			self.URLSequence).setResultsName('addresses') + Suppress(")"))
+		self.AgentIdentifier.setParseAction(self.parse_AgentIdentifier)
 
-String = StringLiteral
+		self.AgentIdentifierSet = (
+			Suppress("(") + Suppress("set") + ZeroOrMore(self.AgentIdentifier) + Suppress(")"))
 
-# inspired by: https://stackoverflow.com/questions/6883049/regex-to-find-urls-in-string-in-python
-# TODO: this is not correct, as any URL, not only http urls should be accepted...
-URL = Regex(r'http[s]?://(?:[a-zA-Z]|[0-9]|[$-&*-_@.&+]|[!*,]|(?:%[0-9a-fA-F][0-9a-fA-F]))+')
+		self.Expression = Or([self.Word, self.String, self.Number, self.DateTime])
 
-URLSequence = Suppress("(") + Suppress("sequence") + ZeroOrMore(URL) + Suppress(")")
-
-AgentIdentifier = (
-	Suppress("(") + Suppress("agent-identifier") + Suppress(":name") +
-	Word.setResultsName('name') + Optional(Suppress(":addresses") +
-	URLSequence).setResultsName('addresses') + Suppress(")"))
-AgentIdentifier.setParseAction(parse_AgentIdentifier)
-
-AgentIdentifierSet = (
-	Suppress("(") + Suppress("set") + ZeroOrMore(AgentIdentifier) + Suppress(")"))
-
-Expression = Or([Word, String, Number, DateTime])
-
-Performative = ["ACCEPT_PROPOSAL", "AGREE", "CANCEL", "CFP", "CONFIRM"
-	"DISCONFIRM", "FAILURE", "INFORM", "INFORM_IF", "INFORM_REF",
-	"NOT_UNDERSTOOD", "PROPOSE", "QUERY_IF", "QUERY_REF", "REFUSE",
-	"REJECT_PROPOSAL", "REQUEST", "REQUEST_WHEN", "REQUEST_WHENEVER",
-	"SUBSCRIBE", "PROXY", "PROPAGATE"]
+		self.Performative = ["ACCEPT_PROPOSAL", "AGREE", "CANCEL", "CFP", "CONFIRM"
+			"DISCONFIRM", "FAILURE", "INFORM", "INFORM_IF", "INFORM_REF",
+			"NOT_UNDERSTOOD", "PROPOSE", "QUERY_IF", "QUERY_REF", "REFUSE",
+			"REJECT_PROPOSAL", "REQUEST", "REQUEST_WHEN", "REQUEST_WHENEVER",
+			"SUBSCRIBE", "PROXY", "PROPAGATE"]
 
 
-MessageType = Or(Performative).setResultsName('performative')
+		self.MessageType = Or(self.Performative).setResultsName('performative')
 
-MessageParameter = Or([
-	(Suppress(":sender") + AgentIdentifier).setResultsName('sender'),
-	(Suppress(":receiver") + AgentIdentifierSet).setResultsName('receiver'),
-	(Suppress(":content") + String).setResultsName('content'),
-	(Suppress(":reply-with") + Expression).setResultsName('reply-with'),
-	(Suppress(":reply-by") + DateTime).setResultsName('reply-by'),
-	(Suppress(":in-reply-to") + Expression).setResultsName('in-reply-to'),
-	(Suppress(":reply-to") + AgentIdentifierSet).setResultsName('reply-to'),
-	(Suppress(":language") + Expression).setResultsName('language'),
-	(Suppress(":encoding") + Expression).setResultsName('encoding'),
-	(Suppress(":ontology") + Expression).setResultsName('ontology'),
-	(Suppress(":protocol") + Word).setResultsName('protocol'),
-	(Suppress(":conversation-id") + Expression).setResultsName('conversation-id')
-	])
+		self.MessageParameter = Or([
+			(Suppress(":sender") + self.AgentIdentifier).setResultsName('sender'),
+			(Suppress(":receiver") + self.AgentIdentifierSet).setResultsName('receiver'),
+			(Suppress(":content") + self.String).setResultsName('content'),
+			(Suppress(":reply-with") + self.Expression).setResultsName('reply-with'),
+			(Suppress(":reply-by") + self.DateTime).setResultsName('reply-by'),
+			(Suppress(":in-reply-to") + self.Expression).setResultsName('in-reply-to'),
+			(Suppress(":reply-to") + self.AgentIdentifierSet).setResultsName('reply-to'),
+			(Suppress(":language") + self.Expression).setResultsName('language'),
+			(Suppress(":encoding") + self.Expression).setResultsName('encoding'),
+			(Suppress(":ontology") + self.Expression).setResultsName('ontology'),
+			(Suppress(":protocol") + self.Word).setResultsName('protocol'),
+			(Suppress(":conversation-id") + self.Expression).setResultsName('conversation-id')
+			])
 
-Message = Suppress("(") + MessageType + ZeroOrMore(MessageParameter) + Suppress(")")
+		self.Message = Suppress("(") + self.MessageType + ZeroOrMore(self.MessageParameter) + Suppress(")")
+
+
+	def parse_DateTime(self, source, location, tokens):
+		tok = tokens[0]
+		# ignore sign for now
+		if tok[:1] in ['+', '-']:
+			tok = tok[1:]
+		ts = datetime.datetime(
+			year = int(tok[0:4]),
+			month = int(tok[4:6]),
+			day = int(tok[6:8]),
+			hour = int(tok[9:11]),
+			minute = int(tok[11:13]),
+			second = int(tok[13:15]),
+			microsecond = int(tok[15:18]) * 1000)
+		return ts
+
+	def parse_StringLiteral(self, source, location, tokens):
+		tok = tokens[0][1:-1]
+		tok = tok.replace('\\"', '"')
+		return tok
+
+	def parse_Integer(self, source, location, tokens):
+		return self.obj_factory.create_int(tokens[0])
+
+	def parse_AgentIdentifier(self, source, location, tokens):
+		name = tokens['name']
+		addresses = tokens['addresses']
+		return self.obj_factory.create_AgentIdentifier(name, addresses)
+
 
 class TestACLStringParser(unittest.TestCase):
+	def setUp(self):
+		self.p = Parser(TestObjectFactory())
 
 	def test_DateTime(self):
 		ts = datetime.datetime(2015, 7, 1, 14, 39, 41, 567 * 1000)
-		self.assertEqual(DateTime.parseString("20150701T143941567")[0], ts)
-		self.assertEqual(DateTime.parseString("+20150701T143941567")[0], ts)
-		self.assertEqual(DateTime.parseString("-20150701T143941567z")[0], ts)
-		self.assertRaises(ParseException, DateTime.parseString, "20150701Z143941567")
-		self.assertRaises(ParseException, DateTime.parseString, "d20150701T143941567")
-		self.assertRaises(ParseException, DateTime.parseString, "20150d01T143941567")
-		self.assertRaises(ParseException, DateTime.parseString, "20150701T14394156")
+		self.assertEqual(self.p.DateTime.parseString("20150701T143941567")[0], ts)
+		self.assertEqual(self.p.DateTime.parseString("+20150701T143941567")[0], ts)
+		self.assertEqual(self.p.DateTime.parseString("-20150701T143941567z")[0], ts)
+		self.assertRaises(ParseException, self.p.DateTime.parseString, "20150701Z143941567")
+		self.assertRaises(ParseException, self.p.DateTime.parseString, "d20150701T143941567")
+		self.assertRaises(ParseException, self.p.DateTime.parseString, "20150d01T143941567")
+		self.assertRaises(ParseException, self.p.DateTime.parseString, "20150701T14394156")
 
 	def test_StringLiteral(self):
-		self.assertEqual(StringLiteral.parseString('"String"')[0], 'String')
-		self.assertEqual(StringLiteral.parseString('"str\\"ing"')[0], 'str"ing')
-		self.assertEqual(StringLiteral.parseString('"String"not part of this String')[0], 'String')
-		self.assertRaises(ParseException, StringLiteral.parseString, 'not a String literal')
+		self.assertEqual(self.p.StringLiteral.parseString('"String"')[0], 'String')
+		self.assertEqual(self.p.StringLiteral.parseString('"str\\"ing"')[0], 'str"ing')
+		self.assertEqual(self.p.StringLiteral.parseString('"String"not part of this String')[0], 'String')
+		self.assertRaises(ParseException, self.p.StringLiteral.parseString, 'not a String literal')
 
 	def test_Word(self):
-		self.assertEqual(Word.parseString('Word')[0], 'Word')
-		self.assertEqual(Word.parseString('WoRd')[0], 'WoRd')
-		self.assertEqual(Word.parseString('w#ord')[0], 'w#ord')
-		self.assertEqual(Word.parseString('w0rd')[0], 'w0rd')
-		self.assertEqual(Word.parseString('w-r+d')[0], 'w-r+d')
-		self.assertEqual(Word.parseString('rma@192.168.122.1:1099/JADE')[0], 'rma@192.168.122.1:1099/JADE')
-		self.assertEqual(Word.parseString('fipa-request\n')[0], 'fipa-request')
-		self.assertRaises(ParseException, Word.parseString, '#notaWord')
+		self.assertEqual(self.p.Word.parseString('Word')[0], 'Word')
+		self.assertEqual(self.p.Word.parseString('WoRd')[0], 'WoRd')
+		self.assertEqual(self.p.Word.parseString('w#ord')[0], 'w#ord')
+		self.assertEqual(self.p.Word.parseString('w0rd')[0], 'w0rd')
+		self.assertEqual(self.p.Word.parseString('w-r+d')[0], 'w-r+d')
+		self.assertEqual(self.p.Word.parseString('rma@192.168.122.1:1099/JADE')[0], 'rma@192.168.122.1:1099/JADE')
+		self.assertEqual(self.p.Word.parseString('fipa-request\n')[0], 'fipa-request')
+		self.assertRaises(ParseException, self.p.Word.parseString, '#notaWord')
 
 	def test_Integer(self):
-		self.assertEqual(Integer.parseString('+100')[0], 100)
-		self.assertEqual(Integer.parseString('-100')[0], -100)
+		self.assertEqual(self.p.Integer.parseString('+100')[0], 100)
+		self.assertEqual(self.p.Integer.parseString('-100')[0], -100)
 
 	def test_String(self):
 		# StringLiteral
-		self.assertEqual(String.parseString('"String"')[0], 'String')
+		self.assertEqual(self.p.String.parseString('"String"')[0], 'String')
 
 	@unittest.expectedFailure
 	def test_String_missing_feature(self):
 		# ByteLengthEncodedString (not implemented yet => fails)
-		self.assertEqual(String.parseString('#6"String')[0], 'String')
+		self.assertEqual(self.p.String.parseString('#6"String')[0], 'String')
 
 	def test_Expression(self):
 		ts = datetime.datetime(2015, 7, 1, 14, 39, 41, 567 * 1000)
-		self.assertEqual(Expression.parseString("20150701T143941567")[0], ts)
-		self.assertEqual(Expression.parseString('"String"')[0], 'String')
-		self.assertEqual(Expression.parseString('w#ord')[0], 'w#ord')
-		self.assertEqual(Expression.parseString('+100')[0], 100)
+		self.assertEqual(self.p.Expression.parseString("20150701T143941567")[0], ts)
+		self.assertEqual(self.p.Expression.parseString('"String"')[0], 'String')
+		self.assertEqual(self.p.Expression.parseString('w#ord')[0], 'w#ord')
+		self.assertEqual(self.p.Expression.parseString('+100')[0], 100)
 
 	def test_URL(self):
-		self.assertEqual(URL.parseString('http://test/')[0], 'http://test/')
-		self.assertEqual(URL.parseString('http://1')[0], 'http://1')
-		self.assertEqual(URL.parseString(
+		self.assertEqual(self.p.URL.parseString('http://test/')[0], 'http://test/')
+		self.assertEqual(self.p.URL.parseString('http://1')[0], 'http://1')
+		self.assertEqual(self.p.URL.parseString(
 			'http://ip2-127.halifax.rwth-aachen.de:7778/acc')[0],
 			'http://ip2-127.halifax.rwth-aachen.de:7778/acc')
-		self.assertEqual(URL.parseString(
+		self.assertEqual(self.p.URL.parseString(
 			'http://130-000.eduroam.rwth-aachen.de:7778/acc')[0],
 			'http://130-000.eduroam.rwth-aachen.de:7778/acc')
 		# even if this might rule out some legitimate urls, it is important,
 		# that the closing bracket is NOT matched
 		# this behavior is needed in order for the URLSequence to work
-		self.assertEqual(URL.parseString('http://1)')[0], 'http://1')
+		self.assertEqual(self.p.URL.parseString('http://1)')[0], 'http://1')
 
 	def test_URLSequence(self):
 		s0 = "(sequence http://1 http://2 http://3)"
@@ -170,19 +176,19 @@ class TestACLStringParser(unittest.TestCase):
 		s3 = "(  sequence  http://1   http://2)"
 		s4 = "(sequence http://130-000.eduroam.rwth-aachen.de:7778/acc )"
 		res = ['http://1', 'http://2', 'http://3']
-		self.assertEqual(list(URLSequence.parseString(s0)), res)
-		self.assertEqual(list(URLSequence.parseString(s1)), res)
-		self.assertEqual(list(URLSequence.parseString(s2)), res)
-		self.assertEqual(list(URLSequence.parseString(s3)), ['http://1', 'http://2'])
-		self.assertEqual(list(URLSequence.parseString(s4)), ['http://130-000.eduroam.rwth-aachen.de:7778/acc'])
+		self.assertEqual(list(self.p.URLSequence.parseString(s0)), res)
+		self.assertEqual(list(self.p.URLSequence.parseString(s1)), res)
+		self.assertEqual(list(self.p.URLSequence.parseString(s2)), res)
+		self.assertEqual(list(self.p.URLSequence.parseString(s3)), ['http://1', 'http://2'])
+		self.assertEqual(list(self.p.URLSequence.parseString(s4)), ['http://130-000.eduroam.rwth-aachen.de:7778/acc'])
 
 	def test_AgentIdentifier(self):
 		a0 = "( agent-identifier :name rma@192.168.122.1:1099/JADE  :addresses (sequence http://130-000.eduroam.rwth-aachen.de:7778/acc ) )"
 		a1 = "( agent-identifier :name test  :addresses (sequence http://1 http://2 ) )"
-		res0 = AgentIdentifier.parseString(a0)[0]
+		res0 = self.p.AgentIdentifier.parseString(a0)[0]
 		self.assertEqual(res0['name'], 'rma@192.168.122.1:1099/JADE')
 		self.assertEqual(list(res0['addresses']), ['http://130-000.eduroam.rwth-aachen.de:7778/acc'])
-		self.assertEqual(list(AgentIdentifier.parseString(a1)[0]['addresses']), ['http://1', 'http://2'])
+		self.assertEqual(list(self.p.AgentIdentifier.parseString(a1)[0]['addresses']), ['http://1', 'http://2'])
 
 	def test_AgentIdentifierSet(self):
 		s0 = "(set ( agent-identifier :name test  :addresses (sequence http://1 )) )"
@@ -191,23 +197,23 @@ class TestACLStringParser(unittest.TestCase):
 		expect0 = {'name': 'test', 'addresses': ['http://1']}
 		s3 = "(set ( agent-identifier :name t1  :addresses (sequence http://1 )) ( agent-identifier :name t2  :addresses (sequence http://2 )) )"
 		expect3 = [{'name': 't1', 'addresses': ['http://1']}, {'name': 't2', 'addresses': ['http://2']}]
-		self.assertEqual(AgentIdentifierSet.parseString(s0)[0], expect0)
-		self.assertEqual(AgentIdentifierSet.parseString(s1)[0], expect0)
-		self.assertEqual(AgentIdentifierSet.parseString(s2)[0], expect0)
-		self.assertEqual(list(AgentIdentifierSet.parseString(s3)), expect3)
+		self.assertEqual(self.p.AgentIdentifierSet.parseString(s0)[0], expect0)
+		self.assertEqual(self.p.AgentIdentifierSet.parseString(s1)[0], expect0)
+		self.assertEqual(self.p.AgentIdentifierSet.parseString(s2)[0], expect0)
+		self.assertEqual(list(self.p.AgentIdentifierSet.parseString(s3)), expect3)
 
 	def test_MessageParameter(self):
-		self.assertRaises(ParseException, MessageParameter.parseString, ":sender wrong")
-		self.assertRaises(ParseException, MessageParameter.parseString, ":sender 100")
-		self.assertRaises(ParseException, MessageParameter.parseString, ":invalid ( agent-identifier :name test  :addresses (sequence http://1 http://2 ) )")
+		self.assertRaises(ParseException, self.p.MessageParameter.parseString, ":sender wrong")
+		self.assertRaises(ParseException, self.p.MessageParameter.parseString, ":sender 100")
+		self.assertRaises(ParseException, self.p.MessageParameter.parseString, ":invalid ( agent-identifier :name test  :addresses (sequence http://1 http://2 ) )")
 
 		inp = ":sender ( agent-identifier :name test  :addresses (sequence http://1 http://2 ) )"
-		out = MessageParameter.parseString(inp)
+		out = self.p.MessageParameter.parseString(inp)
 
 		self.assertTrue('sender' in out)
 		self.assertEqual(out['sender'][0], {'name': 'test', 'addresses': ['http://1', 'http://2']})
 
-		out = MessageParameter.parseString(":reply-by 20150701T143941567")
+		out = self.p.MessageParameter.parseString(":reply-by 20150701T143941567")
 		self.assertTrue('reply-by' in out)
 		self.assertEqual(out['reply-by'][0], datetime.datetime(2015, 7, 1, 14, 39, 41, 567 * 1000))
 
@@ -218,7 +224,7 @@ class TestACLStringParser(unittest.TestCase):
 			' :content  "((action (agent-identifier :name test :addresses (sequence http://localhost:9000)) (get-description)))" \n' +
 			' :language  fipa-sl0  :ontology  FIPA-Agent-Management  :protocol  fipa-request\n' +
 			' :conversation-id  C1438784720_1435754381566 )\n\n\n')
-		out = Message.parseString(msg)
+		out = self.p.Message.parseString(msg)
 
 		self.assertEqual(out['performative'], 'REQUEST')
 		self.assertEqual(out['sender'][0]['name'], 'rma@192.168.122.1:1099/JADE')
@@ -230,7 +236,6 @@ class TestACLStringParser(unittest.TestCase):
 		self.assertEqual(out['ontology'][0], 'FIPA-Agent-Management')
 		self.assertEqual(out['protocol'][0], 'fipa-request')
 		self.assertEqual(out['conversation-id'][0], 'C1438784720_1435754381566')
-
 
 
 
