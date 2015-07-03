@@ -47,9 +47,9 @@ DateTime.setParseAction(parse_DateTime)
 StringLiteral = Regex(r'"(([^"])|(\"))+"')
 StringLiteral.setParseAction(parse_StringLiteral)
 
-# FIPA ACL allows Word to start with " or +, we don't in order to make
-# it possible to destinguish Integer and StringLiteral from Word
-Word = Regex(r'\s*[^\(\)#0-9-@ "+][^\(\) ]*')
+# 1.) FIPA ACL allows Word to start with " or +, we don't in order to make
+#     it possible to destinguish Integer and StringLiteral from Word
+Word = Regex(r'\s*[^\(\)#0-9-@ "+][^\(\)\s]*')
 
 Integer = Regex(r'[\+-]?[0-9]+')
 Integer.setParseAction(parse_Integer)
@@ -75,20 +75,31 @@ AgentIdentifierSet = (
 
 Expression = Or([Word, String, Number, DateTime])
 
+Performative = ["ACCEPT_PROPOSAL", "AGREE", "CANCEL", "CFP", "CONFIRM"
+	"DISCONFIRM", "FAILURE", "INFORM", "INFORM_IF", "INFORM_REF",
+	"NOT_UNDERSTOOD", "PROPOSE", "QUERY_IF", "QUERY_REF", "REFUSE",
+	"REJECT_PROPOSAL", "REQUEST", "REQUEST_WHEN", "REQUEST_WHENEVER",
+	"SUBSCRIBE", "PROXY", "PROPAGATE"]
+
+
+MessageType = Or(Performative).setResultsName('performative')
+
 MessageParameter = Or([
-	Literal(":sender") + AgentIdentifier,
-	Literal(":receiver") + AgentIdentifierSet,
-	Literal(":content") + String,
-	Literal(":reply-with") + Expression,
-	Literal(":reply-by") + DateTime,
-	Literal(":in-reply-to") + Expression,
-	Literal(":reply-to") + AgentIdentifierSet,
-	Literal(":language") + Expression,
-	Literal(":encoding") + Expression,
-	Literal(":ontology") + Expression,
-	Literal(":protocol") + Word,
-	Literal(":conversation-id") + Expression
+	(Suppress(":sender") + AgentIdentifier).setResultsName('sender'),
+	(Suppress(":receiver") + AgentIdentifierSet).setResultsName('receiver'),
+	(Suppress(":content") + String).setResultsName('content'),
+	(Suppress(":reply-with") + Expression).setResultsName('reply-with'),
+	(Suppress(":reply-by") + DateTime).setResultsName('reply-by'),
+	(Suppress(":in-reply-to") + Expression).setResultsName('in-reply-to'),
+	(Suppress(":reply-to") + AgentIdentifierSet).setResultsName('reply-to'),
+	(Suppress(":language") + Expression).setResultsName('language'),
+	(Suppress(":encoding") + Expression).setResultsName('encoding'),
+	(Suppress(":ontology") + Expression).setResultsName('ontology'),
+	(Suppress(":protocol") + Word).setResultsName('protocol'),
+	(Suppress(":conversation-id") + Expression).setResultsName('conversation-id')
 	])
+
+Message = Suppress("(") + MessageType + ZeroOrMore(MessageParameter) + Suppress(")")
 
 class TestACLStringParser(unittest.TestCase):
 
@@ -115,6 +126,7 @@ class TestACLStringParser(unittest.TestCase):
 		self.assertEqual(Word.parseString('w0rd')[0], 'w0rd')
 		self.assertEqual(Word.parseString('w-r+d')[0], 'w-r+d')
 		self.assertEqual(Word.parseString('rma@192.168.122.1:1099/JADE')[0], 'rma@192.168.122.1:1099/JADE')
+		self.assertEqual(Word.parseString('fipa-request\n')[0], 'fipa-request')
 		self.assertRaises(ParseException, Word.parseString, '#notaWord')
 
 	def test_Integer(self):
@@ -191,32 +203,36 @@ class TestACLStringParser(unittest.TestCase):
 
 		inp = ":sender ( agent-identifier :name test  :addresses (sequence http://1 http://2 ) )"
 		out = MessageParameter.parseString(inp)
-		self.assertEqual(out[0], ':sender')
-		self.assertEqual(out[1], {'name': 'test', 'addresses': ['http://1', 'http://2']})
+
+		self.assertTrue('sender' in out)
+		self.assertEqual(out['sender'][0], {'name': 'test', 'addresses': ['http://1', 'http://2']})
 
 		out = MessageParameter.parseString(":reply-by 20150701T143941567")
-		self.assertEqual(out[0], ':reply-by')
-		self.assertEqual(out[1], datetime.datetime(2015, 7, 1, 14, 39, 41, 567 * 1000))
+		self.assertTrue('reply-by' in out)
+		self.assertEqual(out['reply-by'][0], datetime.datetime(2015, 7, 1, 14, 39, 41, 567 * 1000))
+
+	def test_Message(self):
+		msg = ('\n\n(REQUEST\n' +
+			' :sender  ( agent-identifier :name rma@192.168.122.1:1099/JADE  :addresses (sequence http://130-000.eduroam.rwth-aachen.de:7778/acc ))\n' +
+			' :receiver  (set ( agent-identifier :name test  :addresses (sequence http://localhost:9000 )) )\n' +
+			' :content  "((action (agent-identifier :name test :addresses (sequence http://localhost:9000)) (get-description)))" \n' +
+			' :language  fipa-sl0  :ontology  FIPA-Agent-Management  :protocol  fipa-request\n' +
+			' :conversation-id  C1438784720_1435754381566 )\n\n\n')
+		out = Message.parseString(msg)
+
+		self.assertEqual(out['performative'], 'REQUEST')
+		self.assertEqual(out['sender'][0]['name'], 'rma@192.168.122.1:1099/JADE')
+		self.assertEqual(out['sender'][0]['addresses'], ['http://130-000.eduroam.rwth-aachen.de:7778/acc'])
+		self.assertEqual(out['receiver'][0]['name'], 'test')
+		self.assertEqual(out['receiver'][0]['addresses'], ['http://localhost:9000'])
+		self.assertEqual(out['content'][0], '((action (agent-identifier :name test :addresses (sequence http://localhost:9000)) (get-description)))')
+		self.assertEqual(out['language'][0], 'fipa-sl0')
+		self.assertEqual(out['ontology'][0], 'FIPA-Agent-Management')
+		self.assertEqual(out['protocol'][0], 'fipa-request')
+		self.assertEqual(out['conversation-id'][0], 'C1438784720_1435754381566')
+
 
 
 
 if __name__ == "__main__":
 	unittest.main()
-
-#	msg = """
-
-
-#(REQUEST
-# :language  fipa-sl0  :ontology  FIPA-Agent-Management  :protocol  fipa-request
-# :sender  ( agent-identifier :name rma@192.168.122.1:1099/JADE  :addresses (sequence http://130-000.eduroam.rwth-aachen.de:7778/acc ))
-# :receiver  (set ( agent-identifier :name test  :addresses (sequence http://localhost:9000 )) )
-# :content  "((action (agent-identifier :name test :addresses (sequence http://localhost:9000)) (get-description)))" 
-# :language  fipa-sl0  :ontology  FIPA-Agent-Management  :protocol  fipa-request
-# :conversation-id  C1438784720_1435754381566 )
-
-#"""
-#	print("-----------------------------")
-#	print("Testing from_mtp")
-
-#	acl_msg = ACLMessage.from_mtp(envelope, msg)
-#	print(acl_msg)
