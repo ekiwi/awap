@@ -75,6 +75,21 @@ AgentIdentifierSet = (
 
 Expression = Or([Word, String, Number, DateTime])
 
+MessageParameter = Or([
+	Literal(":sender") + AgentIdentifier,
+	Literal(":receiver") + AgentIdentifierSet,
+	Literal(":content") + String,
+	Literal(":reply-with") + Expression,
+	Literal(":reply-by") + DateTime,
+	Literal(":in-reply-to") + Expression,
+	Literal(":reply-to") + AgentIdentifierSet,
+	Literal(":language") + Expression,
+	Literal(":encoding") + Expression,
+	Literal(":ontology") + Expression,
+	Literal(":protocol") + Word,
+	Literal(":conversation-id") + Expression
+	])
+
 class TestACLStringParser(unittest.TestCase):
 
 	def test_DateTime(self):
@@ -106,10 +121,12 @@ class TestACLStringParser(unittest.TestCase):
 		self.assertEqual(Integer.parseString('+100')[0], 100)
 		self.assertEqual(Integer.parseString('-100')[0], -100)
 
-	@unittest.expectedFailure
 	def test_String(self):
 		# StringLiteral
 		self.assertEqual(String.parseString('"String"')[0], 'String')
+
+	@unittest.expectedFailure
+	def test_String_missing_feature(self):
 		# ByteLengthEncodedString (not implemented yet => fails)
 		self.assertEqual(String.parseString('#6"String')[0], 'String')
 
@@ -166,6 +183,20 @@ class TestACLStringParser(unittest.TestCase):
 		self.assertEqual(AgentIdentifierSet.parseString(s1)[0], expect0)
 		self.assertEqual(AgentIdentifierSet.parseString(s2)[0], expect0)
 		self.assertEqual(list(AgentIdentifierSet.parseString(s3)), expect3)
+
+	def test_MessageParameter(self):
+		self.assertRaises(ParseException, MessageParameter.parseString, ":sender wrong")
+		self.assertRaises(ParseException, MessageParameter.parseString, ":sender 100")
+		self.assertRaises(ParseException, MessageParameter.parseString, ":invalid ( agent-identifier :name test  :addresses (sequence http://1 http://2 ) )")
+
+		inp = ":sender ( agent-identifier :name test  :addresses (sequence http://1 http://2 ) )"
+		out = MessageParameter.parseString(inp)
+		self.assertEqual(out[0], ':sender')
+		self.assertEqual(out[1], {'name': 'test', 'addresses': ['http://1', 'http://2']})
+
+		out = MessageParameter.parseString(":reply-by 20150701T143941567")
+		self.assertEqual(out[0], ':reply-by')
+		self.assertEqual(out[1], datetime.datetime(2015, 7, 1, 14, 39, 41, 567 * 1000))
 
 
 
