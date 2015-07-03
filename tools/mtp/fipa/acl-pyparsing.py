@@ -5,7 +5,13 @@ import unittest
 import datetime
 from pyparsing import Regex, ParseException, Or, Literal, Optional, ZeroOrMore, Suppress
 
+class TestObjectFactory(object):
+	def create_int(self, value):
+		return int(value)
+	def create_AgentIdentifier(self, name, addresses):
+		return {'name': name, 'addresses': list(addresses) }
 
+obj_factory = TestObjectFactory()
 
 def parse_DateTime(source, location, tokens):
 	tok = tokens[0]
@@ -28,7 +34,12 @@ def parse_StringLiteral(source, location, tokens):
 	return tok
 
 def parse_Integer(source, location, tokens):
-	return int(tokens[0])
+	return obj_factory.create_int(tokens[0])
+
+def parse_AgentIdentifier(source, location, tokens):
+	name = tokens['name']
+	addresses = tokens['addresses']
+	return obj_factory.create_AgentIdentifier(name, addresses)
 
 DateTime = Regex(r'([\+-])?\d{8}T\d{9}([a-zA-Z])?')
 DateTime.setParseAction(parse_DateTime)
@@ -53,7 +64,14 @@ URL = Regex(r'http[s]?://(?:[a-zA-Z]|[0-9]|[$-&*-_@.&+]|[!*,]|(?:%[0-9a-fA-F][0-
 
 URLSequence = Suppress("(") + Suppress("sequence") + ZeroOrMore(URL) + Suppress(")")
 
-AgentIdentifier = Suppress("(") + Suppress("agent-identifier") + Suppress(":name") + Word + Optional(Suppress(":addresses") + URLSequence) + Suppress(")")
+AgentIdentifier = (
+	Suppress("(") + Suppress("agent-identifier") + Suppress(":name") +
+	Word.setResultsName('name') + Optional(Suppress(":addresses") +
+	URLSequence).setResultsName('addresses') + Suppress(")"))
+AgentIdentifier.setParseAction(parse_AgentIdentifier)
+
+AgentIdentifierSet = (
+	Suppress("(") + Suppress("set") + ZeroOrMore(AgentIdentifier) + Suppress(")"))
 
 Expression = Or([Word, String, Number, DateTime])
 
@@ -132,31 +150,27 @@ class TestACLStringParser(unittest.TestCase):
 	def test_AgentIdentifier(self):
 		a0 = "( agent-identifier :name rma@192.168.122.1:1099/JADE  :addresses (sequence http://130-000.eduroam.rwth-aachen.de:7778/acc ) )"
 		a1 = "( agent-identifier :name test  :addresses (sequence http://1 http://2 ) )"
-		self.assertEqual(list(AgentIdentifier.parseString(a0)), ['rma@192.168.122.1:1099/JADE', 'http://130-000.eduroam.rwth-aachen.de:7778/acc'])
-		self.assertEqual(list(AgentIdentifier.parseString(a1)), ['test', 'http://1', 'http://2'])
+		res0 = AgentIdentifier.parseString(a0)[0]
+		self.assertEqual(res0['name'], 'rma@192.168.122.1:1099/JADE')
+		self.assertEqual(list(res0['addresses']), ['http://130-000.eduroam.rwth-aachen.de:7778/acc'])
+		self.assertEqual(list(AgentIdentifier.parseString(a1)[0]['addresses']), ['http://1', 'http://2'])
 
-
+	def test_AgentIdentifierSet(self):
+		s0 = "(set ( agent-identifier :name test  :addresses (sequence http://1 )) )"
+		s1 = "(set ( agent-identifier :name test  :addresses (sequence http://1 ) ) )"
+		s2 = "(  set ( agent-identifier :name test  :addresses ( sequence http://1 ) ) )"
+		expect0 = {'name': 'test', 'addresses': ['http://1']}
+		s3 = "(set ( agent-identifier :name t1  :addresses (sequence http://1 )) ( agent-identifier :name t2  :addresses (sequence http://2 )) )"
+		expect3 = [{'name': 't1', 'addresses': ['http://1']}, {'name': 't2', 'addresses': ['http://2']}]
+		self.assertEqual(AgentIdentifierSet.parseString(s0)[0], expect0)
+		self.assertEqual(AgentIdentifierSet.parseString(s1)[0], expect0)
+		self.assertEqual(AgentIdentifierSet.parseString(s2)[0], expect0)
+		self.assertEqual(list(AgentIdentifierSet.parseString(s3)), expect3)
 
 
 
 if __name__ == "__main__":
 	unittest.main()
-#	year   = pyparsing.Regex(r'\d{4}')
-#	month  = pyparsing.Regex(r'\d{2}')
-#	day    = pyparsing.Regex(r'\d{2}')
-#	hour   = pyparsing.Regex(r'\d{2}')
-#	minute = pyparsing.Regex(r'\d{2}')
-#	second = pyparsing.Regex(r'\d{2}')
-#	millisecond = pyparsing.Regex(r'\d{3}')
-#	type_designator = pyparsing.Regex(r'[a-zA-Z]')
-#	sign = pyparsing.Regex(r'[\+-]')
-#	data_time_token = pyparsing.Optional(sign) + year + month + day + "T" + hour + minute + second + millisecond
-
-
-
-
-
-
 
 #	msg = """
 
