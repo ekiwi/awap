@@ -11,7 +11,7 @@ class TestObjectFactory(object):
 	def create_AgentIdentifier(self, name, addresses):
 		return {'name': name, 'addresses': list(addresses) }
 
-class Parser(object):
+class ACLParser(object):
 	def __init__(self, obj_factory = TestObjectFactory()):
 		self.obj_factory = obj_factory
 
@@ -107,7 +107,7 @@ class Parser(object):
 
 class TestACLStringParser(unittest.TestCase):
 	def setUp(self):
-		self.p = Parser(TestObjectFactory())
+		self.p = ACLParser(TestObjectFactory())
 
 	def test_DateTime(self):
 		ts = datetime.datetime(2015, 7, 1, 14, 39, 41, 567 * 1000)
