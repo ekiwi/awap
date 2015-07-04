@@ -11,7 +11,7 @@ class TestObjectFactory(object):
 	def create_AgentIdentifier(self, name, addresses):
 		return {'name': name, 'addresses': list(addresses) }
 
-class ACLParser(object):
+class ACLLexicalDefinitionsParser(object):
 	def __init__(self, obj_factory = TestObjectFactory()):
 		self.obj_factory = obj_factory
 
@@ -35,6 +35,34 @@ class ACLParser(object):
 		# inspired by: https://stackoverflow.com/questions/6883049/regex-to-find-urls-in-string-in-python
 		# TODO: this is not correct, as any URL, not only http urls should be accepted...
 		self.URL = Regex(r'http[s]?://(?:[a-zA-Z]|[0-9]|[$-&*-_@.&+]|[!*,]|(?:%[0-9a-fA-F][0-9a-fA-F]))+')
+
+
+	def parse_DateTime(self, source, location, tokens):
+		tok = tokens[0]
+		# ignore sign for now
+		if tok[:1] in ['+', '-']:
+			tok = tok[1:]
+		ts = datetime.datetime(
+			year = int(tok[0:4]),
+			month = int(tok[4:6]),
+			day = int(tok[6:8]),
+			hour = int(tok[9:11]),
+			minute = int(tok[11:13]),
+			second = int(tok[13:15]),
+			microsecond = int(tok[15:18]) * 1000)
+		return ts
+
+	def parse_StringLiteral(self, source, location, tokens):
+		tok = tokens[0][1:-1]
+		tok = tok.replace('\\"', '"')
+		return tok
+
+	def parse_Integer(self, source, location, tokens):
+		return self.obj_factory.create_int(tokens[0])
+
+class ACLParser(ACLLexicalDefinitionsParser):
+	def __init__(self, obj_factory = TestObjectFactory()):
+		super().__init__(obj_factory)
 
 		self.URLSequence = Suppress("(") + Suppress("sequence") + ZeroOrMore(self.URL) + Suppress(")")
 
@@ -75,39 +103,15 @@ class ACLParser(object):
 
 		self.Message = Suppress("(") + self.MessageType + ZeroOrMore(self.MessageParameter) + Suppress(")")
 
-
-	def parse_DateTime(self, source, location, tokens):
-		tok = tokens[0]
-		# ignore sign for now
-		if tok[:1] in ['+', '-']:
-			tok = tok[1:]
-		ts = datetime.datetime(
-			year = int(tok[0:4]),
-			month = int(tok[4:6]),
-			day = int(tok[6:8]),
-			hour = int(tok[9:11]),
-			minute = int(tok[11:13]),
-			second = int(tok[13:15]),
-			microsecond = int(tok[15:18]) * 1000)
-		return ts
-
-	def parse_StringLiteral(self, source, location, tokens):
-		tok = tokens[0][1:-1]
-		tok = tok.replace('\\"', '"')
-		return tok
-
-	def parse_Integer(self, source, location, tokens):
-		return self.obj_factory.create_int(tokens[0])
-
 	def parse_AgentIdentifier(self, source, location, tokens):
 		name = tokens['name']
 		addresses = tokens['addresses']
 		return self.obj_factory.create_AgentIdentifier(name, addresses)
 
 
-class TestACLStringParser(unittest.TestCase):
+class TestACLLexicalDefinitionsParser(unittest.TestCase):
 	def setUp(self):
-		self.p = ACLParser(TestObjectFactory())
+		self.p = ACLLexicalDefinitionsParser(TestObjectFactory())
 
 	def test_DateTime(self):
 		ts = datetime.datetime(2015, 7, 1, 14, 39, 41, 567 * 1000)
@@ -148,13 +152,6 @@ class TestACLStringParser(unittest.TestCase):
 		# ByteLengthEncodedString (not implemented yet => fails)
 		self.assertEqual(self.p.String.parseString('#6"String')[0], 'String')
 
-	def test_Expression(self):
-		ts = datetime.datetime(2015, 7, 1, 14, 39, 41, 567 * 1000)
-		self.assertEqual(self.p.Expression.parseString("20150701T143941567")[0], ts)
-		self.assertEqual(self.p.Expression.parseString('"String"')[0], 'String')
-		self.assertEqual(self.p.Expression.parseString('w#ord')[0], 'w#ord')
-		self.assertEqual(self.p.Expression.parseString('+100')[0], 100)
-
 	def test_URL(self):
 		self.assertEqual(self.p.URL.parseString('http://test/')[0], 'http://test/')
 		self.assertEqual(self.p.URL.parseString('http://1')[0], 'http://1')
@@ -168,6 +165,17 @@ class TestACLStringParser(unittest.TestCase):
 		# that the closing bracket is NOT matched
 		# this behavior is needed in order for the URLSequence to work
 		self.assertEqual(self.p.URL.parseString('http://1)')[0], 'http://1')
+
+class TestACLStringParser(unittest.TestCase):
+	def setUp(self):
+		self.p = ACLParser(TestObjectFactory())
+
+	def test_Expression(self):
+		ts = datetime.datetime(2015, 7, 1, 14, 39, 41, 567 * 1000)
+		self.assertEqual(self.p.Expression.parseString("20150701T143941567")[0], ts)
+		self.assertEqual(self.p.Expression.parseString('"String"')[0], 'String')
+		self.assertEqual(self.p.Expression.parseString('w#ord')[0], 'w#ord')
+		self.assertEqual(self.p.Expression.parseString('+100')[0], 100)
 
 	def test_URLSequence(self):
 		s0 = "(sequence http://1 http://2 http://3)"
