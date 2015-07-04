@@ -13,12 +13,11 @@ http://www.fipa.org/specs/fipa00008/SC00008I.html
 import unittest
 import datetime
 from pyparsing import Regex, ParseException, Or, Literal, ZeroOrMore, Suppress, Forward, OneOrMore, Group
+import aclparser
 
-from aclparser import TestObjectFactory, ACLLexicalDefinitionsParser
-
-class FPLexicalDefinitionsParser(ACLLexicalDefinitionsParser):
-	def __init__(self, obj_factory = TestObjectFactory()):
-		super().__init__(obj_factory)
+class FPLexicalDefinitionsParser(aclparser.ACLLexicalDefinitionsParser):
+	def __init__(self,):
+		super().__init__()
 
 		# 1.) FIPA SL allows Word to start with " or +, we don't in order to make
 		#     it possible to destinguish Integer and StringLiteral from Word
@@ -31,8 +30,8 @@ class FPLexicalDefinitionsParser(ACLLexicalDefinitionsParser):
 		self.VariableIdentifier = Suppress("?") + self.String
 
 class FP0Parser(FPLexicalDefinitionsParser):
-	def __init__(self, obj_factory = TestObjectFactory()):
-		super().__init__(obj_factory)
+	def __init__(self):
+		super().__init__()
 
 		self.language = 'fipa-sl0'
 
@@ -55,6 +54,7 @@ class FP0Parser(FPLexicalDefinitionsParser):
 		self.Agent = self.Term
 		self.ParameterValue = self.Term
 		self.Parameter = self.ParameterName + self.ParameterValue
+		self.Parameter.setParseAction(self.parse_Parameter)
 
 		self.FunctionalTerm = Or([
 			(Suppress("(") + self.FunctionSymbol + ZeroOrMore(self.Term) + Suppress(")")),
@@ -83,10 +83,16 @@ class FP0Parser(FPLexicalDefinitionsParser):
 		self.ContentExpression = Or([self.ActionExpression, self.Proposition])
 		self.Content = Suppress("(") + self.ContentExpression + Suppress(")")
 
+	def parse_Parameter(self, source, location, tokens):
+		return {tokens[0]: tokens[1]}
+
+	def parse_AsList(self, source, location, tokens):
+		print(tokens)
+
 
 class TestFPLexicalDefinitionsParser(unittest.TestCase):
 	def setUp(self):
-		self.p = FPLexicalDefinitionsParser(TestObjectFactory())
+		self.p = FPLexicalDefinitionsParser()
 
 	def test_String(self):
 		self.assertEqual(self.p.String.parseString('SingleWordString')[0], 'SingleWordString')
@@ -119,7 +125,7 @@ class TestFPLexicalDefinitionsParser(unittest.TestCase):
 
 class TestFP0Parser(unittest.TestCase):
 	def setUp(self):
-		self.p = FP0Parser(TestObjectFactory())
+		self.p = FP0Parser()
 
 	def test_NumericalConstant(self):
 		self.assertEqual(self.p.NumericalConstant.parseString('+100')[0], 100)
@@ -147,19 +153,19 @@ class TestFP0Parser(unittest.TestCase):
 
 	def helper_test_Sequence_Set(self, Parser, name):
 		s0 = '({0} 0 1 2 3 4)'.format(name)
-		self.assertEqual(list(Parser.parseString(s0)[0]), [0,1,2,3,4])
+		self.assertEqual(Parser.parseString(s0).asList()[0], [0,1,2,3,4])
 		s1 = '({0} 0 eins "zwei" 00030303T000000000 -4)'.format(name)
 		e1 = [0, 'eins', 'zwei', datetime.datetime(year=3, month=3, day=3), -4]
-		self.assertEqual(list(Parser.parseString(s1)[0]), e1)
+		self.assertEqual(Parser.parseString(s1).asList()[0], e1)
 		s2 = '({0} 0 ({0} 10 11 12) 20 30 40)'.format(name)
-		self.assertEqual(list(Parser.parseString(s2)[0][1]), [10, 11, 12])
+		self.assertEqual(Parser.parseString(s2).asList()[0][1], [10, 11, 12])
 
 	def test_Parameter(self):
 		self.assertEqual(
-			self.p.Parameter.parseString(':test 2').asList(), ['test', 2])
+			self.p.Parameter.parseString(':test 2').asList()[0], {'test': 2})
 		self.assertEqual(
-			self.p.Parameter.parseString(':"fancy name" (sequence 0 1 2 3)').asList(),
-			['fancy name', [0,1,2,3]])
+			self.p.Parameter.parseString(':"fancy name" (sequence 0 1 2 3)').asList()[0],
+			{'fancy name': [0,1,2,3]})
 
 	def test_FunctionalTerm(self):
 		self.assertEqual(
@@ -167,21 +173,21 @@ class TestFP0Parser(unittest.TestCase):
 		ft1 = '(test 1 "2" "long and complicated" (set 0 1 2))'
 		self.assertEqual(
 			self.p.FunctionalTerm.parseString(ft1).asList(),
-			['test', 1, '2', 'long and complicated', [0,1,2]])
+			{'test': [1, '2', 'long and complicated', [0,1,2]]})
 		self.assertEqual(
 			self.p.FunctionalTerm.parseString('(action agent1 term)').asList(),
-			['action', 'agent1', 'term'])
+			{'action': ['agent1', 'term']})
 		self.assertEqual(
 			self.p.FunctionalTerm.parseString('(param :name test :value 1)').asList(),
-			['param', 'name', 'test', 'value', 1])
+			{'param': {'name': 'test', 'value': 1}})
 
 	def test_ActionExpression(self):
 		self.assertEqual(
 			self.p.ActionExpression.parseString('(action agent1 term)').asList(),
-			['agent1', 'term'])
+			{'action': ['agent1', 'term']})
 		self.assertEqual(
 			self.p.ActionExpression.parseString('(action agent23 (set "a b c" 3))').asList(),
-			['agent23', ['a b c', 3]])
+			{'action': ['agent23', ['a b c', 3]]})
 
 	def test_Term(self):
 		# Term can be a Constant
@@ -198,16 +204,16 @@ class TestFP0Parser(unittest.TestCase):
 		# Term can be a FunctionalTerm
 		self.assertEqual(
 			self.p.Term.parseString('(test 1 "2" "long and complicated" (set 0 1 2))').asList(),
-			['test', 1, '2', 'long and complicated', [0,1,2]])
+			{'test': [1, '2', 'long and complicated', [0,1,2]]})
 		# Term can be a ActionExpression
 		# this seems to be ambiguous, thus there is no defined way for our
 		# parser to handle this
 		self.assertEqual(
 			self.p.Term.parseString('(action agent1 term)').asList(),
-			['action', 'agent1', 'term'])
+			{'action': ['agent1', 'term']})
 		self.assertEqual(
 			self.p.Term.parseString('(action agent23 (set "a b c" 3))').asList(),
-			['action', 'agent23', ['a b c', 3]])
+			{'action': ['agent23', ['a b c', 3]]})
 
 	def test_AtomicFormula(self):
 		self.assertEqual(self.p.AtomicFormula.parseString('true')[0], 'true')
@@ -239,6 +245,7 @@ class TestFP0Parser(unittest.TestCase):
 			self.p.Content.parseString(c0).asList(),
 			['agent-identifier', 'name', 'test', 'addresses',
 				['http://localhost:9000'], 'get-description'])
+		print(self.p.Content.parseString(c0).asXML())
 
 
 if __name__ == "__main__":
