@@ -5,8 +5,16 @@ import unittest
 import datetime
 from pyparsing import Regex, ParseException, Or, Literal, Optional, ZeroOrMore, Suppress
 
+class TestObjectFactory(object):
+	def create_int(self, value):
+		return int(value)
+	def create_AgentIdentifier(self, name, addresses):
+		return {'name': name, 'addresses': list(addresses) }
+
 class ACLLexicalDefinitionsParser(object):
-	def __init__(self):
+	def __init__(self, obj_factory = TestObjectFactory()):
+		self.obj_factory = obj_factory
+
 		self.DateTime = Regex(r'([\+-])?\d{8}T\d{9}([a-zA-Z])?')
 		self.DateTime.setParseAction(self.parse_DateTime)
 
@@ -50,11 +58,11 @@ class ACLLexicalDefinitionsParser(object):
 		return tok
 
 	def parse_Integer(self, source, location, tokens):
-		return int(tokens[0])
+		return self.obj_factory.create_int(tokens[0])
 
 class ACLParser(ACLLexicalDefinitionsParser):
-	def __init__(self):
-		super().__init__()
+	def __init__(self, obj_factory = TestObjectFactory()):
+		super().__init__(obj_factory)
 
 		self.URLSequence = Suppress("(") + Suppress("sequence") + ZeroOrMore(self.URL) + Suppress(")")
 
@@ -98,12 +106,12 @@ class ACLParser(ACLLexicalDefinitionsParser):
 	def parse_AgentIdentifier(self, source, location, tokens):
 		name = tokens['name']
 		addresses = tokens['addresses']
-		return {'name': name, 'addresses': list(addresses) }
+		return self.obj_factory.create_AgentIdentifier(name, addresses)
 
 
 class TestACLLexicalDefinitionsParser(unittest.TestCase):
 	def setUp(self):
-		self.p = ACLLexicalDefinitionsParser()
+		self.p = ACLLexicalDefinitionsParser(TestObjectFactory())
 
 	def test_DateTime(self):
 		ts = datetime.datetime(2015, 7, 1, 14, 39, 41, 567 * 1000)
@@ -161,7 +169,7 @@ class TestACLLexicalDefinitionsParser(unittest.TestCase):
 
 class TestACLStringParser(unittest.TestCase):
 	def setUp(self):
-		self.p = ACLParser()
+		self.p = ACLParser(TestObjectFactory())
 
 	def test_Expression(self):
 		ts = datetime.datetime(2015, 7, 1, 14, 39, 41, 567 * 1000)
