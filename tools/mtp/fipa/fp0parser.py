@@ -22,10 +22,25 @@ class TestObjectFactory(aclparser.TestObjectFactory):
 		else:
 			return result
 
+	def _terms_to_list_or_dict(self, terms):
+		""" creates a dictionary if the terms are (key,value) tuples
+			returns an empty list if len(terms) == 0
+		"""
+		if terms is None or len(terms) < 1:
+			return []
+		if isinstance(terms[0], tuple):
+			return {tt[0]: self._extract_parseresults(tt[1]) for tt in terms}
+		else:
+			return [self._extract_parseresults(tt) for tt in terms]
+
 	def create_ActionExpression(self, agent, term):
 		agent = self._extract_parseresults(agent)
 		term = self._extract_parseresults(term)
 		return ('action', {'agent': agent, 'term': term})
+
+	def create_FunctionalTerm(self, name, terms):
+		terms = self._terms_to_list_or_dict(terms)
+		return ('functionalterm', {'name': name, 'terms': terms})
 
 class FPLexicalDefinitionsParser(aclparser.ACLLexicalDefinitionsParser):
 	def __init__(self, obj_factory = TestObjectFactory()):
@@ -74,6 +89,7 @@ class FP0Parser(FPLexicalDefinitionsParser):
 			(Suppress("(") + self.FunctionSymbol + ZeroOrMore(self.Term) + Suppress(")")),
 			(Suppress("(") + self.FunctionSymbol + ZeroOrMore(self.Parameter) + Suppress(")"))
 		])
+		self.FunctionalTerm.setParseAction(self.parse_FunctionalTerm)
 
 		self.ActionExpression = (Suppress("(") +
 			Suppress("action") + self.Agent + self.Term + Suppress(")"))
@@ -106,6 +122,9 @@ class FP0Parser(FPLexicalDefinitionsParser):
 
 	def parse_ActionExpression(self, source, location, tokens):
 		return self.obj_factory.create_ActionExpression(tokens[0], tokens[1])
+
+	def parse_FunctionalTerm(self, source, location, tokens):
+		return self.obj_factory.create_FunctionalTerm(tokens[0], tokens[1:])
 
 
 class TestFPLexicalDefinitionsParser(unittest.TestCase):
@@ -185,20 +204,20 @@ class TestFP0Parser(unittest.TestCase):
 			self.p.Parameter.parseString(':"fancy name" (sequence 0 1 2 3)').asList()[0],
 			('fancy name', [0,1,2,3]))
 
-	@unittest.skip("wip")
 	def test_FunctionalTerm(self):
 		self.assertEqual(
-			self.p.FunctionalTerm.parseString('(empty)').asList(), ['empty'])
+			self.p.FunctionalTerm.parseString('(empty)').asList()[0],
+			('functionalterm', {'name': 'empty', 'terms': []}))
 		ft1 = '(test 1 "2" "long and complicated" (set 0 1 2))'
 		self.assertEqual(
-			self.p.FunctionalTerm.parseString(ft1).asList(),
-			{'test': [1, '2', 'long and complicated', [0,1,2]]})
+			self.p.FunctionalTerm.parseString(ft1).asList()[0],
+			('functionalterm', {'name': 'test', 'terms': [1, '2', 'long and complicated', [0,1,2]]}))
 		self.assertEqual(
-			self.p.FunctionalTerm.parseString('(action agent1 term)').asList(),
-			{'action': ['agent1', 'term']})
+			self.p.FunctionalTerm.parseString('(action agent1 term)').asList()[0],
+			('functionalterm', {'name': 'action', 'terms': ['agent1', 'term']}))
 		self.assertEqual(
-			self.p.FunctionalTerm.parseString('(param :name test :value 1)').asList(),
-			{'param': {'name': 'test', 'value': 1}})
+			self.p.FunctionalTerm.parseString('(param :name test :value 1)').asList()[0],
+			('functionalterm', {'name': 'param', 'terms': {'name': 'test', 'value': 1}}))
 
 	def test_ActionExpression(self):
 		self.assertEqual(
