@@ -12,12 +12,24 @@ http://www.fipa.org/specs/fipa00008/SC00008I.html
 
 import unittest
 import datetime
-from pyparsing import Regex, ParseException, Or, Literal, ZeroOrMore, Suppress, Forward, OneOrMore, Group
+from pyparsing import Regex, ParseException, Or, Literal, ZeroOrMore, Suppress, Forward, OneOrMore, Group, ParseResults
 import aclparser
 
+class TestObjectFactory(aclparser.TestObjectFactory):
+	def _extract_parseresults(self, result):
+		if isinstance(result, ParseResults):
+			return result.asList()
+		else:
+			return result
+
+	def create_ActionExpression(self, agent, term):
+		agent = self._extract_parseresults(agent)
+		term = self._extract_parseresults(term)
+		return ('action', {'agent': agent, 'term': term})
+
 class FPLexicalDefinitionsParser(aclparser.ACLLexicalDefinitionsParser):
-	def __init__(self,):
-		super().__init__()
+	def __init__(self, obj_factory = TestObjectFactory()):
+		super().__init__(obj_factory)
 
 		# 1.) FIPA SL allows Word to start with " or +, we don't in order to make
 		#     it possible to destinguish Integer and StringLiteral from Word
@@ -30,8 +42,8 @@ class FPLexicalDefinitionsParser(aclparser.ACLLexicalDefinitionsParser):
 		self.VariableIdentifier = Suppress("?") + self.String
 
 class FP0Parser(FPLexicalDefinitionsParser):
-	def __init__(self):
-		super().__init__()
+	def __init__(self, obj_factory = TestObjectFactory()):
+		super().__init__(obj_factory)
 
 		self.language = 'fipa-sl0'
 
@@ -65,7 +77,7 @@ class FP0Parser(FPLexicalDefinitionsParser):
 
 		self.ActionExpression = (Suppress("(") +
 			Suppress("action") + self.Agent + self.Term + Suppress(")"))
-		self.ActionExpression.setResultsName('action')
+		self.ActionExpression.setParseAction(self.parse_ActionExpression)
 
 		self.Term << Or([self.Constant, self.Set, self.Sequence, self.FunctionalTerm, self.ActionExpression])
 
@@ -91,6 +103,9 @@ class FP0Parser(FPLexicalDefinitionsParser):
 
 	def parse_as_List(self, source, location, tokens):
 		return tokens.asList()
+
+	def parse_ActionExpression(self, source, location, tokens):
+		return self.obj_factory.create_ActionExpression(tokens[0], tokens[1])
 
 
 class TestFPLexicalDefinitionsParser(unittest.TestCase):
@@ -185,14 +200,13 @@ class TestFP0Parser(unittest.TestCase):
 			self.p.FunctionalTerm.parseString('(param :name test :value 1)').asList(),
 			{'param': {'name': 'test', 'value': 1}})
 
-	@unittest.skip("wip")
 	def test_ActionExpression(self):
 		self.assertEqual(
-			self.p.ActionExpression.parseString('(action agent1 term)').asDict(),
-			{'action': ['agent1', 'term']})
+			self.p.ActionExpression.parseString('(action agent1 term)').asList()[0],
+			('action', {'agent': 'agent1', 'term': 'term'}))
 		self.assertEqual(
-			self.p.ActionExpression.parseString('(action agent23 (set "a b c" 3))').asDict(),
-			{'action': ['agent23', ['a b c', 3]]})
+			self.p.ActionExpression.parseString('(action agent23 (set "a b c" 3))').asList()[0],
+			('action', {'agent': 'agent23', 'term': ['a b c', 3]}))
 
 	@unittest.skip("wip")
 	def test_Term(self):
