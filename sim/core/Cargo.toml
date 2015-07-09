@@ -1,0 +1,4 @@
+[package]
+name = "sim-core"
+version = "0.1.0"
+authors = ["Kevin Laeufer <kevin.laeufer@rwth-aachen.de>"]
