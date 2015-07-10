@@ -245,12 +245,12 @@ class ACLMessage(object):
 class TestACLMessageParsing(unittest.TestCase):
 	def setUp(self):
 		self.acl = ACLMessage()
-		self.test_envelope = """
+		self.test_envelope = ["""
 
 <?xml version="1.0"?>
 <envelope><params index="1"><to><agent-identifier><name>test</name><addresses><url>http://localhost:9000</url></addresses></agent-identifier></to><from><agent-identifier><name>rma@192.168.122.1:1099/JADE</name><addresses><url>http://130-000.eduroam.rwth-aachen.de:7778/acc</url></addresses></agent-identifier></from><acl-representation>fipa.acl.rep.string.std</acl-representation><payload-length>488</payload-length><date>20150701Z143941567</date><intended-receiver><agent-identifier><name>test</name><addresses><url>http://localhost:9000</url></addresses></agent-identifier></intended-receiver></params></envelope>
 
-"""
+"""]
 		test_msg0 = ACLMessage(Performative.REQUEST)
 		test_msg0.sender = AgentIdentifier("rma@192.168.122.1:1099/JADE", "http://130-000.eduroam.rwth-aachen.de:7778/acc")
 		test_msg0.receiver = [AgentIdentifier("test", "http://localhost:9000")]
@@ -314,15 +314,14 @@ class TestACLMessageParsing(unittest.TestCase):
 			msg = ACLMessage.from_mtp(msg_str)
 			self._helper_compare_msg(msg, original_msg)
 
-	@unittest.skip("wip")
 	def test_envelope_from_mtp(self):
-		env = ACLEnvelope.from_mtp(self.TEST_ENVELOPE, self.TEST_STRING_MSG)
+		env = ACLEnvelope.from_mtp(self.test_envelope[0], self.test_msg[0][1])
 		self.assertEqual(env.receiver[0].name, "test")
 		self.assertEqual(env.receiver[0].addresses[0], "http://localhost:9000")
 		self.assertEqual(env.sender[0].name, "rma@192.168.122.1:1099/JADE")
 		self.assertEqual(env.sender[0].addresses[0], "http://130-000.eduroam.rwth-aachen.de:7778/acc")
-		self.assertEqual(env.content, self.TEST_STRING_MSG.strip())
-		self._helper_test_test_string_msg(env.msg)
+		self.assertEqual(env.content, self.test_msg[0][1].strip())
+		self._helper_compare_msg(env.msg, self.test_msg[0][0])
 
 if __name__ == "__main__":
 	unittest.main()
