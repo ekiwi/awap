@@ -23,7 +23,7 @@ impl Node {
 		NodeCommand::WaitForPacket
 	}
 
-	fn consume_packet(&self, packet: Packet) -> NodeCommand {
+	fn receive_packet(&self, packet: &Packet) -> NodeCommand {
 		println!("{} received a packet: {:?}", self.name, packet);
 		NodeCommand::WaitForPacket
 	}
@@ -60,9 +60,8 @@ fn main() {
 		match packets.pop() {
 			Some(packet) => {
 				for node in nodes.iter_mut() {
-					if node.node.address == packet.dest && !node.sleeping {
-						node.command = node.node.consume_packet(packet);
-						break;
+					if !node.sleeping  && node.node.address != packet.src {
+						node.command = node.node.receive_packet(&packet);
 					}
 				}
 			},
