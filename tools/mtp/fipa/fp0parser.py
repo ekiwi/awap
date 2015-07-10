@@ -62,6 +62,12 @@ class TestObjectFactory(aclparser.TestObjectFactory):
 				str(tokens[0]),
 				[self._extract_parseresults(tt) for tt in terms])
 
+	def create_Wff(self, is_atomic_formula, value):
+		if is_atomic_formula:
+			return value
+		else:
+			return ('done', value)
+
 class FPLexicalDefinitionsParser(aclparser.ACLLexicalDefinitionsParser):
 	def __init__(self, obj_factory = TestObjectFactory()):
 		super().__init__(obj_factory)
@@ -127,9 +133,10 @@ class FP0Parser(FPLexicalDefinitionsParser):
 		])
 		self.AtomicFormula.setParseAction(self.parse_AtomicFormula)
 		self.Wff = Or([
+			Suppress("(") + self.ActionOp + self.ActionExpression + Suppress(")"),
 			self.AtomicFormula,
-			Suppress("(") + self.ActionOp + self.ActionExpression + Suppress(")")
 		])
+		self.Wff.setParseAction(self.parse_Wff)
 		self.Proposition = self.Wff
 
 		self.ContentExpression = Or([self.ActionExpression, self.Proposition])
@@ -152,6 +159,11 @@ class FP0Parser(FPLexicalDefinitionsParser):
 
 	def parse_AtomicFormula(self, source, location, tokens):
 		return self.obj_factory.create_AtomicFormula(tokens)
+
+	def parse_Wff(self, source, location, tokens):
+		is_atomic_formula = tokens[0] != 'done'
+		value = tokens[0] if is_atomic_formula else tokens[1]
+		return self.obj_factory.create_Wff(is_atomic_formula, value)
 
 class TestFPLexicalDefinitionsParser(unittest.TestCase):
 	def setUp(self):
@@ -292,16 +304,15 @@ class TestFP0Parser(unittest.TestCase):
 			'("some string that is not result" 1 (set 3 4 5))').asList()[0],
 			('atomicformula', 'some string that is not result', [1, [3, 4, 5]]))
 
-	@unittest.skip("wip")
 	def test_Wff(self):
 		self.assertEqual(
 			self.p.Wff.parseString(
-			'("some string that is not result" 1 (set 3 4 5))').asList(),
-			['some string that is not result', 1, [3, 4, 5]])
+			'("some string that is not result" 1 (set 3 4 5))').asList()[0],
+			('atomicformula', 'some string that is not result', [1, [3, 4, 5]]))
 		self.assertEqual(
 			self.p.Wff.parseString(
-			'(done (action agent1 test))').asList(),
-			['done', 'action' ,'agent1', 'test'])
+			'(done (action agent1 test))').asList()[0],
+			('done', ('action', {'agent': 'agent1', 'term': 'test'})))
 
 	@unittest.skip("wip")
 	def test_Content(self):
