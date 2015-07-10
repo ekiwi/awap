@@ -42,6 +42,26 @@ class TestObjectFactory(aclparser.TestObjectFactory):
 		terms = self._terms_to_list_or_dict(terms)
 		return ('functionalterm', {'name': name, 'terms': terms})
 
+	def create_AtomicFormula(self, tokens):
+		if len(tokens) == 1 and tokens[0] == 'true':
+			return ('atomicformula', True)
+		elif len(tokens) == 1 and tokens[0] == 'false':
+			return ('atomicformula', False)
+		elif len(tokens) == 1:
+			return ('atomicformula', str(tokens[0]))
+		elif tokens[0] == 'result':
+			return (
+				'atomicformula',
+				'result',
+				self._extract_parseresults(tokens[1]),
+				self._extract_parseresults(tokens[2]))
+		else:
+			terms = tokens[1:]
+			return (
+				'atomicformula',
+				str(tokens[0]),
+				[self._extract_parseresults(tt) for tt in terms])
+
 class FPLexicalDefinitionsParser(aclparser.ACLLexicalDefinitionsParser):
 	def __init__(self, obj_factory = TestObjectFactory()):
 		super().__init__(obj_factory)
@@ -105,6 +125,7 @@ class FP0Parser(FPLexicalDefinitionsParser):
 			(Suppress("(") + Literal("result") + self.Term + self.Term + Suppress(")")),
 			(Suppress("(") + self.PredicateSymbol + OneOrMore(self.Term) + Suppress(")"))
 		])
+		self.AtomicFormula.setParseAction(self.parse_AtomicFormula)
 		self.Wff = Or([
 			self.AtomicFormula,
 			Suppress("(") + self.ActionOp + self.ActionExpression + Suppress(")")
@@ -129,6 +150,8 @@ class FP0Parser(FPLexicalDefinitionsParser):
 			return self.obj_factory.create_ActionExpression(tokens[1], tokens[2])
 		return self.obj_factory.create_FunctionalTerm(tokens[0], tokens[1:])
 
+	def parse_AtomicFormula(self, source, location, tokens):
+		return self.obj_factory.create_AtomicFormula(tokens)
 
 class TestFPLexicalDefinitionsParser(unittest.TestCase):
 	def setUp(self):
@@ -253,20 +276,21 @@ class TestFP0Parser(unittest.TestCase):
 			self.p.Term.parseString('(action agent23 (set "a b c" 3))').asList()[0],
 			('action', {'agent': 'agent23', 'term': ['a b c', 3]}))
 
-	@unittest.skip("wip")
 	def test_AtomicFormula(self):
-		self.assertEqual(self.p.AtomicFormula.parseString('true')[0], 'true')
-		self.assertEqual(self.p.AtomicFormula.parseString('false')[0], 'false')
+		self.assertEqual(self.p.AtomicFormula.parseString('true').asList()[0],
+			('atomicformula', True))
+		self.assertEqual(self.p.AtomicFormula.parseString('false').asList()[0],
+			('atomicformula', False))
 		self.assertEqual(
-			self.p.AtomicFormula.parseString('(result 1 2)').asList(),
-			['result', 1, 2])
+			self.p.AtomicFormula.parseString('(result 1 2)').asList()[0],
+			('atomicformula', 'result', 1, 2) )
 		self.assertEqual(
-			self.p.AtomicFormula.parseString('(result 1 (set 3 4 5))').asList(),
-			['result', 1, [3, 4, 5]])
+			self.p.AtomicFormula.parseString('(result 1 (set 3 4 5))').asList()[0],
+			('atomicformula', 'result', 1, [3, 4, 5]))
 		self.assertEqual(
 			self.p.AtomicFormula.parseString(
-			'("some string that is not result" 1 (set 3 4 5))').asList(),
-			['some string that is not result', 1, [3, 4, 5]])
+			'("some string that is not result" 1 (set 3 4 5))').asList()[0],
+			('atomicformula', 'some string that is not result', [1, [3, 4, 5]]))
 
 	@unittest.skip("wip")
 	def test_Wff(self):
