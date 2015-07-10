@@ -3,6 +3,7 @@
 
 import unittest
 import datetime
+import re
 from pyparsing import Regex, ParseException, Or, Literal, Optional, ZeroOrMore, Suppress
 
 class ObjectFactory(object):
@@ -23,7 +24,9 @@ class ACLLexicalDefinitionsParser(object):
 
 		# 1.) FIPA ACL allows Word to start with " or +, we don't in order to make
 		#     it possible to destinguish Integer and StringLiteral from Word
-		self.Word = Regex(r'\s*[^\(\)#0-9-@ "+][^\(\)\s]*')
+		word = r'[^\(\)#0-9-@ "+][^\(\)\s]*'
+		self.re_Word = re.compile(word + r'$')
+		self.Word = Regex(word)
 
 		self.Integer = Regex(r'[\+-]?[0-9]+')
 		self.Integer.setParseAction(self.parse_Integer)
@@ -36,6 +39,8 @@ class ACLLexicalDefinitionsParser(object):
 		# TODO: this is not correct, as any URL, not only http urls should be accepted...
 		self.URL = Regex(r'http[s]?://(?:[a-zA-Z]|[0-9]|[$-&*-_@.&+]|[!*,]|(?:%[0-9a-fA-F][0-9a-fA-F]))+')
 
+	def is_Word(self, word):
+		return self.re_Word.match(word) is not None
 
 	def parse_DateTime(self, source, location, tokens):
 		tok = tokens[0]
