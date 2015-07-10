@@ -88,7 +88,7 @@ class ACLParser(ACLLexicalDefinitionsParser):
 
 		self.MessageParameterNames = ['sender', 'receiver', 'content',
 			'reply-with', 'reply-by', 'in-reply-to', 'reply-to', 'language',
-			'encoding', 'ontology', 'protocol', ':conversation-id']
+			'encoding', 'ontology', 'protocol', 'conversation-id']
 
 		self.MessageParameter = Or([
 			(Suppress(":sender") + self.AgentIdentifier).setResultsName('sender'),

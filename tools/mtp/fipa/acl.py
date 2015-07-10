@@ -150,10 +150,17 @@ class ACLMessage(object):
 
 	def parse_string_message(self, message):
 		msg = self.parser.parse_message(message)
-		self.performative = msg['performative']
+		self.performative = Performative[msg['performative']]
 		for param in self.parser.MessageParameterNames:
 			if param in msg:
-				setattr(self, param.replace('-', '_'), msg[param])
+				if param == 'sender':
+					self.sender = AgentIdentifier(msg['sender'][0]['name'], msg['sender'][0]['addresses'])
+				elif param == 'receiver':
+					self.receiver = [
+						AgentIdentifier(rr['name'], rr['addresses'])
+						for rr in msg['receiver']]
+				else:
+					setattr(self, param.replace('-', '_'), msg[param][0])
 
 	def __str__(self):
 		s = '(' + self.performative.name + ' '
@@ -178,19 +185,16 @@ class ACLMessage(object):
 class TestACLMessageParsing(unittest.TestCase):
 	def setUp(self):
 		self.acl = ACLMessage()
-
-	TEST_ENVELOPE = """
+		self.TEST_ENVELOPE = """
 
 <?xml version="1.0"?>
 <envelope><params index="1"><to><agent-identifier><name>test</name><addresses><url>http://localhost:9000</url></addresses></agent-identifier></to><from><agent-identifier><name>rma@192.168.122.1:1099/JADE</name><addresses><url>http://130-000.eduroam.rwth-aachen.de:7778/acc</url></addresses></agent-identifier></from><acl-representation>fipa.acl.rep.string.std</acl-representation><payload-length>483</payload-length><date>20150701Z143941567</date><intended-receiver><agent-identifier><name>test</name><addresses><url>http://localhost:9000</url></addresses></agent-identifier></intended-receiver></params></envelope>
 
 """
-
-	TEST_STRING_MSG = """
+		self.TEST_STRING_MSG = """
 
 
 (REQUEST
- :language  fipa-sl0  :ontology  FIPA-Agent-Management  :protocol  fipa-request
  :sender  ( agent-identifier :name rma@192.168.122.1:1099/JADE  :addresses (sequence http://130-000.eduroam.rwth-aachen.de:7778/acc ))
  :receiver  (set ( agent-identifier :name test  :addresses (sequence http://localhost:9000 )) )
  :content  "((action (agent-identifier :name test :addresses (sequence http://localhost:9000)) (get-description)))" 
@@ -200,9 +204,18 @@ class TestACLMessageParsing(unittest.TestCase):
 """
 
 	def test_msg_from_mtp(self):
-		acl_msg = ACLMessage.from_mtp(
-			TestACLMessageParsing.TEST_ENVELOPE,
-			TestACLMessageParsing.TEST_STRING_MSG)
+		msg = ACLMessage.from_mtp(self.TEST_ENVELOPE, self.TEST_STRING_MSG)
+		self.assertEqual(msg.performative, Performative.REQUEST)
+		self.assertEqual(msg.sender.name, "rma@192.168.122.1:1099/JADE")
+		self.assertEqual(msg.sender.addresses[0], "http://130-000.eduroam.rwth-aachen.de:7778/acc")
+		self.assertEqual(msg.receiver[0].name, "test")
+		self.assertEqual(msg.receiver[0].addresses[0], "http://localhost:9000")
+		self.assertEqual(msg.content, "((action (agent-identifier :name test :addresses (sequence http://localhost:9000)) (get-description)))")
+		self.assertEqual(msg.language, "fipa-sl0")
+		self.assertEqual(msg.ontology, "FIPA-Agent-Management")
+		self.assertEqual(msg.protocol, "fipa-request")
+		self.assertEqual(msg.conversation_id, "C1438784720_1435754381566")
+
 
 if __name__ == "__main__":
 	unittest.main()
