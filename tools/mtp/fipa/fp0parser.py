@@ -15,7 +15,7 @@ import datetime
 from pyparsing import Regex, ParseException, Or, Literal, ZeroOrMore, Suppress, Forward, OneOrMore, Group, ParseResults
 import aclparser
 
-class TestObjectFactory(aclparser.TestObjectFactory):
+class ObjectFactory(aclparser.ObjectFactory):
 	def _extract_parseresults(self, result):
 		if isinstance(result, ParseResults):
 			return result.asList()
@@ -69,7 +69,7 @@ class TestObjectFactory(aclparser.TestObjectFactory):
 			return ('done', value)
 
 class FPLexicalDefinitionsParser(aclparser.ACLLexicalDefinitionsParser):
-	def __init__(self, obj_factory = TestObjectFactory()):
+	def __init__(self, obj_factory = ObjectFactory()):
 		super().__init__(obj_factory)
 
 		# 1.) FIPA SL allows Word to start with " or +, we don't in order to make
@@ -83,7 +83,7 @@ class FPLexicalDefinitionsParser(aclparser.ACLLexicalDefinitionsParser):
 		self.VariableIdentifier = Suppress("?") + self.String
 
 class FP0Parser(FPLexicalDefinitionsParser):
-	def __init__(self, obj_factory = TestObjectFactory()):
+	def __init__(self, obj_factory = ObjectFactory()):
 		super().__init__(obj_factory)
 
 		self.language = 'fipa-sl0'
