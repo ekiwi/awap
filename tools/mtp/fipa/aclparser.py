@@ -4,7 +4,7 @@
 import unittest
 import datetime
 import re
-from pyparsing import Regex, ParseException, Or, Literal, Optional, ZeroOrMore, Suppress
+from pyparsing import Regex, ParseException, Or, Literal, Optional, ZeroOrMore, Suppress, CaselessKeyword
 
 class ObjectFactory(object):
 	def create_int(self, value):
@@ -82,12 +82,29 @@ class ACLParser(ACLLexicalDefinitionsParser):
 
 		self.Expression = Or([self.Word, self.String, self.Number, self.DateTime])
 
-		self.Performative = ["ACCEPT_PROPOSAL", "AGREE", "CANCEL", "CFP", "CONFIRM"
-			"DISCONFIRM", "FAILURE", "INFORM", "INFORM_IF", "INFORM_REF",
-			"NOT_UNDERSTOOD", "PROPOSE", "QUERY_IF", "QUERY_REF", "REFUSE",
-			"REJECT_PROPOSAL", "REQUEST", "REQUEST_WHEN", "REQUEST_WHENEVER",
-			"SUBSCRIBE", "PROXY", "PROPAGATE"]
-
+		self.Performative = [
+			CaselessKeyword("ACCEPT-PROPOSAL"),
+			CaselessKeyword("AGREE"),
+			CaselessKeyword("CANCEL"),
+			CaselessKeyword("CFP"),
+			CaselessKeyword("CONFIRM"),
+			CaselessKeyword("DISCONFIRM"),
+			CaselessKeyword("FAILURE"),
+			CaselessKeyword("INFORM"),
+			CaselessKeyword("INFORM-IF"),
+			CaselessKeyword("INFORM-REF"),
+			CaselessKeyword("NOT-UNDERSTOOD"),
+			CaselessKeyword("PROPOSE"),
+			CaselessKeyword("QUERY-IF"),
+			CaselessKeyword("QUERY-REF"),
+			CaselessKeyword("REFUSE"),
+			CaselessKeyword("REJECT-PROPOSAL"),
+			CaselessKeyword("REQUEST"),
+			CaselessKeyword("REQUEST-WHEN"),
+			CaselessKeyword("REQUEST-WHENEVER"),
+			CaselessKeyword("SUBSCRIBE"),
+			CaselessKeyword("PROXY"),
+			CaselessKeyword("PROPAGATE")]
 
 		self.MessageType = Or(self.Performative).setResultsName('performative')
 
@@ -182,6 +199,9 @@ class TestACLLexicalDefinitionsParser(unittest.TestCase):
 class TestACLStringParser(unittest.TestCase):
 	def setUp(self):
 		self.p = ACLParser(ObjectFactory())
+
+	def test_MessageType(self):
+		self.assertEqual(self.p.MessageType.parseString('agree')[0], 'AGREE')
 
 	def test_Expression(self):
 		ts = datetime.datetime(2015, 7, 1, 14, 39, 41, 567 * 1000)

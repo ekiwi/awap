@@ -202,7 +202,7 @@ class ACLMessage(object):
 
 	def parse_string_message(self, message):
 		msg = self.parser.parse_message(message)
-		self.performative = Performative[msg['performative']]
+		self.performative = Performative[msg['performative'].replace('-','_')]
 		for param in self.parser.MessageParameterNames:
 			if param in msg:
 				if param == 'sender':
