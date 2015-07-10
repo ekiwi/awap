@@ -19,7 +19,7 @@ class ACLLexicalDefinitionsParser(object):
 		self.DateTime = Regex(r'([\+-])?\d{8}T\d{9}([a-zA-Z])?')
 		self.DateTime.setParseAction(self.parse_DateTime)
 
-		self.StringLiteral = Regex(r'"([^"\\]|(\\.))+"')
+		self.StringLiteral = Regex(r'"((\\")|[^"])+"')
 		self.StringLiteral.setParseAction(self.parse_StringLiteral)
 
 		# 1.) FIPA ACL allows Word to start with " or +, we don't in order to make
