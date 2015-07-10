@@ -87,10 +87,15 @@ class MTPHandler(BaseHTTPRequestHandler):
 		if env_mime != "application/xml" or msg_mime != "application/text":
 			print("Error: did not receive the correct mime type")
 			self.send_error(406)	# TODO: what is the correct code?
-		else:
-			msg = ACLMessage.from_mtp(envelope, message)
-			self.server.rx_queue.put(msg)
-			self.send_ok()
+			return
+		evelope = ACLEnvelope.from_mtp(envelope)
+		if evelope.representation != 'fipa.acl.rep.string.std':
+			print Exception("Error: envelope specifies `{}`. Can only read fipa.acl.rep.string.std.".format(evelope.representation))
+			self.send_error(406)	# TODO: what is the correct code?
+			return
+		msg = ACLMessage.from_mtp(envelope, message)
+		self.server.rx_queue.put(msg)
+		self.send_ok()
 
 	def send_ok(self):
 		self.send_response(200)

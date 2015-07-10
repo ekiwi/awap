@@ -55,8 +55,10 @@ class MessageParameterType(Enum):
 
 class AgentIdentifier(object):
 
-	def __init__(self, name=None, addresses=[]):
-		if not isinstance(addresses, list):
+	def __init__(self, name=None, addresses=None):
+		if addresses is None:
+			addresses = []
+		elif not isinstance(addresses, list):
 			addresses = [addresses]
 		self.name = name
 		self.addresses = addresses
@@ -90,6 +92,84 @@ class AgentIdentifier(object):
 			ai.addresses.append(url.text)
 		return ai
 
+class ACLEnvelope(object):
+	"""
+	See http://www.fipa.org/specs/fipa00085/SC00085J.html
+	"""
+	def __init__(self, sender, receiver, content, representation='fipa.acl.rep.string.std'):
+		self.sender = sender
+		self.receiver = receiver
+		self.acl_representation = representation
+		self._content = content
+		self._msg = None
+
+	@classmethod
+	def from_message(cls, acl_msg):
+		env = ACLEnvelope(
+			sender = [acl_msg.sender],
+			receiver = acl_msg.receiver,
+			content = str(acl_msg),
+			representation='fipa.acl.rep.string.std')
+		return env
+
+	@classmethod
+	def from_mtp(cls, envelope, content):
+		receiver = []
+		sender = []
+		length = 0
+		representation=None
+		root = ET.fromstring(envelope.strip())
+		if root.tag != 'envelope':
+			raise Exception("Invalid xml. Expected root tag to be <envelope>")
+		# TODO: check more than one <params> tag
+		params = root.find('params')
+		for identifier in params.find('to'):
+			receiver.append(AgentIdentifier.from_xml(identifier))
+		for identifier in params.find('from'):
+			sender.append(AgentIdentifier.from_xml(identifier))
+		representation = params.find('acl-representation').text
+		length = int(params.find('payload-length').text)
+		if len(content) != length:
+			print("Error in ACLEnvelope.from_mtp: length ({}) does not match len(content) ({})".format(length, len(content)))
+		return ACLEnvelope(sender, receiver, content, representation)
+
+	@property
+	def msg(self):
+		if self._msg is None:
+			self._msg = ACLMessage.from_mtp(self.content)
+		return self._msg
+
+	@property
+	def content(self):
+		return self._content
+
+	@content.setter
+	def content(self, value):
+		if self._content != value:
+			self._msg = None
+			self._content = value
+
+	def xml(self):
+		root = ET.Element('envelope')
+		param = ET.SubElement(root, 'params')
+		param.set('index', '1')
+		to = ET.SubElement(param, 'to')
+		for receiver in self.receiver:
+			to.append(receiver.xml())
+		ET.SubElement(param, 'from').append(self.sender.xml())
+		# TODO: what is this for? do we not intent to send our message to
+		#       all receivers?
+		intended = ET.SubElement(param, 'intended-receiver')
+		for receiver in self.receiver:
+			intended.append(receiver.xml())
+		ET.SubElement(param, 'payload-length').text = str(self.payload_length )
+		# currently string representation is hard coded
+		ET.SubElement(param, 'acl-representation').text = self.acl_representation
+		now = datetime.utcnow()
+		ts = "{0}{1:03d}".format(now.strftime("%Y%m%dZ%H%M%S"), int(now.microsecond / 1000))
+		ET.SubElement(param, 'date').text = ts
+		return root
+
 class ACLMessage(object):
 	"""
 		See http://www.fipa.org/specs/fipa00070/SC00070I.html
@@ -109,51 +189,10 @@ class ACLMessage(object):
 				setattr(self, param.replace('-', '_'), None)
 
 	@classmethod
-	def from_mtp(cls, envelope, msg):
+	def from_mtp(cls, msg):
 		a = ACLMessage()
-		a.parse_xml_envelope(envelope)
 		a.parse_string_message(msg)
 		return a
-
-	def generate_envelope(self):
-		"""
-		See http://www.fipa.org/specs/fipa00085/SC00085J.html
-		"""
-		root = ET.Element('envelope')
-		param = ET.SubElement(root, 'params')
-		param.set('index', '1')
-		to = ET.SubElement(param, 'to')
-		for receiver in self.receiver:
-			to.append(receiver.xml())
-		ET.SubElement(param, 'from').append(self.sender.xml())
-		# TODO: what is this for? do we not intent to send our message to
-		#       all receivers?
-		intended = ET.SubElement(param, 'intended-receiver')
-		for receiver in self.receiver:
-			intended.append(receiver.xml())
-		# FIXME: this is a little bit inefficient, since we prob. generate the string twice
-		ET.SubElement(param, 'payload-length').text = str(len(str(self)))
-		# currently string representation is hard coded
-		ET.SubElement(param, 'acl-representation').text = 'fipa.acl.rep.string.std'
-		now = datetime.utcnow()
-		ts = "{0}{1:03d}".format(now.strftime("%Y%m%dZ%H%M%S"), int(now.microsecond / 1000))
-		ET.SubElement(param, 'date').text = ts
-		return ET.tostring(root, encoding='unicode', method='xml')
-
-	def parse_xml_envelope(self, envelope):
-		root = ET.fromstring(envelope.strip())
-		if root.tag != 'envelope':
-			raise Exception("Invalid xml. Expected root tag to be <envelope>")
-		for params in root:
-			if params.tag != "params":
-				raise Exception("Invalid xml. Expected only params tag to be in <envelope>")
-			receiver = []
-			for identifier in params.find('to'):
-				receiver.append(AgentIdentifier.from_xml(identifier))
-			sender = AgentIdentifier.from_xml(params.find('from')[0])
-			representation = params.find('acl-representation').text
-		if representation != 'fipa.acl.rep.string.std':
-			raise Exception("Error: envelope specifies `{}`. Can only read fipa.acl.rep.string.std.".format(representation))
 
 	def parse_string_message(self, message):
 		msg = self.parser.parse_message(message)
@@ -195,7 +234,7 @@ class TestACLMessageParsing(unittest.TestCase):
 		self.TEST_ENVELOPE = """
 
 <?xml version="1.0"?>
-<envelope><params index="1"><to><agent-identifier><name>test</name><addresses><url>http://localhost:9000</url></addresses></agent-identifier></to><from><agent-identifier><name>rma@192.168.122.1:1099/JADE</name><addresses><url>http://130-000.eduroam.rwth-aachen.de:7778/acc</url></addresses></agent-identifier></from><acl-representation>fipa.acl.rep.string.std</acl-representation><payload-length>483</payload-length><date>20150701Z143941567</date><intended-receiver><agent-identifier><name>test</name><addresses><url>http://localhost:9000</url></addresses></agent-identifier></intended-receiver></params></envelope>
+<envelope><params index="1"><to><agent-identifier><name>test</name><addresses><url>http://localhost:9000</url></addresses></agent-identifier></to><from><agent-identifier><name>rma@192.168.122.1:1099/JADE</name><addresses><url>http://130-000.eduroam.rwth-aachen.de:7778/acc</url></addresses></agent-identifier></from><acl-representation>fipa.acl.rep.string.std</acl-representation><payload-length>488</payload-length><date>20150701Z143941567</date><intended-receiver><agent-identifier><name>test</name><addresses><url>http://localhost:9000</url></addresses></agent-identifier></intended-receiver></params></envelope>
 
 """
 		self.TEST_STRING_MSG = """
@@ -211,7 +250,9 @@ class TestACLMessageParsing(unittest.TestCase):
 """
 
 	def test_msg_from_mtp(self):
-		msg = ACLMessage.from_mtp(self.TEST_ENVELOPE, self.TEST_STRING_MSG)
+		self._helper_test_test_string_msg(ACLMessage.from_mtp(self.TEST_STRING_MSG))
+
+	def _helper_test_test_string_msg(self, msg):
 		self.assertEqual(msg.performative, Performative.REQUEST)
 		self.assertEqual(msg.sender.name, "rma@192.168.122.1:1099/JADE")
 		self.assertEqual(msg.sender.addresses[0], "http://130-000.eduroam.rwth-aachen.de:7778/acc")
@@ -233,7 +274,15 @@ class TestACLMessageParsing(unittest.TestCase):
 		acl_msg.ontology = "FIPA-Agent-Management"
 		acl_msg.protocol = "fipa-request"
 		message = str(acl_msg)
-		envelope = acl_msg.generate_envelope()
+
+	def test_envelope_from_mtp(self):
+		env = ACLEnvelope.from_mtp(self.TEST_ENVELOPE, self.TEST_STRING_MSG)
+		self.assertEqual(env.receiver[0].name, "test")
+		self.assertEqual(env.receiver[0].addresses[0], "http://localhost:9000")
+		self.assertEqual(env.sender[0].name, "rma@192.168.122.1:1099/JADE")
+		self.assertEqual(env.sender[0].addresses[0], "http://130-000.eduroam.rwth-aachen.de:7778/acc")
+		self.assertEqual(env.content, self.TEST_STRING_MSG)
+		self._helper_test_test_string_msg(env.msg)
 
 if __name__ == "__main__":
 	unittest.main()
