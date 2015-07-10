@@ -17,6 +17,7 @@ import xml.etree.ElementTree as ET
 from datetime import datetime
 import re
 import unittest
+import aclparser
 
 class Performative(Enum):
 	ACCEPT_PROPOSAL = 0
@@ -86,70 +87,19 @@ class AgentIdentifier(object):
 			ai.addresses.append(url.text)
 		return ai
 
-class AgentIdentifierSet(list):
-	def isempty(self):
-		return len(self) == 0
-
-class String(str):
-	def isempty(self):
-		return len(self) == 0
-
-class Expression(str):
-	def isempty(self):
-		return len(self) == 0
-
-class Word(str):
-	def isempty(self):
-		return len(self) == 0
-
-class Time(str):
-	def isempty(self):
-		return len(self) == 0
-
 class ACLMessage(object):
 	"""
 		See http://www.fipa.org/specs/fipa00070/SC00070I.html
 	"""
-
-	FIPA_PARAMETERS = {
-		'sender':      MessageParameterType.AgentIdentifier,
-		'receiver':    MessageParameterType.AgentIdentifierSet,
-		'content':     MessageParameterType.String,
-		'reply-with':  MessageParameterType.Expression,
-		'reply-by':    MessageParameterType.DateTime,
-		'in-reply-to': MessageParameterType.Expression,
-		'reply-to':    MessageParameterType.AgentIdentifierSet,
-		'language':    MessageParameterType.Expression,
-		'ontology':    MessageParameterType.Expression,
-		# should be word, but JADE apparently uses strings
-		'protocol':    MessageParameterType.String,
-		'conversation-id': MessageParameterType.Expression,
-	}
-
-	RE_WORD = re.compile(r'\s*(?P<word>[^\(\)#0-9-@ ][^\(\) ]*)')
-	RE_DATETIME = re.compile(
-		r'\s*(?P<sign>[\+-])?(?P<year>\d{4})(?P<month>\d{2})(?P<day>\d{2})' +
-		r'(T|Z)(?P<hour>\d{2})(?P<minute>\d{2})(?P<second>\d{2})' +
-		r'(?P<millisecond>\d{3})([a-zA-Z])?')
-	RE_INTEGER             = re.compile(r'\s*(?P<int>[\+-]?[0-9]+)')
-	RE_STRINGLITERAL       = re.compile(r'\s*"(?P<string>(([^"])|(\"))+)"')
-	RE_URL_SEQUENCE_START  = re.compile(r'\s*\(\s*sequence')
-	RE_URL_SEQUENCE_MEMBER = re.compile(r'\s*(?P<url>http://\S+)')
-	RE_AGENT_IDENTIFIER    = re.compile(r'\s*\(\s*agent-identifier')
-	RE_FIPA_PARAM          = re.compile(r'\s*:(?P<param>' +
-		'|'.join([str(p) for p in FIPA_PARAMETERS]) +r') ')
-	RE_AGENT_ID_PARAM      = re.compile(r'\s*:(?P<param>name|addresses|resolvers) ')
-	RE_CLOSING_BRACKET     = re.compile(r'\s*\)')
-	RE_SET_START           = re.compile(r'\s*\(\s*set')
-
 	def __init__(self, performative=None):
+		self.parser = aclparser.ACLParser()
 		self.mime_type = "application/text"
 		self.performative = performative
-		for param_name, param_type in ACLMessage.FIPA_PARAMETERS.items():
-			if param_type in [MessageParameterType.AgentIdentifierSet]:
-				setattr(self, param_name.replace('-', '_'), [])
+		for param in self.parser.MessageParameterNames:
+			if param in ['receiver', 'reply-to']:
+				setattr(self, param.replace('-', '_'), [])
 			else:
-				setattr(self, param_name.replace('-', '_'), None)
+				setattr(self, param.replace('-', '_'), None)
 
 	@classmethod
 	def from_mtp(cls, envelope, msg):
@@ -199,78 +149,11 @@ class ACLMessage(object):
 			raise Exception("Error: envelope specifies `{}`. Can only read fipa.acl.rep.string.std.".format(representation))
 
 	def parse_string_message(self, message):
-		# find performative
-		performatives = '|'.join([p.name for p in Performative])
-		m = re.search(r'\s*\((?P<perf>{})'.format(performatives), message)
-		self.performative = Performative[m.group('perf')]
-		# find parameters
-		pos = m.end(0)
-		max_pos = len(message)
-		while pos < max_pos:
-			m = ACLMessage.RE_FIPA_PARAM.match(message, pos)
-			pos = m.end(0)
-			param = m.group('param')
-			key = param.replace('-', '_')
-			#if param_type in [MessageParameterType.AgentIdentifierSet]:
-			#	print("TODO: implement")
-			print(param)
-			(value, pos) = self.parse_expression(message, pos)
-			print(value)
-
-	def parse_expression(self, message, pos):
-		m = ACLMessage.RE_DATETIME.match(message, pos)
-		if m:
-			ts = datetime(
-				int(m.group('year')),
-				int(m.group('month')),
-				int(m.group('day')),
-				int(m.group('hour')),
-				int(m.group('minute')),
-				int(m.group('second')),
-				int(m.group('millisecond')) * 1000)
-			return (ts, m.end(0))
-		m = ACLMessage.RE_URL_SEQUENCE_START.match(message, pos)
-		if m:
-			pos = m.end(0)
-			urls = []
-			while ACLMessage.RE_CLOSING_BRACKET.match(message, pos) is None:
-				m = ACLMessage.RE_URL_SEQUENCE_MEMBER.match(message, pos)
-				urls.append(m.group('url'))
-				pos = m.end(0)
-			return (urls, ACLMessage.RE_CLOSING_BRACKET.match(message, pos).end())
-		m = ACLMessage.RE_SET_START.match(message, pos)
-		if m:
-			pos = m.end(0)
-			set_members = []
-			while ACLMessage.RE_CLOSING_BRACKET.match(message, pos) is None:
-				(member, pos) = self.parse_expression(message, pos)
-				set_members.append(member)
-			return (set_members, ACLMessage.RE_CLOSING_BRACKET.match(message, pos).end())
-		m = ACLMessage.RE_STRINGLITERAL.match(message, pos)
-		if m:
-			return (m.group('string'), m.end(0))
-		m = ACLMessage.RE_INTEGER.match(message, pos)
-		if m:
-			return (int(m.group('int')), m.end(0))
-		m = ACLMessage.RE_WORD.match(message, pos)
-		if m:
-			return (m.group('word'), m.end(0))
-		m = ACLMessage.RE_AGENT_IDENTIFIER.match(message, pos)
-		if m:
-			return self.parse_agent_identifier(message, m.end(0))
-		print("Unkown expression @ pos={}:\n{}".format(pos, message[pos:]))
-
-	def parse_agent_identifier(self, message, pos):
-		agent_id = AgentIdentifier()
-		while ACLMessage.RE_CLOSING_BRACKET.match(message, pos) is None:
-			m = ACLMessage.RE_AGENT_ID_PARAM.match(message, pos)
-			pos = m.end(0)
-			param = m.group('param')
-			if param == 'name':
-				(agent_id.name, pos) = self.parse_expression(message, pos)
-			elif param == 'addresses':
-				(agent_id.addresses, pos) = self.parse_expression(message, pos)
-		return(agent_id, ACLMessage.RE_CLOSING_BRACKET.match(message, pos).end())
+		msg = self.parser.parse_message(message)
+		self.performative = msg['performative']
+		for param in self.parser.MessageParameterNames:
+			if param in msg:
+				setattr(self, param.replace('-', '_'), msg[param])
 
 	def __str__(self):
 		s = '(' + self.performative.name + ' '
@@ -295,32 +178,6 @@ class ACLMessage(object):
 class TestACLMessageParsing(unittest.TestCase):
 	def setUp(self):
 		self.acl = ACLMessage()
-
-	def test_datetime(self):
-		(ts, pos) = self.acl.parse_expression(" +20150701T143941567Z ", 0)
-		print(ts)
-		self.assertEqual(pos, 21)
-		self.assertEqual(ts.year, 2015)
-		self.assertEqual(ts.month, 7)
-		self.assertEqual(ts.day, 1)
-		self.assertEqual(ts.hour, 14)
-		self.assertEqual(ts.minute, 39)
-		self.assertEqual(ts.second, 41)
-		self.assertEqual(ts.microsecond, 567 * 1000)
-
-	def test_word(self):
-		(word, pos) = self.acl.parse_expression(" word", 0)
-		self.assertEqual(pos, 5)
-		self.assertEqual(word, "word")
-		(word, pos) = self.acl.parse_expression(" w(ord", 0)
-		self.assertNotEqual(word, "w(ord")
-
-	def test_string_literal(self):
-		(string, pos) = self.acl.parse_expression(' "string"', 0)
-		self.assertEqual(pos, 9)
-		self.assertEqual(string, "string")
-		(string, pos) = self.acl.parse_expression(' "str\\"ing"', 0)
-		self.assertEqual(string, 'str\\"ing')
 
 	TEST_ENVELOPE = """
 

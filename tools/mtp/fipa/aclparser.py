@@ -86,6 +86,10 @@ class ACLParser(ACLLexicalDefinitionsParser):
 
 		self.MessageType = Or(self.Performative).setResultsName('performative')
 
+		self.MessageParameterNames = ['sender', 'receiver', 'content',
+			'reply-with', 'reply-by', 'in-reply-to', 'reply-to', 'language',
+			'encoding', 'ontology', 'protocol', ':conversation-id']
+
 		self.MessageParameter = Or([
 			(Suppress(":sender") + self.AgentIdentifier).setResultsName('sender'),
 			(Suppress(":receiver") + self.AgentIdentifierSet).setResultsName('receiver'),
@@ -102,6 +106,9 @@ class ACLParser(ACLLexicalDefinitionsParser):
 			])
 
 		self.Message = Suppress("(") + self.MessageType + ZeroOrMore(self.MessageParameter) + Suppress(")")
+
+	def parse_message(self, msg):
+		return self.Message.parseString(msg)
 
 	def parse_AgentIdentifier(self, source, location, tokens):
 		name = tokens['name']
@@ -233,7 +240,7 @@ class TestACLStringParser(unittest.TestCase):
 			' :content  "((action (agent-identifier :name test :addresses (sequence http://localhost:9000)) (get-description)))" \n' +
 			' :language  fipa-sl0  :ontology  FIPA-Agent-Management  :protocol  fipa-request\n' +
 			' :conversation-id  C1438784720_1435754381566 )\n\n\n')
-		out = self.p.Message.parseString(msg)
+		out = self.p.parse_message(msg)
 
 		self.assertEqual(out['performative'], 'REQUEST')
 		self.assertEqual(out['sender'][0]['name'], 'rma@192.168.122.1:1099/JADE')
