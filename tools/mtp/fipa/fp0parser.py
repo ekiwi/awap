@@ -314,14 +314,17 @@ class TestFP0Parser(unittest.TestCase):
 			'(done (action agent1 test))').asList()[0],
 			('done', ('action', {'agent': 'agent1', 'term': 'test'})))
 
-	@unittest.skip("wip")
 	def test_Content(self):
 		c0 = '((action (agent-identifier :name test :addresses (sequence http://localhost:9000)) (get-description)))'
-		self.assertEqual(
-			self.p.Content.parseString(c0).asList(),
-			['agent-identifier', 'name', 'test', 'addresses',
-				['http://localhost:9000'], 'get-description'])
-		print(self.p.Content.parseString(c0).asXML())
+		action = self.p.Content.parseString(c0).asList()[0]
+		self.assertEqual(action[0], 'action')
+		agent = action[1]['agent']
+		self.assertEqual(agent[1]['name'], 'agent-identifier')
+		self.assertEqual(agent[1]['terms']['addresses'][0], 'http://localhost:9000')
+		self.assertEqual(agent[1]['terms']['name'], 'test')
+		term = action[1]['term']
+		self.assertEqual(term[0], 'functionalterm')
+		self.assertEqual(term[1]['name'], 'get-description')
 
 
 if __name__ == "__main__":
