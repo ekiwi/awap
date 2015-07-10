@@ -157,19 +157,24 @@ class ACLEnvelope(object):
 		to = ET.SubElement(param, 'to')
 		for receiver in self.receiver:
 			to.append(receiver.xml())
-		ET.SubElement(param, 'from').append(self.sender.xml())
+		fro = ET.SubElement(param, 'from')
+		for sender in self.sender:
+			fro.append(sender.xml())
 		# TODO: what is this for? do we not intent to send our message to
 		#       all receivers?
 		intended = ET.SubElement(param, 'intended-receiver')
 		for receiver in self.receiver:
 			intended.append(receiver.xml())
-		ET.SubElement(param, 'payload-length').text = str(self.payload_length )
+		ET.SubElement(param, 'payload-length').text = str(len(self.content))
 		# currently string representation is hard coded
 		ET.SubElement(param, 'acl-representation').text = self.acl_representation
 		now = datetime.utcnow()
 		ts = "{0}{1:03d}".format(now.strftime("%Y%m%dZ%H%M%S"), int(now.microsecond / 1000))
 		ET.SubElement(param, 'date').text = ts
 		return root
+
+	def xml_string(self):
+		return ET.tostring(self.xml(), encoding='unicode', method='xml')
 
 class ACLMessage(object):
 	"""

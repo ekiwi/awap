@@ -9,6 +9,7 @@ import queue, threading, re
 from fipa.acl import ACLMessage, ACLEnvelope, Performative, AgentIdentifier
 
 from http.server import HTTPServer, BaseHTTPRequestHandler
+from urllib.parse import urlparse
 
 msg_frmt = """
 This is not part of the MIME multipart encoded message.
@@ -31,7 +32,7 @@ class Mtp(object):
 		self.tx_headers = {
 			"Content-type": "multipart/mixed ; boundary=\"{}\"".format(self.boundary),
 			"Connection": "keep-alive"}
-		self.tx_queues = []
+		self.tx_queues = {}
 
 		self.rx_queue = queue.Queue()
 		self.rx_server = MTPServer(addresse, self.rx_queue)
@@ -41,15 +42,14 @@ class Mtp(object):
 
 	def send(self, env):
 		if isinstance(env, ACLMessage):
-			env = ACLEnvelope.from_msg(msg)
+			env = ACLEnvelope.from_message(env)
 		if isinstance(env, ACLEnvelope):
-			env_txt = ET.tostring(env.xml(), encoding='unicode', method='xml')
-			body = msg_frmt.format(env_txt, env.msg.mime_type, env.msg)
+			body = msg_frmt.format(env.xml_string(), env.msg.mime_type, env.msg)
 			body = ''.join((line + '\r\n') for line in body.splitlines())
 			for receiver in env.receiver:
 				# FIXME: currently only supports one address per receiver
 				url = receiver.addresses[0]
-				if not url in self.rx_queues:
+				if not url in self.tx_queues:
 					qq = queue.Queue()
 					tx_thread = threading.Thread(target=self.sender, args=[url, qq])
 					tx_thread.start()
@@ -62,10 +62,10 @@ class Mtp(object):
 	def sender(self, url, tx_queue):
 		""" Thread that is responsible for sending ACLMessages
 		"""
-		tx = http.client.HTTPConnection(self.url)
+		tx = http.client.HTTPConnection(urlparse(url).netloc)
 		while True:
-			env = tx_queue.get()
-			if env is None:
+			body = tx_queue.get()
+			if body is None:
 				break
 			tx.request("POST", "", body, self.tx_headers)
 			response = tx.getresponse()
@@ -133,16 +133,17 @@ class MTPServer(HTTPServer):
 		super().__init__(addresse, MTPHandler)
 
 if __name__ == "__main__":
-#	mtp = Mtp("130-000.eduroam.rwth-aachen.de:7778")
-#	mtp.send(acl_msg)
-
-#	# TODO: implement in Mtp method
-#	mtp.tx_queue.join()
-#	print("done")
-#	mtp.tx_queue.put(None)
-
+	acl_msg = ACLMessage(Performative.INFORM)
+	acl_msg.sender     = AgentIdentifier("ams@192.168.122.1:5000/JADE", "http://ip2-127.halifax.rwth-aachen.de:57727/acc")
+	acl_msg.receiver  += [AgentIdentifier("ams@192.168.122.1:1099/JADE", "http://ip2-127.halifax.rwth-aachen.de:7778/acc")]
+	acl_msg.content = '"((result (action (agent-identifier :name ams@192.168.122.1:5000/JADE :addresses (sequence http://ip2-127.halifax.rwth-aachen.de:5000/acc)) (get-description)) (sequence (ap-description :name 192.168.122.1:5000/JADE :ap-services (sequence (ap-service :name fipa.mts.mtp.http.std :type fipa.mts.mtp.http.std :addresses (sequence http://ip2-127.halifax.rwth-aachen.de:5000/acc)))))))"'
+	acl_msg.reply_with = "rma@192.168.122.1:1099/JADE1435662093800"
+	acl_msg.language = "fipa-sl0"
+	acl_msg.ontology = "FIPA-Agent-Management"
+	acl_msg.protocol = "fipa-request"
 
 	mtp = Mtp(('', 9000))
+	mtp.send(acl_msg)
 
 	while True:
 		env = mtp.receive()
