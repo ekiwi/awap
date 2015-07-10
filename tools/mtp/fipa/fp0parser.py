@@ -124,6 +124,9 @@ class FP0Parser(FPLexicalDefinitionsParser):
 		return self.obj_factory.create_ActionExpression(tokens[0], tokens[1])
 
 	def parse_FunctionalTerm(self, source, location, tokens):
+		# HACK: resolve ambiguity between ActionExpression and FunctionalTerm
+		if tokens[0] == "action" and len(tokens) == 3:
+			return self.obj_factory.create_ActionExpression(tokens[1], tokens[2])
 		return self.obj_factory.create_FunctionalTerm(tokens[0], tokens[1:])
 
 
@@ -213,9 +216,6 @@ class TestFP0Parser(unittest.TestCase):
 			self.p.FunctionalTerm.parseString(ft1).asList()[0],
 			('functionalterm', {'name': 'test', 'terms': [1, '2', 'long and complicated', [0,1,2]]}))
 		self.assertEqual(
-			self.p.FunctionalTerm.parseString('(action agent1 term)').asList()[0],
-			('functionalterm', {'name': 'action', 'terms': ['agent1', 'term']}))
-		self.assertEqual(
 			self.p.FunctionalTerm.parseString('(param :name test :value 1)').asList()[0],
 			('functionalterm', {'name': 'param', 'terms': {'name': 'test', 'value': 1}}))
 
@@ -227,7 +227,6 @@ class TestFP0Parser(unittest.TestCase):
 			self.p.ActionExpression.parseString('(action agent23 (set "a b c" 3))').asList()[0],
 			('action', {'agent': 'agent23', 'term': ['a b c', 3]}))
 
-	@unittest.skip("wip")
 	def test_Term(self):
 		# Term can be a Constant
 		self.assertEqual(self.p.Term.parseString('-100')[0], -100)
@@ -242,17 +241,17 @@ class TestFP0Parser(unittest.TestCase):
 		self.helper_test_Sequence_Set(self.p.Term, 'set')
 		# Term can be a FunctionalTerm
 		self.assertEqual(
-			self.p.Term.parseString('(test 1 "2" "long and complicated" (set 0 1 2))').asList(),
-			{'test': [1, '2', 'long and complicated', [0,1,2]]})
+			self.p.Term.parseString('(test 1 "2" "long and complicated" (set 0 1 2))').asList()[0],
+			('functionalterm', {'name': 'test', 'terms': [1, '2', 'long and complicated', [0,1,2]]}))
 		# Term can be a ActionExpression
 		# this seems to be ambiguous, thus there is no defined way for our
 		# parser to handle this
 		self.assertEqual(
-			self.p.Term.parseString('(action agent1 term)').asList(),
-			{'action': ['agent1', 'term']})
+			self.p.Term.parseString('(action agent1 term)').asList()[0],
+			('action', {'agent': 'agent1', 'term': 'term'}))
 		self.assertEqual(
-			self.p.Term.parseString('(action agent23 (set "a b c" 3))').asList(),
-			{'action': ['agent23', ['a b c', 3]]})
+			self.p.Term.parseString('(action agent23 (set "a b c" 3))').asList()[0],
+			('action', {'agent': 'agent23', 'term': ['a b c', 3]}))
 
 	@unittest.skip("wip")
 	def test_AtomicFormula(self):
