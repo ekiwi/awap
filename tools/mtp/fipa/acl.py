@@ -100,7 +100,7 @@ class ACLEnvelope(object):
 		self.sender = sender
 		self.receiver = receiver
 		self.acl_representation = representation
-		self._content = content
+		self._content = content.strip()
 		self._msg = None
 
 	@classmethod
@@ -145,6 +145,7 @@ class ACLEnvelope(object):
 
 	@content.setter
 	def content(self, value):
+		value = value.strip()
 		if self._content != value:
 			self._msg = None
 			self._content = value

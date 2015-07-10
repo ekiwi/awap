@@ -6,7 +6,7 @@
 import http.client
 import urllib.parse
 import queue, threading, re
-from fipa.acl import ACLMessage, Performative, AgentIdentifier
+from fipa.acl import ACLMessage, ACLEnvelope, Performative, AgentIdentifier
 
 from http.server import HTTPServer, BaseHTTPRequestHandler
 
@@ -25,18 +25,13 @@ Content-Type: {}
 """
 
 class Mtp(object):
-	def __init__(self, addresse, url):
-		self.url = url
+	def __init__(self, addresse):
 		self.boundary = "a1723f6311bdcdc73e4145537302b33"
 
 		self.tx_headers = {
 			"Content-type": "multipart/mixed ; boundary=\"{}\"".format(self.boundary),
 			"Connection": "keep-alive"}
-		self.tx = http.client.HTTPConnection(self.url)
-		self.tx_queue = queue.Queue()
-		self.tx_thread = threading.Thread(target=self.sender)
-		# self.tx_thread.setDaemon(True)
-		self.tx_thread.start()
+		self.tx_queues = []
 
 		self.rx_queue = queue.Queue()
 		self.rx_server = MTPServer(addresse, self.rx_queue)
@@ -44,28 +39,40 @@ class Mtp(object):
 		# self.rx_thread.setDaemon(True)
 		self.rx_thread.start()
 
-	def send(self, msg):
-		if isinstance(msg, ACLMessage):
-			self.tx_queue.put(msg)
+	def send(self, env):
+		if isinstance(env, ACLMessage):
+			env = ACLEnvelope.from_msg(msg)
+		if isinstance(env, ACLEnvelope):
+			env_txt = ET.tostring(env.xml(), encoding='unicode', method='xml')
+			body = msg_frmt.format(env_txt, env.msg.mime_type, env.msg)
+			body = ''.join((line + '\r\n') for line in body.splitlines())
+			for receiver in env.receiver:
+				# FIXME: currently only supports one address per receiver
+				url = receiver.addresses[0]
+				if not url in self.rx_queues:
+					qq = queue.Queue()
+					tx_thread = threading.Thread(target=self.sender, args=[url, qq])
+					tx_thread.start()
+					self.tx_queues[url] = qq
+				self.tx_queues[url].put(body)
 
 	def receive(self):
 		return self.rx_queue.get()
 
-	def sender(self):
+	def sender(self, url, tx_queue):
 		""" Thread that is responsible for sending ACLMessages
 		"""
+		tx = http.client.HTTPConnection(self.url)
 		while True:
-			msg = self.tx_queue.get()
-			if msg is None:
+			env = tx_queue.get()
+			if env is None:
 				break
-			body = msg_frmt.format(msg.generateEnvelope(), msg.mime_type, msg)
-			body = ''.join((line + '\r\n') for line in body.splitlines())
-			self.tx.request("POST", "", body, self.tx_headers)
-			response = self.tx.getresponse()
+			tx.request("POST", "", body, self.tx_headers)
+			response = tx.getresponse()
 			if response.reason != "OK":
 				print("Error: failed to send message")
-			self.tx_queue.task_done()
-		self.tx.close()
+			tx_queue.task_done()
+		tx.close()
 
 	def receiver(self):
 		""" Thread that is responsible for receiving ACLMessages
@@ -88,13 +95,12 @@ class MTPHandler(BaseHTTPRequestHandler):
 			print("Error: did not receive the correct mime type")
 			self.send_error(406)	# TODO: what is the correct code?
 			return
-		evelope = ACLEnvelope.from_mtp(envelope)
-		if evelope.representation != 'fipa.acl.rep.string.std':
-			print Exception("Error: envelope specifies `{}`. Can only read fipa.acl.rep.string.std.".format(evelope.representation))
+		env = ACLEnvelope.from_mtp(envelope, message)
+		if env.acl_representation != 'fipa.acl.rep.string.std':
+			print("Error: envelope specifies `{}`. Can only read fipa.acl.rep.string.std.".format(env.representation))
 			self.send_error(406)	# TODO: what is the correct code?
 			return
-		msg = ACLMessage.from_mtp(envelope, message)
-		self.server.rx_queue.put(msg)
+		self.server.rx_queue.put(env)
 		self.send_ok()
 
 	def send_ok(self):
@@ -136,11 +142,11 @@ if __name__ == "__main__":
 #	mtp.tx_queue.put(None)
 
 
-	mtp = Mtp(('', 9000), "130-000.eduroam.rwth-aachen.de:7778")
+	mtp = Mtp(('', 9000))
 
 	while True:
-		msg = mtp.receive()
-		print(msg)
+		env = mtp.receive()
+		print(env.msg)
 
 
 
