@@ -94,8 +94,12 @@ class ACLMessage(object):
 	"""
 		See http://www.fipa.org/specs/fipa00070/SC00070I.html
 	"""
+	ACLParserSingleton = None
+
 	def __init__(self, performative=None):
-		self.parser = aclparser.ACLParser()
+		if ACLMessage.ACLParserSingleton is None:
+			ACLMessage.ACLParserSingleton = aclparser.ACLParser()
+		self.parser = ACLMessage.ACLParserSingleton
 		self.mime_type = "application/text"
 		self.performative = performative
 		for param in self.parser.MessageParameterNames:
