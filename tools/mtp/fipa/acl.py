@@ -17,7 +17,10 @@ import xml.etree.ElementTree as ET
 from datetime import datetime
 import re
 import unittest
-import aclparser
+if __name__ == "__main__":
+	import aclparser
+else:
+	from . import aclparser
 
 class Performative(Enum):
 	ACCEPT_PROPOSAL = 0
@@ -165,10 +168,10 @@ class ACLMessage(object):
 	def __str__(self):
 		s = '(' + self.performative.name + ' '
 		parameters = vars(self)
-		for pp in ACLMessage.FIPA_PARAMETERS:
-			key = pp.replace('-', '_')
+		for param in self.parser.MessageParameterNames:
+			key = param.replace('-', '_')
 			if key in parameters and parameters[key]:
-				s += ' :' + pp + ' '
+				s += ' :' + param + ' '
 				s += ACLMessage._to_acl_string(parameters[key])
 		s += ')'
 		return s
@@ -216,21 +219,17 @@ class TestACLMessageParsing(unittest.TestCase):
 		self.assertEqual(msg.protocol, "fipa-request")
 		self.assertEqual(msg.conversation_id, "C1438784720_1435754381566")
 
+	def test_msg_to_string(self):
+		acl_msg = ACLMessage(Performative.INFORM)
+		acl_msg.sender     = AgentIdentifier("ams@192.168.122.1:1099/JADE", "http://ip2-127.halifax.rwth-aachen.de:7778/acc")
+		acl_msg.receiver  += [AgentIdentifier("ams@192.168.122.1:5000/JADE", "http://ip2-127.halifax.rwth-aachen.de:57727/acc")]
+		acl_msg.content = '"((result (action (agent-identifier :name ams@192.168.122.1:1099/JADE :addresses (sequence http://ip2-127.halifax.rwth-aachen.de:7778/acc)) (get-description)) (sequence (ap-description :name \"\\"192.168.122.1:1099/JADE\\"\" :ap-services (sequence (ap-service :name fipa.mts.mtp.http.std :type fipa.mts.mtp.http.std :addresses (sequence http://ip2-127.halifax.rwth-aachen.de:7778/acc)))))))"'
+		acl_msg.reply_with = "rma@192.168.122.1:5000/JADE1435662093800"
+		acl_msg.language = "fipa-sl0"
+		acl_msg.ontology = "FIPA-Agent-Management"
+		acl_msg.protocol = "fipa-request"
+		message = str(acl_msg)
+		envelope = acl_msg.generate_envelope()
 
 if __name__ == "__main__":
 	unittest.main()
-#	acl_msg = ACLMessage(Performative.INFORM)
-#	acl_msg.sender     = AgentIdentifier("ams@192.168.122.1:1099/JADE", "http://ip2-127.halifax.rwth-aachen.de:7778/acc")
-#	acl_msg.receiver  += [AgentIdentifier("ams@192.168.122.1:5000/JADE", "http://ip2-127.halifax.rwth-aachen.de:57727/acc")]
-#	acl_msg.content = '"((result (action (agent-identifier :name ams@192.168.122.1:1099/JADE :addresses (sequence http://ip2-127.halifax.rwth-aachen.de:7778/acc)) (get-description)) (sequence (ap-description :name \"\\"192.168.122.1:1099/JADE\\"\" :ap-services (sequence (ap-service :name fipa.mts.mtp.http.std :type fipa.mts.mtp.http.std :addresses (sequence http://ip2-127.halifax.rwth-aachen.de:7778/acc)))))))"'
-#	acl_msg.reply_with = "rma@192.168.122.1:5000/JADE1435662093800"
-#	acl_msg.language = "fipa-sl0"
-#	acl_msg.ontology = "FIPA-Agent-Management"
-#	acl_msg.protocol = "fipa-request"
-
-#	print(acl_msg)
-
-#	print(acl_msg.generate_envelope())
-
-#	print(ET.dump(acl_msg.sender.xml()))
-
