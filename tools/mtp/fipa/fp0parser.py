@@ -142,6 +142,9 @@ class FP0Parser(FPLexicalDefinitionsParser):
 		self.ContentExpression = Or([self.ActionExpression, self.Proposition])
 		self.Content = Suppress("(") + self.ContentExpression + Suppress(")")
 
+	def parse_content(self, content):
+		return self.Content.parseString(content)
+
 	def parse_as_Touple(self, source, location, tokens):
 		return (tokens[0], tokens[1])
 
@@ -316,7 +319,7 @@ class TestFP0Parser(unittest.TestCase):
 
 	def test_Content(self):
 		c0 = '((action (agent-identifier :name test :addresses (sequence http://localhost:9000)) (get-description)))'
-		action = self.p.Content.parseString(c0).asList()[0]
+		action = self.p.parse_content(c0).asList()[0]
 		self.assertEqual(action[0], 'action')
 		agent = action[1]['agent']
 		self.assertEqual(agent[1]['name'], 'agent-identifier')
