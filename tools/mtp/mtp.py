@@ -4,7 +4,6 @@
 # mtp.py
 
 import http.client
-import urllib.parse
 import queue, threading, re
 from fipa.acl import ACLMessage, ACLEnvelope, Performative, AgentIdentifier
 
@@ -77,7 +76,7 @@ class MTP(object):
 
 		for receiver in envelope.receiver:
 			if receiver.name in self._rx_queues:
-				self._rx_queues[receiver.name].put(envelope)
+				self._rx_queues[receiver.name].put(envelope.msg)
 			else:
 				print('\nERROR: could not deliver packet to `{}`'.format(receiver.name))
 
