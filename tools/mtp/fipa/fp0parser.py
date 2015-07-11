@@ -13,7 +13,10 @@ http://www.fipa.org/specs/fipa00008/SC00008I.html
 import unittest
 import datetime
 from pyparsing import Regex, ParseException, Or, Literal, ZeroOrMore, Suppress, Forward, OneOrMore, Group, ParseResults
-import aclparser
+if __name__ == "__main__":
+	import aclparser
+else:
+	from . import aclparser
 
 class ObjectFactory(aclparser.ObjectFactory):
 	def _extract_parseresults(self, result):
@@ -328,6 +331,10 @@ class TestFP0Parser(unittest.TestCase):
 		term = action[1]['term']
 		self.assertEqual(term[0], 'functionalterm')
 		self.assertEqual(term[1]['name'], 'get-description')
+
+		# parsing this takes way too long...
+		c1 = '((result (action (agent-identifier :name ams@192.168.122.1:1099/JADE :addresses (sequence http://ip2-127.halifax.rwth-aachen.de:7778/acc)) (get-description)) (sequence (ap-description :name "\\"192.168.122.1:1099/JADE\\"" :ap-services (sequence (ap-service :name fipa.mts.mtp.http.std :type fipa.mts.mtp.http.std :addresses (sequence http://ip2-127.halifax.rwth-aachen.de:7778/acc)))))))'
+		result = self.p.parse_content(c1).asList()[0]
 
 
 if __name__ == "__main__":
