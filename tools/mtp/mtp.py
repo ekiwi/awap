@@ -35,7 +35,7 @@ class MTP(object):
 		self._tx_queues = {}
 
 		pp = urlparse(self.url)
-		self._rx_queues = []
+		self._rx_queues = {}
 		self._rx_server = MTPServer((pp.hostname, pp.port), self._process_packet)
 		self._rx_thread = threading.Thread(target=self._receiver)
 		self._rx_thread.start()
@@ -157,15 +157,53 @@ class MTPServer(HTTPServer):
 		super().__init__(addresse, MTPHandler)
 
 
+class ACLCommunicator(object):
+	""" Base class for all services/agents that have a AgentIdentifier and
+		need to use the MTP to communicate.
+	"""
+	def __init__(self, name, mtp):
+		assert isinstance(mtp, MTP)
+		self.id = AgentIdentifier(name, mtp.url)
+		self._mtp = mtp
+		self._rx_queue = queue.Queue()
+		self._mtp.register_receiver(self.id.name, self._rx_queue)
+
+	def send(self, msg):
+		self._mtp.send(msg)
+
+	def receive(self):
+		msg = self._rx_queue.get()
+		return msg
+
+	def create_msg(self, performative, receiver=None):
+		msg = ACLMessage(performative)
+		msg.sender = self.id
+		if receiver:
+			if isinstance(receiver, list):
+				msg.receiver += receiver
+			else:
+				msg.receiver.append(receiver)
+		return msg
+
+	def create_answer(self, performative, msg0):
+		msg = ACLMessage(performative)
+		msg.sender = self.id
+		msg.receiver = [msg0.sender]
+		msg.language = msg0.language
+		msg.ontology = msg0.ontology
+		msg.protocol = msg0.protocol
+		msg.conversation_id = msg0.conversation_id
+		msg.in_reply_to = msg0.reply_with
+		return msg
+
 if __name__ == "__main__":
-	acl_msg = ACLMessage(Performative.REQUEST)
-	acl_msg.sender     = AgentIdentifier("ams@awap", "http://localhost:9000/acc")
-	acl_msg.receiver  += [AgentIdentifier("ams@192.168.122.1:1099/JADE", "http://ip2-127.halifax.rwth-aachen.de:7778/acc")]
+	mtp = MTP("http://localhost:9000/acc")
+	ams = ACLCommunicator("ams@awap", mtp)
+	rec = AgentIdentifier("ams@192.168.122.1:1099/JADE", "http://ip2-127.halifax.rwth-aachen.de:7778/acc")
+	acl_msg = ams.create_msg(Performative.REQUEST, rec)
 	acl_msg.content = '((action (agent-identifier :name ams@192.168.122.1:1099/JADE :addresses (sequence http://ip2-127.halifax.rwth-aachen.de:7778/acc)) (get-description)))'
 	acl_msg.language = "fipa-sl0"
 	acl_msg.ontology = "FIPA-Agent-Management"
 	acl_msg.protocol = "fipa-request"
-
-	mtp = MTP("http://localhost:9000/acc")
-	mtp.send(acl_msg)
+	ams.send(acl_msg)
 
