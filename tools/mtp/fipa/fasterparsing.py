@@ -45,7 +45,8 @@ class RawRegex(Element):
 		m = self._compiled_re.match(string, pos)
 		if m:
 			self.endpos = m.endpos
-			return list(m.groups())
+			res_list = list(m.groups())
+			return [res for res in res_list if res]
 		else:
 			raise ParseException("Failed to find `{}` @:\n`{}`".format(self.getRegexString(), string[pos:]))
 
@@ -102,7 +103,9 @@ class And(MultiElement):
 		compressed = []
 		re_string = ""
 		for ee in elements:
-			if ee.isSimpleRegex:
+			if isinstance(ee, str):
+				re_string += '\s*({})'.format(ee)
+			elif ee.isSimpleRegex:
 				re_string += ee.getRegexString()
 			else:
 				if len(re_string) > 0:
@@ -118,8 +121,6 @@ class And(MultiElement):
 		results = []
 		for ee in elements:
 			res = ee.parseString(string, pos)
-			if not res:
-				return None
 			pos = ee.endpos
 			if isinstance(res, list):
 				results += res
@@ -136,7 +137,9 @@ class Or(MultiElement):
 		compressed = []
 		re_strings = []
 		for ee in elements:
-			if ee.isSimpleRegex:
+			if isinstance(ee, str):
+				re_strings.append('\s*({})'.format(ee))
+			elif ee.isSimpleRegex:
 				re_strings.append(ee.getRegexString())
 			else:
 				compressed.append(ee)
@@ -150,7 +153,10 @@ class Or(MultiElement):
 		elements = self.compressedElements
 		res = None
 		for ee in elements:
-			res = ee.parseString(string, pos)
-			if res:
-				return res
-		return res
+			try:
+				return ee.parseString(string, pos)
+			except ParserException:
+				pass
+		if res:
+			return res
+		raise ParseException("Failed to find Or `` @:\n`{}`".format(string[pos:]))

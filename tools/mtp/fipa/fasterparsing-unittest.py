@@ -35,10 +35,11 @@ class Test(unittest.TestCase):
 		self.assertEqual(aa2.parseString("Tel 0123")[0], "0123")
 
 	def test_Or(self):
-		oo0 = Or([Literal('hello')])
+		oo0 = Or(['hello'])
 		self.assertEqual(oo0.parseString("hello")[0], "hello")
-		oo1 = Or([Literal('hello'), Literal('world')])
+		oo1 = Or(['hello', 'world', 'what'])
 		self.assertEqual(oo1.parseString("hello world")[0], "hello")
+		self.assertEqual(oo1.parseString("world hello")[0], "world")
 
 if __name__ == "__main__":
 	unittest.main()
