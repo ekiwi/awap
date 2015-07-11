@@ -22,23 +22,23 @@ Content-Type: {}
 
 {}
 --a1723f6311bdcdc73e4145537302b33--
-
 """
 
-class Mtp(object):
-	def __init__(self, addresse):
-		self.boundary = "a1723f6311bdcdc73e4145537302b33"
+class MTP(object):
+	def __init__(self, url):
+		self.url = url
+		self._boundary = "a1723f6311bdcdc73e4145537302b33"
 
-		self.tx_headers = {
-			"Content-type": "multipart/mixed ; boundary=\"{}\"".format(self.boundary),
+		self._tx_headers = {
+			"Content-type": "multipart/mixed ; boundary=\"{}\"".format(self._boundary),
 			"Connection": "keep-alive"}
-		self.tx_queues = {}
+		self._tx_queues = {}
 
-		self.rx_queue = queue.Queue()
-		self.rx_server = MTPServer(addresse, self.rx_queue)
-		self.rx_thread = threading.Thread(target=self.receiver)
-		# self.rx_thread.setDaemon(True)
-		self.rx_thread.start()
+		pp = urlparse(self.url)
+		self._rx_queues = []
+		self._rx_server = MTPServer((pp.hostname, pp.port), self._process_packet)
+		self._rx_thread = threading.Thread(target=self._receiver)
+		self._rx_thread.start()
 
 	def send(self, env):
 		if isinstance(env, ACLMessage):
@@ -49,17 +49,41 @@ class Mtp(object):
 			for receiver in env.receiver:
 				# FIXME: currently only supports one address per receiver
 				url = receiver.addresses[0]
-				if not url in self.tx_queues:
+				if not url in self._tx_queues:
 					qq = queue.Queue()
-					tx_thread = threading.Thread(target=self.sender, args=[url, qq])
+					tx_thread = threading.Thread(target=self._sender, args=[url, qq])
 					tx_thread.start()
-					self.tx_queues[url] = qq
-				self.tx_queues[url].put(body)
+					self._tx_queues[url] = qq
+				self._tx_queues[url].put(body)
+		print('--------------------------------------')
+		print('Sending')
+		print('=======')
+		print(env.msg)
+		print('--------------------------------------')
 
-	def receive(self):
-		return self.rx_queue.get()
+	def register_receiver(self, name, queue):
+		if name in self._rx_queues and self._rx_queues[name] != queue:
+			print("WARN: overwriting queue registered for `{}`".format(name))
+		self._rx_queues[name] = queue
 
-	def sender(self, url, tx_queue):
+	def _process_packet(self, envelope):
+		""" Called by the HTTPServer in it's own thread.
+			Distributes packets to the correct receiver queue
+		"""
+		print('--------------------------------------')
+		print('Received')
+		print('========')
+		print(envelope.msg)
+
+		for receiver in envelope.receiver:
+			if receiver.name in self._rx_queues:
+				self._rx_queues[receiver.name].put(envelope)
+			else:
+				print('\nERROR: could not deliver packet to `{}`'.format(receiver.name))
+
+		print('--------------------------------------')
+
+	def _sender(self, url, tx_queue):
 		""" Thread that is responsible for sending ACLMessages
 		"""
 		tx = http.client.HTTPConnection(urlparse(url).netloc)
@@ -67,17 +91,17 @@ class Mtp(object):
 			body = tx_queue.get()
 			if body is None:
 				break
-			tx.request("POST", "", body, self.tx_headers)
+			tx.request("POST", "", body, self._tx_headers)
 			response = tx.getresponse()
 			if response.reason != "OK":
 				print("Error: failed to send message")
 			tx_queue.task_done()
 		tx.close()
 
-	def receiver(self):
+	def _receiver(self):
 		""" Thread that is responsible for receiving ACLMessages
 		"""
-		self.rx_server.serve_forever()
+		self._rx_server.serve_forever()
 
 
 class MTPHandler(BaseHTTPRequestHandler):
@@ -89,8 +113,8 @@ class MTPHandler(BaseHTTPRequestHandler):
 		# initialize regex matchers
 		self.re_bd = re.compile(r'--{}\s*'.format(boundary))
 		self.re_ct = re.compile(r'content-type:\s+(?P<ct>[a-z]+/[a-z]+)', re.IGNORECASE)
-		(envelope, env_mime, pos) = self.parse_multipart(body, 0)
-		(message,  msg_mime, pos) = self.parse_multipart(body, pos)
+		(envelope, env_mime, pos) = self._parse_multipart(body, 0)
+		(message,  msg_mime, pos) = self._parse_multipart(body, pos)
 		if env_mime != "application/xml" or msg_mime != "application/text":
 			print("Error: did not receive the correct mime type")
 			self.send_error(406)	# TODO: what is the correct code?
@@ -100,16 +124,16 @@ class MTPHandler(BaseHTTPRequestHandler):
 			print("Error: envelope specifies `{}`. Can only read fipa.acl.rep.string.std.".format(env.representation))
 			self.send_error(406)	# TODO: what is the correct code?
 			return
-		self.server.rx_queue.put(env)
-		self.send_ok()
+		self.server._process_packet(env)
+		self._send_ok()
 
-	def send_ok(self):
+	def _send_ok(self):
 		self.send_response(200)
 		self.send_header("Content-type", "text/html")
 		self.end_headers()
 		self.wfile.write(b"<html><body><h1>200 OK</h1></body></html>")
 
-	def parse_multipart(self, body, pos):
+	def _parse_multipart(self, body, pos):
 		pos = self.re_bd.search(body, pos).end(0)
 		m = self.re_ct.match(body, pos)
 		if m is None:
@@ -128,29 +152,20 @@ class MTPHandler(BaseHTTPRequestHandler):
 
 
 class MTPServer(HTTPServer):
-	def __init__(self, addresse, rx_queue):
-		self.rx_queue = rx_queue
+	def __init__(self, addresse, _process_packet):
+		self._process_packet = _process_packet
 		super().__init__(addresse, MTPHandler)
 
+
 if __name__ == "__main__":
-	acl_msg = ACLMessage(Performative.INFORM)
-	acl_msg.sender     = AgentIdentifier("ams@192.168.122.1:5000/JADE", "http://ip2-127.halifax.rwth-aachen.de:57727/acc")
+	acl_msg = ACLMessage(Performative.REQUEST)
+	acl_msg.sender     = AgentIdentifier("ams@awap", "http://localhost:9000/acc")
 	acl_msg.receiver  += [AgentIdentifier("ams@192.168.122.1:1099/JADE", "http://ip2-127.halifax.rwth-aachen.de:7778/acc")]
-	acl_msg.content = '"((result (action (agent-identifier :name ams@192.168.122.1:5000/JADE :addresses (sequence http://ip2-127.halifax.rwth-aachen.de:5000/acc)) (get-description)) (sequence (ap-description :name 192.168.122.1:5000/JADE :ap-services (sequence (ap-service :name fipa.mts.mtp.http.std :type fipa.mts.mtp.http.std :addresses (sequence http://ip2-127.halifax.rwth-aachen.de:5000/acc)))))))"'
-	acl_msg.reply_with = "rma@192.168.122.1:1099/JADE1435662093800"
+	acl_msg.content = '((action (agent-identifier :name ams@192.168.122.1:1099/JADE :addresses (sequence http://ip2-127.halifax.rwth-aachen.de:7778/acc)) (get-description)))'
 	acl_msg.language = "fipa-sl0"
 	acl_msg.ontology = "FIPA-Agent-Management"
 	acl_msg.protocol = "fipa-request"
 
-	mtp = Mtp(('', 9000))
+	mtp = MTP("http://localhost:9000/acc")
 	mtp.send(acl_msg)
-
-	while True:
-		env = mtp.receive()
-		print(env.msg)
-
-
-
-
-
 
