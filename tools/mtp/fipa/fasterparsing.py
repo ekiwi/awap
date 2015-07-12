@@ -17,9 +17,13 @@ class ParseException(Exception):
 class Element(object):
 	def __init__(self):
 		self.endpos = 0
+		self.parse_action = None
 
 	def getRegexString(self):
 		return None
+
+	def setParseAction(self, callback):
+		self.parse_action = callback
 
 class RawRegex(Element):
 	def __init__(self, string):
@@ -37,7 +41,11 @@ class RawRegex(Element):
 		if m:
 			self.endpos = m.endpos
 			res_list = list(m.groups())
-			return [res for res in res_list if res]
+			res = [rr for rr in res_list if rr]
+			if self.parse_action:
+				new_res = [self.parse_action(string, pos, res)]
+				res = new_res if new_res else res
+			return res
 		else:
 			raise ParseException("Failed to find `{}` @:\n`{}`".format(self.getRegexString(), string[pos:]))
 
