@@ -15,9 +15,10 @@ class ParseException(Exception):
 	pass
 
 class Element(object):
-	def __init__(self):
+	def __init__(self, suppress=False):
 		self.endpos = 0
 		self.parse_actions = [self._defaultParseAction]
+		self._suppress = suppress
 
 	def getRegexString(self):
 		return None
@@ -28,9 +29,13 @@ class Element(object):
 	def _defaultParseAction(self, source, pos, tockens):
 		return tockens
 
+	def suppress(self):
+		self._suppress = True
+		return self
+
 class RawRegex(Element):
-	def __init__(self, string, parse_actions=None):
-		super().__init__()
+	def __init__(self, string, parse_actions=None, suppress=False):
+		super().__init__(suppress)
 		self._compiled_re = None
 		self._string = string
 		if parse_actions:
@@ -72,9 +77,8 @@ class RawRegex(Element):
 
 class Regex(RawRegex):
 	def __init__(self, string, suppress=False):
-		super().__init__(string)
-		self._suppress = suppress
-		if suppress:
+		super().__init__(string, None, suppress)
+		if self._suppress:
 			self.parse_actions = []
 
 	def getRegexString(self):
@@ -103,8 +107,8 @@ class Suppress(Regex):
 		super().__init__(string, suppress=True)
 
 class MultiElement(Element):
-	def __init__(self, elements):
-		super().__init__()
+	def __init__(self, elements, suppress=False):
+		super().__init__(suppress)
 		self._elements = elements
 		self._compressed_elements = None
 		self._is_simple_regex = None
@@ -126,8 +130,8 @@ class MultiElement(Element):
 			return None
 
 class And(MultiElement):
-	def __init__(self, elements):
-		super().__init__(elements)
+	def __init__(self, elements, suppress=False):
+		super().__init__(elements, suppress)
 
 	def compressElements(self, elements):
 		compressed = []
@@ -160,11 +164,11 @@ class And(MultiElement):
 			else:
 				results.append(res)
 		self.endpos = pos
-		return results
+		return results if not self._suppress else []
 
 class Or(MultiElement):
-	def __init__(self, elements):
-		super().__init__(elements)
+	def __init__(self, elements, suppress=False):
+		super().__init__(elements, suppress)
 
 	def compressElements(self, elements):
 		compressed = []
@@ -187,12 +191,10 @@ class Or(MultiElement):
 
 	def parseString(self, string, pos=0):
 		elements = self.compressedElements
-		res = None
 		for ee in elements:
 			try:
-				return ee.parseString(string, pos)
+				res = ee.parseString(string, pos)
+				return res if not self._suppress else []
 			except ParseException:
 				pass
-		if res:
-			return res
 		raise ParseException("Failed to find Or `` @:\n`{}`".format(string[pos:]))

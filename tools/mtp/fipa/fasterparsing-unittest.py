@@ -74,6 +74,8 @@ class Test(unittest.TestCase):
 		self.assertRaises(ParseException, aa1.parseString, "hello")
 		aa2 = And([Suppress('Tel'), Regex(r'[0-9]{4}')])
 		self.assertEqual(aa2.parseString("Tel 0123")[0], "0123")
+		aa3 = And([Literal('Tel'), Regex(r'[0-9]{4}')]).suppress()
+		self.assertEqual(len(aa3.parseString("Tel 0123")), 0)
 
 	def test_Or(self):
 		oo0 = Or(['hello'])
@@ -81,6 +83,8 @@ class Test(unittest.TestCase):
 		oo1 = Or(['hello', 'world', 'what'])
 		self.assertEqual(oo1.parseString("hello world")[0], "hello")
 		self.assertEqual(oo1.parseString("world hello")[0], "world")
+		oo2 = Or(['hello', 'world', 'what']).suppress()
+		self.assertEqual(len(oo2.parseString("world hello")), 0)
 
 if __name__ == "__main__":
 	unittest.main()
