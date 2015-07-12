@@ -88,6 +88,16 @@ class Literal(Regex):
 	def __init__(self, string, suppress=False):
 		super().__init__(string, suppress)
 
+class CaselessKeyword(Regex):
+	def __init__(self, string, suppress=False):
+		regex = ''.join(['[{}{}]'.format(c.upper(), c.lower()) for c in string])
+		super().__init__(regex, suppress)
+		self.parse_actions = [self.returnKeyword]
+		self._keyword = string
+
+	def returnKeyword(self, source, pos, tockens):
+		return self._keyword
+
 class Suppress(Regex):
 	def __init__(self, string):
 		super().__init__(string, suppress=True)

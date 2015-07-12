@@ -5,8 +5,8 @@
 
 import unittest, datetime
 
-#from pyparsing import Literal, Suppress, Regex, ParseException, And, Or
-from fasterparsing import Literal, Suppress, Regex, ParseException, And, Or
+#from pyparsing import Literal, Suppress, Regex, ParseException, And, Or, CaselessKeyword
+from fasterparsing import Literal, Suppress, Regex, ParseException, And, Or, CaselessKeyword
 
 class Test(unittest.TestCase):
 
@@ -14,6 +14,20 @@ class Test(unittest.TestCase):
 		ll = Literal('hello')
 		self.assertEqual(ll.parseString("hello")[0], "hello")
 		self.assertRaises(ParseException, ll.parseString, "not hello")
+
+	def test_CaselessKeyword(self):
+		ck0 = CaselessKeyword('test')
+		self.assertEqual(ck0.parseString("test")[0], "test")
+		self.assertEqual(ck0.parseString("Test")[0], "test")
+		self.assertEqual(ck0.parseString("teSt")[0], "test")
+		self.assertEqual(ck0.parseString("tesT")[0], "test")
+		self.assertRaises(ParseException, ck0.parseString, "not test")
+		ck1 = And([CaselessKeyword('hello'), Literal('world')])
+		self.assertEqual(ck1.parseString("hello world")[0], "hello")
+		self.assertEqual(ck1.parseString("heLlo world")[0], "hello")
+		self.assertEqual(ck1.parseString("hellO world")[0], "hello")
+		self.assertEqual(ck1.parseString("Hello world")[0], "hello")
+		self.assertRaises(ParseException, ck1.parseString, "hello World")
 
 	def test_Suppress(self):
 		ll = Suppress('hello')
