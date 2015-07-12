@@ -5,8 +5,8 @@
 
 import unittest, datetime
 
-#from pyparsing import Literal, Suppress, Regex, ParseException, And, Or, CaselessKeyword, ZeroOrMore
-from fasterparsing import Literal, Suppress, Regex, ParseException, And, Or, CaselessKeyword, ZeroOrMore
+#from pyparsing import Literal, Suppress, Regex, ParseException, And, Or, CaselessKeyword, ZeroOrMore, OneOrMore
+from fasterparsing import Literal, Suppress, Regex, ParseException, And, Or, CaselessKeyword, ZeroOrMore, OneOrMore
 
 class Test(unittest.TestCase):
 
@@ -112,6 +112,14 @@ class Test(unittest.TestCase):
 		self.assertEqual(len(zom0.parseString("0123")), 1)
 		self.assertEqual(len(zom0.parseString("0 1 2 3")), 4)
 		self.assertEqual(list(zom0.parseString("0 1 2 3 test")), ['0', '1', '2', '3'])
+
+	def test_OneOrMore(self):
+		oom0 = OneOrMore(Regex(r'[0-9]+'))
+		self.assertRaises(ParseException, oom0.parseString, "hello")
+		self.assertEqual(len(oom0.parseString("0")), 1)
+		self.assertEqual(len(oom0.parseString("0123")), 1)
+		self.assertEqual(len(oom0.parseString("0 1 2 3")), 4)
+		self.assertEqual(list(oom0.parseString("0 1 2 3 test")), ['0', '1', '2', '3'])
 
 if __name__ == "__main__":
 	unittest.main()

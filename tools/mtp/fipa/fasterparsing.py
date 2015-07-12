@@ -221,3 +221,19 @@ class ZeroOrMore(Element):
 			except ParseException:
 				break
 		return results
+
+class OneOrMore(Element):
+	def __init__(self, element, suppress=False):
+		super().__init__()
+		self._element = element
+
+	def parseString(self, string, pos=0):
+		results = self._element.parseString(string, pos)
+		pos = self._element.endpos
+		while True:
+			try:
+				results += self._element.parseString(string, pos)
+				pos = self._element.endpos
+			except ParseException:
+				break
+		return results
