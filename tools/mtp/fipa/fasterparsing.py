@@ -15,28 +15,19 @@ class ParseException(Exception):
 	pass
 
 class Element(object):
-	def __init__(self, isSimpleRegex):
-		# is true if this element can be represented by a regex
+	def __init__(self):
 		self.endpos = 0
-		if isSimpleRegex:
-			self.isSimpleRegex = isSimpleRegex
 
 	def getRegexString(self):
-		if self.isSimpleRegex:
-			return self._getRegexString()
-		else:
-			raise Exception("Element is not a simple regex, thus there is no regex string to return.")
-
-	def _getRegexString(self):
-		raise Exception("Abstract method Element::_getRegexString must be overwritten.")
+		return None
 
 class RawRegex(Element):
 	def __init__(self, string):
-		super().__init__(True)
+		super().__init__()
 		self._compiled_re = None
 		self._string = string
 
-	def _getRegexString(self):
+	def getRegexString(self):
 		return self._string
 
 	def parseString(self, string, pos=0):
@@ -55,7 +46,7 @@ class Regex(RawRegex):
 		super().__init__(string)
 		self._suppress = suppress
 
-	def _getRegexString(self):
+	def getRegexString(self):
 		if self._suppress:
 			templ = '\s*(?:{})'
 		else:
@@ -72,16 +63,10 @@ class Suppress(Regex):
 
 class MultiElement(Element):
 	def __init__(self, elements):
-		super().__init__(None)
+		super().__init__()
 		self._elements = elements
 		self._compressed_elements = None
 		self._is_simple_regex = None
-
-	@property
-	def isSimpleRegex(self):
-		if not self._is_simple_regex:
-			self._is_simple_regex = reduce(operator.__and__, [ee.isSimpleRedex for ee in self._elements])
-		return self._is_simple_regex
 
 	@property
 	def compressedElements(self):
@@ -92,8 +77,12 @@ class MultiElement(Element):
 	def compressElements(self, elements):
 		raise Exception("Abstract method MultiElement::compressElements must be overwritten.")
 
-	def _getRegexString(self):
-		return self.compressedElements[0].getRegexString()
+	def getRegexString(self):
+		elements = self.compressedElements
+		if len(elements) == 1:
+			return elements[0].getRegexString()
+		else:
+			return None
 
 class And(MultiElement):
 	def __init__(self, elements):
@@ -104,9 +93,10 @@ class And(MultiElement):
 		re_string = ""
 		for ee in elements:
 			if isinstance(ee, str):
-				re_string += '\s*({})'.format(ee)
-			elif ee.isSimpleRegex:
-				re_string += ee.getRegexString()
+				ee = Regex(ee)
+			ee_re = ee.getRegexString()
+			if ee_re:
+				re_string += ee_re
 			else:
 				if len(re_string) > 0:
 					compressed.append(RawRegex(re_string))
@@ -138,9 +128,10 @@ class Or(MultiElement):
 		re_strings = []
 		for ee in elements:
 			if isinstance(ee, str):
-				re_strings.append('\s*({})'.format(ee))
-			elif ee.isSimpleRegex:
-				re_strings.append(ee.getRegexString())
+				ee = Regex(ee)
+			ee_re = ee.getRegexString()
+			if ee_re:
+				re_strings.append(ee_re)
 			else:
 				compressed.append(ee)
 		if len(re_strings) > 0:
