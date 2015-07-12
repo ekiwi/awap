@@ -53,8 +53,19 @@ class RawRegex(Element):
 			results = []
 			for (result, parse_action) in zip(res_list, self.parse_actions):
 				if result:
-					parsed = parse_action(string, pos, result)
-					results.append(parsed if parsed else result)
+					# Since this is a simple regex, the result will always be
+					# a simple string, directly from python `re` module.
+					# To keep the interface consistent with pyparsing,
+					# we wrap that string in a list.
+					parsed = parse_action(string, pos, [result])
+					# Unpack parsed according to some rules observed with
+					# pyparsing:
+					if parsed is None:
+						results.append(result)
+					if isinstance(parsed, list):
+						results += parsed
+					else:
+						results.append(parsed)
 			return results
 		else:
 			raise ParseException("Failed to find `{}` @:\n`{}`".format(self.getRegexString(), string[pos:]))
