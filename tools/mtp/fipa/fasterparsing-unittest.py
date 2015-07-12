@@ -41,7 +41,7 @@ class Test(unittest.TestCase):
 		return ts
 
 	def test_Regex_DateTime(self):
-		DateTime = Regex(r'([\+-])?\d{8}T\d{9}([a-zA-Z])?')
+		DateTime = Regex(r'[\+-]?\d{8}T\d{9}[a-zA-Z]?')
 		DateTime.setParseAction(self.parse_DateTime)
 		ts = datetime.datetime(2015, 7, 1, 14, 39, 41, 567 * 1000)
 		self.assertEqual(DateTime.parseString("20150701T143941567")[0], ts)
