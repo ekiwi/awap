@@ -49,7 +49,7 @@ class RawRegex(Element):
 			self._compiled_re = re.compile(self.getRegexString())
 		m = self._compiled_re.match(string, pos)
 		if m:
-			self.endpos = m.endpos
+			self.endpos = m.end(0)
 			res_list = list(m.groups())
 			if len(res_list) != len(self.parse_actions):
 				# this is NOT a ParseException, since it should never happen
@@ -198,3 +198,18 @@ class Or(MultiElement):
 			except ParseException:
 				pass
 		raise ParseException("Failed to find Or `` @:\n`{}`".format(string[pos:]))
+
+class ZeroOrMore(Element):
+	def __init__(self, element, suppress=False):
+		super().__init__()
+		self._element = element
+
+	def parseString(self, string, pos=0):
+		results = []
+		while True:
+			try:
+				results += self._element.parseString(string, pos)
+				pos = self._element.endpos
+			except ParseException:
+				break
+		return results
