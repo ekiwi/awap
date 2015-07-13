@@ -93,10 +93,12 @@ class Regex(RawRegex):
 
 class Literal(Regex):
 	def __init__(self, string, suppress=False):
-		super().__init__(string, suppress)
+		super().__init__(re.escape(string), suppress)
 
 class CaselessKeyword(Regex):
 	def __init__(self, string, suppress=False):
+		# TODO: this does not work for all possible inputs
+		string = re.escape(string)
 		regex = ''.join(['[{}{}]'.format(c.upper(), c.lower()) for c in string])
 		super().__init__(regex, suppress)
 		self.parse_actions = [self.returnKeyword]
@@ -105,7 +107,7 @@ class CaselessKeyword(Regex):
 	def returnKeyword(self, source, pos, tockens):
 		return self._keyword
 
-class Suppress(Regex):
+class Suppress(Literal):
 	def __init__(self, string):
 		super().__init__(string, suppress=True)
 
@@ -127,7 +129,10 @@ class MultiElement(Element):
 
 	def getRegexString(self):
 		elements = self.compressedElements
-		if len(elements) == 1:
+		# only if we can compress to one element and if this MultiElement,
+		# does not have a custom parse_action, can we simplify this
+		# into a simple regex
+		if len(elements) == 1 and self.parse_actions[0] != self._defaultParseAction:
 			return elements[0].getRegexString()
 		else:
 			return None
