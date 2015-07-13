@@ -79,7 +79,7 @@ class Test(unittest.TestCase):
 		aa4 = Suppress('Tel') + Regex(r'[0-9]{4}')
 		self.assertEqual(aa4.parseString("Tel 0123")[0], "0123")
 		aa5 = Suppress('(') + Suppress('Tel') + Regex(r'[0-9]{4}') + Suppress(')')
-		self.assertEqual(aa5.parseString("Tel 0123")[0], "0123")
+		self.assertEqual(aa5.parseString("(Tel 0123)")[0], "0123")
 
 	def parse_Tel(self, message, pos, tokens):
 		return {'country': tokens[0], 'area': [1], 'local': [2]}
