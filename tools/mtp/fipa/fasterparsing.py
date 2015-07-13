@@ -172,7 +172,18 @@ class And(MultiElement):
 			else:
 				results.append(res)
 		self.endpos = pos
-		return results if not self._suppress else []
+		if self._suppress:
+			return []
+		else:
+			parsed = self.parse_actions[0](string, pos, results)
+			# Unpack parsed according to some rules observed with
+			# pyparsing:
+			if parsed is None:
+				return results
+			if isinstance(parsed, list):
+				return parsed
+			else:
+				return [parsed]
 
 class Or(MultiElement):
 	def __init__(self, elements, suppress=False):
