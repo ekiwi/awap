@@ -82,7 +82,7 @@ class Test(unittest.TestCase):
 		self.assertEqual(aa5.parseString("(Tel 0123)")[0], "0123")
 
 	def parse_Tel(self, message, pos, tokens):
-		return {'country': tokens[0], 'area': [1], 'local': [2]}
+		return {'country': tokens[0], 'area': tokens[1], 'local': tokens[2]}
 
 	def test_And_Nesting(self):
 		Tel = (
