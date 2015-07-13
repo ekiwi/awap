@@ -78,6 +78,23 @@ class Test(unittest.TestCase):
 		self.assertEqual(len(aa3.parseString("Tel 0123")), 0)
 		aa4 = Suppress('Tel') + Regex(r'[0-9]{4}')
 		self.assertEqual(aa4.parseString("Tel 0123")[0], "0123")
+		aa5 = Suppress('(') + Suppress('Tel') + Regex(r'[0-9]{4}') + Suppress(')')
+		self.assertEqual(aa5.parseString("Tel 0123")[0], "0123")
+
+	def parse_Tel(self, message, pos, tokens):
+		return {'country': tokens[0], 'area': [1], 'local': [2]}
+
+	def test_And_Nesting(self):
+		Tel = (
+			Suppress('Tel.:') + Regex(r'(?:[+]{1,2}|(?:00))?[0-9]{1,2}') +
+			Regex('[0-9]{3}') + Regex('[0-9]{4}'))
+		Tel.setParseAction(self.parse_Tel)
+		TelAndName = Tel + Suppress('Name:') + Regex('[a-zA-Z]+')
+		res = TelAndName.parseString('Tel.: 49 023 1567 Name: Test')
+		self.assertEqual(res[0]['local'], '1567')
+		self.assertEqual(res[0]['country'], '49')
+		self.assertEqual(res[0]['area'], '023')
+		self.assertEqual(res[1], 'Test')
 
 	def test_Or(self):
 		oo0 = Or(['hello'])
