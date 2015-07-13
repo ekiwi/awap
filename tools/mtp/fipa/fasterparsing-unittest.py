@@ -76,6 +76,8 @@ class Test(unittest.TestCase):
 		self.assertEqual(aa2.parseString("Tel 0123")[0], "0123")
 		aa3 = And([Literal('Tel'), Regex(r'[0-9]{4}')]).suppress()
 		self.assertEqual(len(aa3.parseString("Tel 0123")), 0)
+		aa4 = Suppress('Tel') + Regex(r'[0-9]{4}')
+		self.assertEqual(aa4.parseString("Tel 0123")[0], "0123")
 
 	def test_Or(self):
 		oo0 = Or(['hello'])

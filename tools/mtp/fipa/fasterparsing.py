@@ -33,6 +33,9 @@ class Element(object):
 		self._suppress = True
 		return self
 
+	def __add__(self, other):
+		return And([self, other])
+
 class RawRegex(Element):
 	def __init__(self, string, parse_actions=None, suppress=False):
 		super().__init__(suppress)
