@@ -41,7 +41,7 @@ class RawRegex(Element):
 		super().__init__(suppress)
 		self._compiled_re = None
 		self._string = string
-		if parse_actions:
+		if parse_actions is not None:
 			self.parse_actions = parse_actions
 
 	def getRegexString(self):
