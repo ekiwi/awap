@@ -136,6 +136,20 @@ class MultiElement(Element):
 		else:
 			return None
 
+	def _parseResults(self, string, pos, results):
+		""" Convenience function that runs results through the parse_action
+			and tries to mimic pyparsing behavior.
+		"""
+		parsed = self.parse_actions[0](string, pos, results)
+		# Unpack parsed according to some rules observed with
+		# pyparsing:
+		if parsed is None:
+			return results
+		if isinstance(parsed, list):
+			return parsed
+		else:
+			return [parsed]
+
 class And(MultiElement):
 	def __init__(self, elements, suppress=False):
 		super().__init__(elements, suppress)
@@ -174,15 +188,7 @@ class And(MultiElement):
 		if self._suppress:
 			return []
 		else:
-			parsed = self.parse_actions[0](string, pos, results)
-			# Unpack parsed according to some rules observed with
-			# pyparsing:
-			if parsed is None:
-				return results
-			if isinstance(parsed, list):
-				return parsed
-			else:
-				return [parsed]
+			return self._parseResults(string, pos, results)
 
 class Or(MultiElement):
 	def __init__(self, elements, suppress=False):
@@ -212,7 +218,10 @@ class Or(MultiElement):
 		for ee in elements:
 			try:
 				res = ee.parseString(string, pos)
-				return res if not self._suppress else []
+				if self._suppress:
+					return []
+				else:
+					return self._parseResults(string, pos, res)
 			except ParseException:
 				pass
 		raise ParseException("Failed to find Or `` @:\n`{}`".format(string[pos:]))

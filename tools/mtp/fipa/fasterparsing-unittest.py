@@ -96,6 +96,9 @@ class Test(unittest.TestCase):
 		self.assertEqual(res[0]['area'], '023')
 		self.assertEqual(res[1], 'Test')
 
+	def parse_to_upper(self, message, pos, tokens):
+		return tokens[0].upper()
+
 	def test_Or(self):
 		oo0 = Or(['hello'])
 		self.assertEqual(oo0.parseString("hello")[0], "hello")
@@ -104,6 +107,11 @@ class Test(unittest.TestCase):
 		self.assertEqual(oo1.parseString("world hello")[0], "world")
 		oo2 = Or(['hello', 'world', 'what']).suppress()
 		self.assertEqual(len(oo2.parseString("world hello")), 0)
+		oo3 = Or(['str', 'int', 'list'])
+		oo3.setParseAction(self.parse_to_upper)
+		self.assertEqual(oo3.parseString("str")[0], "STR")
+		self.assertEqual(oo3.parseString("list")[0], "LIST")
+		self.assertEqual(oo3.parseString("int")[0], "INT")
 
 	def test_ZeroOrMore(self):
 		zom0 = ZeroOrMore(Regex(r'[0-9]+'))
