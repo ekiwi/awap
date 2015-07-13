@@ -5,7 +5,6 @@
 # tries to be a faster implementation of the subset of pyparsing that is
 # used in the awap bridge application
 
-import unittest
 import re, operator
 
 
