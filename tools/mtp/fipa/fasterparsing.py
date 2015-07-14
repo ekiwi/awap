@@ -88,7 +88,7 @@ class RawRegex(Element):
 		return '{}({})'.format(self.__class__.__name__, str(self._string))
 
 	def __repr__(self):
-		return '{}({})'.format(self.__class__.__name__, str(self._string))
+		return str(self)
 
 class Regex(RawRegex):
 	def __init__(self, string, suppress=False):
@@ -178,7 +178,7 @@ class MultiElement(Element):
 		return '{}({})'.format(self.__class__.__name__, str(self.compressedElements))
 
 	def __repr__(self):
-		return '{}({})'.format(self.__class__.__name__, str(self.compressedElements))
+		return str(self)
 
 class And(MultiElement):
 	def __init__(self, elements, suppress=False):
@@ -265,10 +265,20 @@ class Or(MultiElement):
 				pass
 		raise ParseException("Failed to find Or `` @:\n`{}`".format(string[pos:]))
 
-class ZeroOrMore(Element):
+class WrapperElement(Element):
 	def __init__(self, element, suppress=False):
 		super().__init__()
 		self._element = element
+
+	def __str__(self):
+		return '{}({})'.format(self.__class__.__name__, str(self._element))
+
+	def __repr__(self):
+		return str(self)
+
+class ZeroOrMore(WrapperElement):
+	def __init__(self, element, suppress=False):
+		super().__init__(element)
 
 	def parseString(self, string, pos=0):
 		results = []
@@ -278,12 +288,12 @@ class ZeroOrMore(Element):
 				pos = self._element.endpos
 			except ParseException:
 				break
+		self.endpos = pos
 		return results
 
-class OneOrMore(Element):
+class OneOrMore(WrapperElement):
 	def __init__(self, element, suppress=False):
-		super().__init__()
-		self._element = element
+		super().__init__(element)
 
 	def parseString(self, string, pos=0):
 		results = self._element.parseString(string, pos)
@@ -294,4 +304,18 @@ class OneOrMore(Element):
 				pos = self._element.endpos
 			except ParseException:
 				break
+		self.endpos = pos
 		return results
+
+class Group(WrapperElement):
+	def __init__(self, element, suppress=False):
+		super().__init__(element)
+		self._parse_actions = [self._parse_to_list]
+
+	def parseString(self, string, pos=0):
+		res = [self._element.parseString(string, pos)]
+		self.endpos = self._element.endpos
+		return res
+
+	def _parse_to_list(self, source, pos, tockens):
+		return [tockens]
