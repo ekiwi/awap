@@ -143,16 +143,16 @@ class Test(unittest.TestCase):
 
 	def test_Forward(self):
 		Term = Forward()
-		StringList = Group(Suppress('[') + ZeroOrMore(Term + Suppress(Regex(',?'))) + Suppress(']'))
+		StringList = Group(Suppress('[') + ZeroOrMore(Term + Suppress(',')) + Suppress(']'))
 		Term << Or([Literal('test'), Regex(r'[a-zA-Z]'), StringList])
-		res0 = StringList.parseString('[[a],b,c,test]')[0]
+		res0 = StringList.parseString('[[a,],b,c,test,]')[0]
 		self.assertEqual(res0[0][0], 'a')
 		self.assertEqual(res0[1], 'b')
 		self.assertEqual(res0[2], 'c')
 		self.assertEqual(res0[3], 'test')
-		res1 = StringList.parseString('[a,[b],c,test]')[0]
+		res1 = StringList.parseString('[a,[b,],c,test,]')[0]
 		self.assertEqual(res1[1][0], 'b')
-		res2 = StringList.parseString('[a,b,c,[test,test,test],d,[e,f,[g,h]]]')[0]
+		res2 = StringList.parseString('[a,b,c,[test,test,test,],d,[e,f,[g,h,],],]')[0]
 		self.assertEqual(res2[3][1], 'test')
 		self.assertEqual(len(res2[3]), 3)
 		self.assertEqual(len(res2[5][2]), 2)

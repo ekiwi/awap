@@ -39,6 +39,9 @@ class Element(object):
 	def __add__(self, other):
 		return And([self, other])
 
+	def __repr__(self):
+		return str(self)
+
 class RawRegex(Element):
 	def __init__(self, string, parse_actions=None, suppress=False):
 		super().__init__(suppress)
@@ -61,9 +64,11 @@ class RawRegex(Element):
 				# this is NOT a ParseException, since it should never happen
 				raise Exception("Error: number of results ({}) is ".format(len(res_list)) +
 					"not equal to the number of parse_actions ({})".format(len(self._parse_actions)) +
+					'\nin: `{}`'.format(self) +
 					'\nresults:      {}'.format(res_list) +
 					'\nparse_actions: {}'.format(self._parse_actions) +
-					'\n@ pos:{} => "{}"'.format(pos, string[pos:]))
+					'\n@ pos:{} => "{}"'.format(pos, string[pos:]) +
+					'\nm: {}'.format(m))
 			results = []
 			for (result, parse_action) in zip(res_list, self._parse_actions):
 				if result:
@@ -85,10 +90,7 @@ class RawRegex(Element):
 			raise ParseException("Failed to find `{}` @:\n`{}`".format(self.getRegexString(), string[pos:]))
 
 	def __str__(self):
-		return '{}({})'.format(self.__class__.__name__, str(self._string))
-
-	def __repr__(self):
-		return str(self)
+		return '{}(\'{}\')'.format(self.__class__.__name__, str(self._string))
 
 class Regex(RawRegex):
 	def __init__(self, string, suppress=False):
@@ -177,9 +179,6 @@ class MultiElement(Element):
 	def __str__(self):
 		return '{}({})'.format(self.__class__.__name__, str(self.compressedElements))
 
-	def __repr__(self):
-		return str(self)
-
 class And(MultiElement):
 	def __init__(self, elements, suppress=False):
 		super().__init__(elements, suppress)
@@ -257,6 +256,7 @@ class Or(MultiElement):
 		for ee in elements:
 			try:
 				res = ee.parseString(string, pos)
+				self.endpos = ee.endpos
 				if self._suppress:
 					return []
 				else:
@@ -267,18 +267,15 @@ class Or(MultiElement):
 
 class WrapperElement(Element):
 	def __init__(self, element, suppress=False):
-		super().__init__()
+		super().__init__(suppress)
 		self._element = element
 
 	def __str__(self):
 		return '{}({})'.format(self.__class__.__name__, str(self._element))
 
-	def __repr__(self):
-		return str(self)
-
 class ZeroOrMore(WrapperElement):
 	def __init__(self, element, suppress=False):
-		super().__init__(element)
+		super().__init__(element, suppress)
 
 	def parseString(self, string, pos=0):
 		results = []
@@ -293,7 +290,7 @@ class ZeroOrMore(WrapperElement):
 
 class OneOrMore(WrapperElement):
 	def __init__(self, element, suppress=False):
-		super().__init__(element)
+		super().__init__(element, suppress)
 
 	def parseString(self, string, pos=0):
 		results = self._element.parseString(string, pos)
@@ -309,7 +306,7 @@ class OneOrMore(WrapperElement):
 
 class Group(WrapperElement):
 	def __init__(self, element, suppress=False):
-		super().__init__(element)
+		super().__init__(element, suppress)
 		self._parse_actions = [self._parse_to_list]
 
 	def parseString(self, string, pos=0):
@@ -319,3 +316,21 @@ class Group(WrapperElement):
 
 	def _parse_to_list(self, source, pos, tockens):
 		return [tockens]
+
+class Forward(WrapperElement):
+	def __init__(self, suppress=False):
+		super().__init__(None, suppress)
+
+	def parseString(self, string, pos=0):
+		if self._element is None:
+			return None
+		else:
+			res = self._element.parseString(string, pos)
+			self.endpos = self._element.endpos
+			return res
+
+	def __lshift__(self, other):
+		self._element = other
+
+	def __str__(self):
+		return 'Forward'
