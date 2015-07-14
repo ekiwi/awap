@@ -198,6 +198,7 @@ class And(MultiElement):
 				if len(re_string) > 0:
 					compressed.append(RawRegex(re_string, re_parse_actions))
 					re_string = ""
+					re_parse_actions = []
 				compressed.append(ee)
 		if len(re_string) > 0:
 			compressed.append(RawRegex(re_string, re_parse_actions))
