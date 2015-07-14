@@ -247,7 +247,7 @@ class Or(MultiElement):
 				compressed.append(ee)
 		if len(re_strings) > 0:
 			# build or'd regex string and insert at beginning of the list
-			re_string = '|'.join(re_strings)
+			re_string = '(?:{})'.format('|'.join(re_strings))
 			compressed.insert(0, RawRegex(re_string, re_parse_actions))
 		return compressed
 
