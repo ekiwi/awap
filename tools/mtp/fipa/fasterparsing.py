@@ -177,7 +177,7 @@ class MultiElement(Element):
 			return [parsed]
 
 	def __str__(self):
-		return '{}({})'.format(self.__class__.__name__, str(self.compressedElements))
+		return '{}({})'.format(self.__class__.__name__, str(self._elements))
 
 class And(MultiElement):
 	def __init__(self, elements, suppress=False):
