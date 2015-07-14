@@ -4,7 +4,7 @@
 import unittest
 import datetime
 import re
-from pyparsing import Regex, ParseException, Or, Literal, Optional, ZeroOrMore, Suppress, CaselessKeyword
+from fasterparsing import Regex, ParseException, Or, Literal, Optional, ZeroOrMore, Suppress, CaselessKeyword
 
 class ObjectFactory(object):
 	def create_int(self, value):
@@ -16,10 +16,10 @@ class ACLLexicalDefinitionsParser(object):
 	def __init__(self, obj_factory = ObjectFactory()):
 		self.obj_factory = obj_factory
 
-		self.DateTime = Regex(r'([\+-])?\d{8}T\d{9}([a-zA-Z])?')
+		self.DateTime = Regex(r'[\+-]?\d{8}T\d{9}[a-zA-Z]?')
 		self.DateTime.setParseAction(self.parse_DateTime)
 
-		self.StringLiteral = Regex(r'"((\\")|[^"])+"')
+		self.StringLiteral = Regex(r'"(?:(?:\\")|[^"])+"')
 		self.StringLiteral.setParseAction(self.parse_StringLiteral)
 
 		# 1.) FIPA ACL allows Word to start with " or +, we don't in order to make
@@ -73,14 +73,14 @@ class ACLParser(ACLLexicalDefinitionsParser):
 
 		self.AgentIdentifier = (
 			Suppress("(") + Suppress("agent-identifier") + Suppress(":name") +
-			self.Word.setResultsName('name') + Optional(Suppress(":addresses") +
-			self.URLSequence).setResultsName('addresses') + Suppress(")"))
+			self.Word + Optional(Suppress(":addresses") +
+			self.URLSequence) + Suppress(")"))
 		self.AgentIdentifier.setParseAction(self.parse_AgentIdentifier)
 
 		self.AgentIdentifierSet = (
 			Suppress("(") + Suppress("set") + ZeroOrMore(self.AgentIdentifier) + Suppress(")"))
 
-		self.Expression = Or([self.Word, self.String, self.Number, self.DateTime])
+		self.Expression = Or([self.DateTime, self.Number, self.Word, self.String])
 
 		self.Performative = [
 			CaselessKeyword("ACCEPT-PROPOSAL"),
@@ -106,37 +106,48 @@ class ACLParser(ACLLexicalDefinitionsParser):
 			CaselessKeyword("PROXY"),
 			CaselessKeyword("PROPAGATE")]
 
-		self.MessageType = Or(self.Performative).setResultsName('performative')
+		self.MessageType = Or(self.Performative)
 
 		self.MessageParameterNames = ['sender', 'receiver', 'content',
 			'reply-with', 'reply-by', 'in-reply-to', 'reply-to', 'language',
 			'encoding', 'ontology', 'protocol', 'conversation-id']
 
 		self.MessageParameter = Or([
-			(Suppress(":sender") + self.AgentIdentifier).setResultsName('sender'),
-			(Suppress(":receiver") + self.AgentIdentifierSet).setResultsName('receiver'),
-			(Suppress(":content") + self.String).setResultsName('content'),
-			(Suppress(":reply-with") + self.Expression).setResultsName('reply-with'),
-			(Suppress(":reply-by") + self.DateTime).setResultsName('reply-by'),
-			(Suppress(":in-reply-to") + self.Expression).setResultsName('in-reply-to'),
-			(Suppress(":reply-to") + self.AgentIdentifierSet).setResultsName('reply-to'),
-			(Suppress(":language") + self.Expression).setResultsName('language'),
-			(Suppress(":encoding") + self.Expression).setResultsName('encoding'),
-			(Suppress(":ontology") + self.Expression).setResultsName('ontology'),
-			(Suppress(":protocol") + self.Word).setResultsName('protocol'),
-			(Suppress(":conversation-id") + self.Expression).setResultsName('conversation-id')
+			Literal(":sender") + self.AgentIdentifier,
+			Literal(":receiver") + self.AgentIdentifierSet,
+			Literal(":content") + self.String,
+			Literal(":reply-with") + self.Expression,
+			Literal(":reply-by") + self.DateTime,
+			Literal(":in-reply-to") + self.Expression,
+			Literal(":reply-to") + self.AgentIdentifierSet,
+			Literal(":language") + self.Expression,
+			Literal(":encoding") + self.Expression,
+			Literal(":ontology") + self.Expression,
+			Literal(":protocol") + self.Word,
+			Literal(":conversation-id") + self.Expression
 			])
 
 		self.Message = Suppress("(") + self.MessageType + ZeroOrMore(self.MessageParameter) + Suppress(")")
+		self.Message.setParseAction(self.parse_Message)
 
 	def parse_message(self, msg):
 		return self.Message.parseString(msg)
 
 	def parse_AgentIdentifier(self, source, location, tokens):
-		name = tokens['name']
-		addresses = tokens['addresses']
+		name = tokens[0]
+		addresses = tokens[1:]
 		return self.obj_factory.create_AgentIdentifier(name, addresses)
 
+	def parse_Message(self, source, location, tokens):
+		msg = {'performative': tokens[0]}
+		key = None
+		for tok in tokens[1:]:
+			if key is None:
+				key = tok[1:]
+			else:
+				msg[key] = tok
+				key = None
+		return msg
 
 class TestACLLexicalDefinitionsParser(unittest.TestCase):
 	def setUp(self):
@@ -251,12 +262,13 @@ class TestACLStringParser(unittest.TestCase):
 		inp = ":sender ( agent-identifier :name test  :addresses (sequence http://1 http://2 ) )"
 		out = self.p.MessageParameter.parseString(inp)
 
-		self.assertTrue('sender' in out)
-		self.assertEqual(out['sender'][0], {'name': 'test', 'addresses': ['http://1', 'http://2']})
+		self.assertEqual(out[0], ':sender')
+		self.assertEqual(out[1], {'name': 'test', 'addresses': ['http://1', 'http://2']})
 
 		out = self.p.MessageParameter.parseString(":reply-by 20150701T143941567")
-		self.assertTrue('reply-by' in out)
-		self.assertEqual(out['reply-by'][0], datetime.datetime(2015, 7, 1, 14, 39, 41, 567 * 1000))
+		self.assertEqual(out[0], ':reply-by')
+		self.assertEqual(out[1], datetime.datetime(2015, 7, 1, 14, 39, 41, 567 * 1000))
+
 
 	def test_Message(self):
 		msg = ('\n\n(REQUEST\n' +
@@ -265,18 +277,18 @@ class TestACLStringParser(unittest.TestCase):
 			' :content  "((action (agent-identifier :name test :addresses (sequence http://localhost:9000)) (get-description)))" \n' +
 			' :language  fipa-sl0  :ontology  FIPA-Agent-Management  :protocol  fipa-request\n' +
 			' :conversation-id  C1438784720_1435754381566 )\n\n\n')
-		out = self.p.parse_message(msg)
+		out = self.p.parse_message(msg)[0]
 
 		self.assertEqual(out['performative'], 'REQUEST')
-		self.assertEqual(out['sender'][0]['name'], 'rma@192.168.122.1:1099/JADE')
-		self.assertEqual(out['sender'][0]['addresses'], ['http://130-000.eduroam.rwth-aachen.de:7778/acc'])
-		self.assertEqual(out['receiver'][0]['name'], 'test')
-		self.assertEqual(out['receiver'][0]['addresses'], ['http://localhost:9000'])
-		self.assertEqual(out['content'][0], '((action (agent-identifier :name test :addresses (sequence http://localhost:9000)) (get-description)))')
-		self.assertEqual(out['language'][0], 'fipa-sl0')
-		self.assertEqual(out['ontology'][0], 'FIPA-Agent-Management')
-		self.assertEqual(out['protocol'][0], 'fipa-request')
-		self.assertEqual(out['conversation-id'][0], 'C1438784720_1435754381566')
+		self.assertEqual(out['sender']['name'], 'rma@192.168.122.1:1099/JADE')
+		self.assertEqual(out['sender']['addresses'], ['http://130-000.eduroam.rwth-aachen.de:7778/acc'])
+		self.assertEqual(out['receiver']['name'], 'test')
+		self.assertEqual(out['receiver']['addresses'], ['http://localhost:9000'])
+		self.assertEqual(out['content'], '((action (agent-identifier :name test :addresses (sequence http://localhost:9000)) (get-description)))')
+		self.assertEqual(out['language'], 'fipa-sl0')
+		self.assertEqual(out['ontology'], 'FIPA-Agent-Management')
+		self.assertEqual(out['protocol'], 'fipa-request')
+		self.assertEqual(out['conversation-id'], 'C1438784720_1435754381566')
 
 
 
