@@ -289,6 +289,18 @@ class ZeroOrMore(WrapperElement):
 		self.endpos = pos
 		return results
 
+class Optional(WrapperElement):
+	def __init__(self, element, suppress=False):
+		super().__init__(element, suppress)
+
+	def parseString(self, string, pos=0):
+		try:
+			res = self._element.parseString(string, pos)
+			self.endpos = self._element.endpos
+			return res
+		except ParseException:
+			return []
+
 class OneOrMore(WrapperElement):
 	def __init__(self, element, suppress=False):
 		super().__init__(element, suppress)
