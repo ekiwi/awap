@@ -5,8 +5,8 @@
 
 import unittest, datetime
 
-#from pyparsing import Literal, Suppress, Regex, ParseException, And, Or, CaselessKeyword, ZeroOrMore, OneOrMore
-from fasterparsing import Literal, Suppress, Regex, ParseException, And, Or, CaselessKeyword, ZeroOrMore, OneOrMore
+# from pyparsing import Literal, Suppress, Regex, ParseException, And, Or, CaselessKeyword, ZeroOrMore, OneOrMore, Group
+from fasterparsing import Literal, Suppress, Regex, ParseException, And, Or, CaselessKeyword, ZeroOrMore, OneOrMore, Group
 
 class Test(unittest.TestCase):
 
@@ -128,6 +128,18 @@ class Test(unittest.TestCase):
 		self.assertEqual(len(oom0.parseString("0123")), 1)
 		self.assertEqual(len(oom0.parseString("0 1 2 3")), 4)
 		self.assertEqual(list(oom0.parseString("0 1 2 3 test")), ['0', '1', '2', '3'])
+
+	def test_Group(self):
+		StringListWithoutGroup = Suppress('[') + ZeroOrMore(Regex(r'[a-zA-Z]+') + Suppress(',')) + Suppress(']')
+		StringList = Group(StringListWithoutGroup)
+		self.assertEqual(StringListWithoutGroup.parseString('[a,b,c,d,]')[0], 'a')
+		self.assertEqual(StringListWithoutGroup.parseString('[a,b,c,d,]')[1], 'b')
+		self.assertEqual(StringListWithoutGroup.parseString('[a,b,c,d,]')[2], 'c')
+		self.assertEqual(StringListWithoutGroup.parseString('[a,b,c,d,]')[3], 'd')
+		self.assertEqual(StringList.parseString('[a,b,c,d,]')[0][0], 'a')
+		self.assertEqual(StringList.parseString('[a,b,c,d,]')[0][1], 'b')
+		self.assertEqual(StringList.parseString('[a,b,c,d,]')[0][2], 'c')
+		self.assertEqual(StringList.parseString('[a,b,c,d,]')[0][3], 'd')
 
 if __name__ == "__main__":
 	unittest.main()
