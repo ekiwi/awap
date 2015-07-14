@@ -12,19 +12,15 @@ http://www.fipa.org/specs/fipa00008/SC00008I.html
 
 import unittest
 import datetime
-from pyparsing import Regex, ParseException, Or, Literal, ZeroOrMore, Suppress, Forward, OneOrMore, Group, ParseResults
+
 if __name__ == "__main__":
 	import aclparser
 else:
 	from . import aclparser
 
-class ObjectFactory(aclparser.ObjectFactory):
-	def _extract_parseresults(self, result):
-		if isinstance(result, ParseResults):
-			return result.asList()
-		else:
-			return result
+from fasterparsing import Regex, ParseException, Or, Literal, ZeroOrMore, Suppress, Forward, OneOrMore, Group
 
+class ObjectFactory(aclparser.ObjectFactory):
 	def _terms_to_list_or_dict(self, terms):
 		""" creates a dictionary if the terms are (key,value) tuples
 			returns an empty list if len(terms) == 0
@@ -32,13 +28,11 @@ class ObjectFactory(aclparser.ObjectFactory):
 		if terms is None or len(terms) < 1:
 			return []
 		if isinstance(terms[0], tuple):
-			return {tt[0]: self._extract_parseresults(tt[1]) for tt in terms}
+			return {tt[0]: tt[1] for tt in terms}
 		else:
-			return [self._extract_parseresults(tt) for tt in terms]
+			return [tt for tt in terms]
 
 	def create_ActionExpression(self, agent, term):
-		agent = self._extract_parseresults(agent)
-		term = self._extract_parseresults(term)
 		return ('action', {'agent': agent, 'term': term})
 
 	def create_FunctionalTerm(self, name, terms):
@@ -53,17 +47,10 @@ class ObjectFactory(aclparser.ObjectFactory):
 		elif len(tokens) == 1:
 			return ('atomicformula', str(tokens[0]))
 		elif tokens[0] == 'result':
-			return (
-				'atomicformula',
-				'result',
-				self._extract_parseresults(tokens[1]),
-				self._extract_parseresults(tokens[2]))
+			return ('atomicformula', 'result', tokens[1], tokens[2])
 		else:
 			terms = tokens[1:]
-			return (
-				'atomicformula',
-				str(tokens[0]),
-				[self._extract_parseresults(tt) for tt in terms])
+			return ( 'atomicformula', str(tokens[0]), terms)
 
 	def create_Wff(self, is_atomic_formula, value):
 		if is_atomic_formula:
@@ -93,7 +80,7 @@ class FP0Parser(FPLexicalDefinitionsParser):
 
 		# TODO: support float
 		self.NumericalConstant = self.Integer
-		self.Constant = Or([self.NumericalConstant, self.String, self.DateTime])
+		self.Constant = Or([self.DateTime, self.NumericalConstant, self.String])
 
 		self.PredicateSymbol = self.String
 		self.PropositionSymbol = self.String
@@ -152,7 +139,7 @@ class FP0Parser(FPLexicalDefinitionsParser):
 		return (tokens[0], tokens[1])
 
 	def parse_as_List(self, source, location, tokens):
-		return tokens.asList()
+		return tokens
 
 	def parse_ActionExpression(self, source, location, tokens):
 		return self.obj_factory.create_ActionExpression(tokens[0], tokens[1])
@@ -170,6 +157,7 @@ class FP0Parser(FPLexicalDefinitionsParser):
 		is_atomic_formula = tokens[0] != 'done'
 		value = tokens[0] if is_atomic_formula else tokens[1]
 		return self.obj_factory.create_Wff(is_atomic_formula, value)
+
 
 class TestFPLexicalDefinitionsParser(unittest.TestCase):
 	def setUp(self):
@@ -234,38 +222,39 @@ class TestFP0Parser(unittest.TestCase):
 
 	def helper_test_Sequence_Set(self, Parser, name):
 		s0 = '({0} 0 1 2 3 4)'.format(name)
-		self.assertEqual(Parser.parseString(s0).asList()[0], [0,1,2,3,4])
+		self.assertEqual(Parser.parseString(s0)[0], [0,1,2,3,4])
 		s1 = '({0} 0 eins "zwei" 00030303T000000000 -4)'.format(name)
 		e1 = [0, 'eins', 'zwei', datetime.datetime(year=3, month=3, day=3), -4]
-		self.assertEqual(Parser.parseString(s1).asList()[0], e1)
+		self.assertEqual(Parser.parseString(s1)[0], e1)
 		s2 = '({0} 0 ({0} 10 11 12) 20 30 40)'.format(name)
-		self.assertEqual(Parser.parseString(s2).asList()[0][1], [10, 11, 12])
+		self.assertEqual(Parser.parseString(s2)[0][1], [10, 11, 12])
 
 	def test_Parameter(self):
 		self.assertEqual(
-			self.p.Parameter.parseString(':test 2').asList()[0], ('test', 2))
+			self.p.Parameter.parseString(':test 2')[0], ('test', 2))
 		self.assertEqual(
-			self.p.Parameter.parseString(':"fancy name" (sequence 0 1 2 3)').asList()[0],
+			self.p.Parameter.parseString(':"fancy name" (sequence 0 1 2 3)')[0],
 			('fancy name', [0,1,2,3]))
 
 	def test_FunctionalTerm(self):
+		# import pdb; pdb.set_trace()
 		self.assertEqual(
-			self.p.FunctionalTerm.parseString('(empty)').asList()[0],
+			self.p.FunctionalTerm.parseString('(empty)')[0],
 			('functionalterm', {'name': 'empty', 'terms': []}))
 		ft1 = '(test 1 "2" "long and complicated" (set 0 1 2))'
 		self.assertEqual(
-			self.p.FunctionalTerm.parseString(ft1).asList()[0],
+			self.p.FunctionalTerm.parseString(ft1)[0],
 			('functionalterm', {'name': 'test', 'terms': [1, '2', 'long and complicated', [0,1,2]]}))
 		self.assertEqual(
-			self.p.FunctionalTerm.parseString('(param :name test :value 1)').asList()[0],
+			self.p.FunctionalTerm.parseString('(param :name test :value 1)')[0],
 			('functionalterm', {'name': 'param', 'terms': {'name': 'test', 'value': 1}}))
 
 	def test_ActionExpression(self):
 		self.assertEqual(
-			self.p.ActionExpression.parseString('(action agent1 term)').asList()[0],
+			self.p.ActionExpression.parseString('(action agent1 term)')[0],
 			('action', {'agent': 'agent1', 'term': 'term'}))
 		self.assertEqual(
-			self.p.ActionExpression.parseString('(action agent23 (set "a b c" 3))').asList()[0],
+			self.p.ActionExpression.parseString('(action agent23 (set "a b c" 3))')[0],
 			('action', {'agent': 'agent23', 'term': ['a b c', 3]}))
 
 	def test_Term(self):
@@ -282,47 +271,47 @@ class TestFP0Parser(unittest.TestCase):
 		self.helper_test_Sequence_Set(self.p.Term, 'set')
 		# Term can be a FunctionalTerm
 		self.assertEqual(
-			self.p.Term.parseString('(test 1 "2" "long and complicated" (set 0 1 2))').asList()[0],
+			self.p.Term.parseString('(test 1 "2" "long and complicated" (set 0 1 2))')[0],
 			('functionalterm', {'name': 'test', 'terms': [1, '2', 'long and complicated', [0,1,2]]}))
 		# Term can be a ActionExpression
 		# this seems to be ambiguous, thus there is no defined way for our
 		# parser to handle this
 		self.assertEqual(
-			self.p.Term.parseString('(action agent1 term)').asList()[0],
+			self.p.Term.parseString('(action agent1 term)')[0],
 			('action', {'agent': 'agent1', 'term': 'term'}))
 		self.assertEqual(
-			self.p.Term.parseString('(action agent23 (set "a b c" 3))').asList()[0],
+			self.p.Term.parseString('(action agent23 (set "a b c" 3))')[0],
 			('action', {'agent': 'agent23', 'term': ['a b c', 3]}))
 
 	def test_AtomicFormula(self):
-		self.assertEqual(self.p.AtomicFormula.parseString('true').asList()[0],
+		self.assertEqual(self.p.AtomicFormula.parseString('true')[0],
 			('atomicformula', True))
-		self.assertEqual(self.p.AtomicFormula.parseString('false').asList()[0],
+		self.assertEqual(self.p.AtomicFormula.parseString('false')[0],
 			('atomicformula', False))
 		self.assertEqual(
-			self.p.AtomicFormula.parseString('(result 1 2)').asList()[0],
+			self.p.AtomicFormula.parseString('(result 1 2)')[0],
 			('atomicformula', 'result', 1, 2) )
 		self.assertEqual(
-			self.p.AtomicFormula.parseString('(result 1 (set 3 4 5))').asList()[0],
+			self.p.AtomicFormula.parseString('(result 1 (set 3 4 5))')[0],
 			('atomicformula', 'result', 1, [3, 4, 5]))
 		self.assertEqual(
 			self.p.AtomicFormula.parseString(
-			'("some string that is not result" 1 (set 3 4 5))').asList()[0],
+			'("some string that is not result" 1 (set 3 4 5))')[0],
 			('atomicformula', 'some string that is not result', [1, [3, 4, 5]]))
 
 	def test_Wff(self):
 		self.assertEqual(
 			self.p.Wff.parseString(
-			'("some string that is not result" 1 (set 3 4 5))').asList()[0],
+			'("some string that is not result" 1 (set 3 4 5))')[0],
 			('atomicformula', 'some string that is not result', [1, [3, 4, 5]]))
 		self.assertEqual(
 			self.p.Wff.parseString(
-			'(done (action agent1 test))').asList()[0],
+			'(done (action agent1 test))')[0],
 			('done', ('action', {'agent': 'agent1', 'term': 'test'})))
 
 	def test_Content(self):
 		c0 = '((action (agent-identifier :name test :addresses (sequence http://localhost:9000)) (get-description)))'
-		action = self.p.parse_content(c0).asList()[0]
+		action = self.p.parse_content(c0)[0]
 		self.assertEqual(action[0], 'action')
 		agent = action[1]['agent']
 		self.assertEqual(agent[1]['name'], 'agent-identifier')
@@ -334,8 +323,7 @@ class TestFP0Parser(unittest.TestCase):
 
 		# parsing this takes way too long...
 		c1 = '((result (action (agent-identifier :name ams@192.168.122.1:1099/JADE :addresses (sequence http://ip2-127.halifax.rwth-aachen.de:7778/acc)) (get-description)) (sequence (ap-description :name "\\"192.168.122.1:1099/JADE\\"" :ap-services (sequence (ap-service :name fipa.mts.mtp.http.std :type fipa.mts.mtp.http.std :addresses (sequence http://ip2-127.halifax.rwth-aachen.de:7778/acc)))))))'
-		result = self.p.parse_content(c1).asList()[0]
-
+		result = self.p.parse_content(c1)[0]
 
 if __name__ == "__main__":
 	unittest.main()
