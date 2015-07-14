@@ -113,6 +113,11 @@ class Test(unittest.TestCase):
 		self.assertEqual(oo3.parseString("list")[0], "LIST")
 		self.assertEqual(oo3.parseString("int")[0], "INT")
 
+	def test_Or_in_And(self):
+		oa0 = Suppress('?') + Or(['hello', 'world'])
+		self.assertEqual(oa0.parseString("?hello")[0], "hello")
+		self.assertEqual(oa0.parseString("?world")[0], "world")
+
 	def test_ZeroOrMore(self):
 		zom0 = ZeroOrMore(Regex(r'[0-9]+'))
 		self.assertEqual(len(zom0.parseString("hello")), 0)
