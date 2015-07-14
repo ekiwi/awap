@@ -34,10 +34,19 @@ class Test(unittest.TestCase):
 		self.assertEqual(len(ll.parseString("hello")), 0)
 		self.assertRaises(ParseException, ll.parseString, "not hello")
 
+	def parse_StringLiteral(self, source, location, tokens):
+		tok = tokens[0][1:-1]
+		tok = tok.replace('\\"', '"')
+		return tok
+
 	def test_Regex(self):
 		rr0 = Regex(r'[0-9]{4}')
 		self.assertEqual(rr0.parseString("0123")[0], "0123")
 		self.assertRaises(ParseException, rr0.parseString, "hello")
+		StringLiteral = Regex(r'"(?:(?:\\")|[^"])+"')
+		StringLiteral.setParseAction(self.parse_StringLiteral)
+		self.assertEqual(StringLiteral.parseString('"String"')[0], 'String')
+		self.assertEqual(StringLiteral.parseString('"str\\"ing"')[0], 'str"ing')
 
 	def parse_DateTime(self, source, location, tokens):
 		tok = tokens[0]
