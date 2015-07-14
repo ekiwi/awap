@@ -16,14 +16,18 @@ class ParseException(Exception):
 class Element(object):
 	def __init__(self, suppress=False):
 		self.endpos = 0
-		self.parse_actions = [self._defaultParseAction]
+		self._parse_actions = [self._defaultParseAction]
 		self._suppress = suppress
 
 	def getRegexString(self):
 		return None
 
 	def setParseAction(self, callback):
-		self.parse_actions = [callback]
+		self._parse_actions = [callback]
+
+	@property
+	def parse_actions(self):
+		return self._parse_actions
 
 	def _defaultParseAction(self, source, pos, tockens):
 		return tockens
@@ -41,7 +45,7 @@ class RawRegex(Element):
 		self._compiled_re = None
 		self._string = string
 		if parse_actions is not None:
-			self.parse_actions = parse_actions
+			self._parse_actions = parse_actions
 
 	def getRegexString(self):
 		return self._string
@@ -53,12 +57,15 @@ class RawRegex(Element):
 		if m:
 			self.endpos = m.end(0)
 			res_list = list(m.groups())
-			if len(res_list) != len(self.parse_actions):
+			if len(res_list) != len(self._parse_actions):
 				# this is NOT a ParseException, since it should never happen
 				raise Exception("Error: number of results ({}) is ".format(len(res_list)) +
-					"not equal to the number of parse_actions ({})".format(len(self.parse_actions)))
+					"not equal to the number of parse_actions ({})".format(len(self._parse_actions)) +
+					'\nresults:      {}'.format(res_list) +
+					'\nparse_actions: {}'.format(self._parse_actions) +
+					'\n@ pos:{} => "{}"'.format(pos, string[pos:]))
 			results = []
-			for (result, parse_action) in zip(res_list, self.parse_actions):
+			for (result, parse_action) in zip(res_list, self._parse_actions):
 				if result:
 					# Since this is a simple regex, the result will always be
 					# a simple string, directly from python `re` module.
@@ -77,11 +84,17 @@ class RawRegex(Element):
 		else:
 			raise ParseException("Failed to find `{}` @:\n`{}`".format(self.getRegexString(), string[pos:]))
 
+	def __str__(self):
+		return '{}({})'.format(self.__class__.__name__, str(self._string))
+
+	def __repr__(self):
+		return '{}({})'.format(self.__class__.__name__, str(self._string))
+
 class Regex(RawRegex):
 	def __init__(self, string, suppress=False):
 		super().__init__(string, None, suppress)
 		if self._suppress:
-			self.parse_actions = []
+			self._parse_actions = []
 
 	def getRegexString(self):
 		if self._suppress:
@@ -100,7 +113,7 @@ class CaselessKeyword(Regex):
 		string = re.escape(string)
 		regex = ''.join(['[{}{}]'.format(c.upper(), c.lower()) for c in string])
 		super().__init__(regex, suppress)
-		self.parse_actions = [self.returnKeyword]
+		self._parse_actions = [self.returnKeyword]
 		self._keyword = string
 
 	def returnKeyword(self, source, pos, tockens):
@@ -126,13 +139,24 @@ class MultiElement(Element):
 	def compressElements(self, elements):
 		raise Exception("Abstract method MultiElement::compressElements must be overwritten.")
 
-	def getRegexString(self):
-		elements = self.compressedElements
+	def _can_simplify_to_regex(self):
 		# only if we can compress to one element and if this MultiElement,
 		# does not have a custom parse_action, can we simplify this
 		# into a simple regex
-		if len(elements) == 1 and self.parse_actions[0] != self._defaultParseAction:
-			return elements[0].getRegexString()
+		# print(self._elements)
+		# print(len(elements) == 1, self._parse_actions[0] == self._defaultParseAction)
+		return len(self.compressedElements) == 1 and self._parse_actions[0] == self._defaultParseAction
+
+	@property
+	def parse_actions(self):
+		if self._can_simplify_to_regex():
+			return self.compressedElements[0].parse_actions
+		else:
+			return self._parse_actions
+
+	def getRegexString(self):
+		if self._can_simplify_to_regex():
+			return self.compressedElements[0].getRegexString()
 		else:
 			return None
 
@@ -140,7 +164,7 @@ class MultiElement(Element):
 		""" Convenience function that runs results through the parse_action
 			and tries to mimic pyparsing behavior.
 		"""
-		parsed = self.parse_actions[0](string, pos, results)
+		parsed = self._parse_actions[0](string, pos, results)
 		# Unpack parsed according to some rules observed with
 		# pyparsing:
 		if parsed is None:
@@ -149,6 +173,12 @@ class MultiElement(Element):
 			return parsed
 		else:
 			return [parsed]
+
+	def __str__(self):
+		return '{}({})'.format(self.__class__.__name__, str(self.compressedElements))
+
+	def __repr__(self):
+		return '{}({})'.format(self.__class__.__name__, str(self.compressedElements))
 
 class And(MultiElement):
 	def __init__(self, elements, suppress=False):
@@ -189,6 +219,14 @@ class And(MultiElement):
 			return []
 		else:
 			return self._parseResults(string, pos, results)
+
+#	def __add__(self, other):
+#		if self._parse_actions[0] != self._defaultParseAction:
+#			self._compressed_elements = None
+#			self._elements.append(other)
+#			return self
+#		else:
+#			return And([self, other])
 
 class Or(MultiElement):
 	def __init__(self, elements, suppress=False):
