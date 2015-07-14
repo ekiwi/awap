@@ -220,13 +220,14 @@ class And(MultiElement):
 		else:
 			return self._parseResults(string, pos, results)
 
-#	def __add__(self, other):
-#		if self._parse_actions[0] != self._defaultParseAction:
-#			self._compressed_elements = None
-#			self._elements.append(other)
-#			return self
-#		else:
-#			return And([self, other])
+	def __add__(self, other):
+		# check if there are any specific settings
+		if self._parse_actions[0] == self._defaultParseAction and not self._suppress:
+			self._compressed_elements = None
+			self._elements.append(other)
+			return self
+		else:
+			return And([self, other])
 
 class Or(MultiElement):
 	def __init__(self, elements, suppress=False):
