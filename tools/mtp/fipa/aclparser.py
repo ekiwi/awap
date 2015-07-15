@@ -4,7 +4,7 @@
 import unittest
 import datetime
 import re
-from fasterparsing import Regex, ParseException, Or, Literal, Optional, ZeroOrMore, Suppress, CaselessKeyword
+from fasterparsing import Regex, ParseException, Or, Literal, Optional, ZeroOrMore, Suppress, CaselessKeyword, Group
 
 class ObjectFactory(object):
 	def create_int(self, value):
@@ -77,7 +77,7 @@ class ACLParser(ACLLexicalDefinitionsParser):
 			self.URLSequence) + Suppress(")"))
 		self.AgentIdentifier.setParseAction(self.parse_AgentIdentifier)
 
-		self.AgentIdentifierSet = (
+		self.AgentIdentifierSet = Group(
 			Suppress("(") + Suppress("set") + ZeroOrMore(self.AgentIdentifier) + Suppress(")"))
 
 		self.Expression = Or([self.DateTime, self.Number, self.Word, self.String])
