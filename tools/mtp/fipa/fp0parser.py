@@ -13,7 +13,7 @@ http://www.fipa.org/specs/fipa00008/SC00008I.html
 import unittest
 import datetime
 
-import .aclparser
+from . import aclparser
 from .fasterparsing import Regex, ParseException, Or, Literal, ZeroOrMore, Suppress, Forward, OneOrMore, Group
 
 class ObjectFactory(aclparser.ObjectFactory):

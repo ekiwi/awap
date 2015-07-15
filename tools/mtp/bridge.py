@@ -14,5 +14,5 @@ if __name__ == "__main__":
 	jade_url = sys.argv[1]
 	mtp = MTP("http://localhost:9000/acc")
 	ams = AMS("awap", mtp)
-	ams.discover_ams(AgentIdentifier("ams@192.168.122.1:1099/JADE", jade_url))
+	ams.discover_agents(AgentIdentifier("ams@192.168.122.1:1099/JADE", jade_url))
 
