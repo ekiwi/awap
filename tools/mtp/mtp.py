@@ -4,7 +4,7 @@
 # mtp.py
 
 import http.client
-import queue, threading, re
+import queue, threading, re, sys
 from fipa import ACLMessage, ACLEnvelope, Performative, AgentIdentifier
 
 from http.server import HTTPServer, BaseHTTPRequestHandler
@@ -196,11 +196,15 @@ class ACLCommunicator(object):
 		return msg
 
 if __name__ == "__main__":
+	if len(sys.argv) < 2:
+		print("Use: {} JADE_URL".format(sys.argv[0]))
+		sys.exit(1)
+	jade_url = sys.argv[1]
 	mtp = MTP("http://localhost:9000/acc")
 	ams = ACLCommunicator("ams@awap", mtp)
-	rec = AgentIdentifier("ams@192.168.122.1:1099/JADE", "http://ip2-127.halifax.rwth-aachen.de:7778/acc")
+	rec = AgentIdentifier("ams@192.168.122.1:1099/JADE", jade_url)
 	acl_msg = ams.create_msg(Performative.REQUEST, rec)
-	acl_msg.content = '((action (agent-identifier :name ams@192.168.122.1:1099/JADE :addresses (sequence http://ip2-127.halifax.rwth-aachen.de:7778/acc)) (get-description)))'
+	acl_msg.content = '((action (agent-identifier :name ams@192.168.122.1:1099/JADE :addresses (sequence {})) (get-description)))'.format(jade_url)
 	acl_msg.language = "fipa-sl0"
 	acl_msg.ontology = "FIPA-Agent-Management"
 	acl_msg.protocol = "fipa-request"
