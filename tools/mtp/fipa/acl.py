@@ -201,18 +201,18 @@ class ACLMessage(object):
 		return a
 
 	def parse_string_message(self, message):
-		msg = self.parser.parse_message(message)
+		msg = self.parser.parse_message(message)[0]
 		self.performative = Performative[msg['performative'].replace('-','_')]
 		for param in self.parser.MessageParameterNames:
 			if param in msg:
 				if param == 'sender':
-					self.sender = AgentIdentifier(msg['sender'][0]['name'], msg['sender'][0]['addresses'])
+					self.sender = AgentIdentifier(msg['sender']['name'], msg['sender']['addresses'])
 				elif param == 'receiver':
 					self.receiver = [
 						AgentIdentifier(rr['name'], rr['addresses'])
 						for rr in msg['receiver']]
 				else:
-					setattr(self, param.replace('-', '_'), msg[param][0])
+					setattr(self, param.replace('-', '_'), msg[param])
 
 	def __str__(self):
 		# make sure sender is not a list
