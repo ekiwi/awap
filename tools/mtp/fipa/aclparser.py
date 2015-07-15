@@ -4,7 +4,7 @@
 import unittest
 import datetime
 import re
-from fasterparsing import Regex, ParseException, Or, Literal, Optional, ZeroOrMore, Suppress, CaselessKeyword, Group
+from .fasterparsing import Regex, ParseException, Or, Literal, Optional, ZeroOrMore, Suppress, CaselessKeyword, Group
 
 class ObjectFactory(object):
 	def create_int(self, value):

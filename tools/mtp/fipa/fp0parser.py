@@ -13,12 +13,8 @@ http://www.fipa.org/specs/fipa00008/SC00008I.html
 import unittest
 import datetime
 
-if __name__ == "__main__":
-	import aclparser
-else:
-	from . import aclparser
-
-from fasterparsing import Regex, ParseException, Or, Literal, ZeroOrMore, Suppress, Forward, OneOrMore, Group
+import .aclparser
+from .fasterparsing import Regex, ParseException, Or, Literal, ZeroOrMore, Suppress, Forward, OneOrMore, Group
 
 class ObjectFactory(aclparser.ObjectFactory):
 	def _terms_to_list_or_dict(self, terms):
