@@ -71,6 +71,9 @@ class AgentIdentifier(object):
 		s += '))'
 		return s
 
+	def __repr__(self):
+		return str(self)
+
 	def isempty(self):
 		return self.name is None
 

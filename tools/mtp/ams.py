@@ -4,14 +4,40 @@
 # ams.py
 
 from mtp import MTP, ACLCommunicator, AgentIdentifier, Performative
-from fipa import FP0Parser
+from fipa import FP0Parser, FP0ObjectFactory
+
+
+class CustomFP0ObjectFactory(FP0ObjectFactory):
+	def create_FunctionalTerm(self, name, terms):
+		if name == 'agent-identifier':
+			(id_name, id_addresses) = (None, [])
+			for term in terms:
+				if term[0] == 'name': id_name = term[1]
+				elif term[0] == 'addresses': id_addresses = term[1]
+			if id_name:
+				return AgentIdentifier(id_name, id_addresses)
+		terms = self._terms_to_list_or_dict(terms)
+		return (name, terms)
+
+	def create_AtomicFormula(self, tokens):
+		if len(tokens) == 1 and tokens[0] == 'true':
+			return True
+		elif len(tokens) == 1 and tokens[0] == 'false':
+			return False
+		elif len(tokens) == 1:
+			return str(tokens[0])
+		elif tokens[0] == 'result':
+			return ('result', tokens[1], tokens[2])
+		else:
+			terms = tokens[1:]
+			return (str(tokens[0]), terms)
 
 
 class AMS(ACLCommunicator):
 	def __init__(self, platform_name, mtp):
 		self.platform_name = platform_name
 		super().__init__('ams@{}'.format(self.platform_name), mtp)
-		self.parser = FP0Parser()
+		self.parser = FP0Parser(CustomFP0ObjectFactory())
 
 	def create_msg(self, performative, receiver=None):
 		msg = super().create_msg(performative, receiver)
@@ -56,4 +82,13 @@ class AMS(ACLCommunicator):
 		res = self.parser.parse_content(answer.content)
 		print(res)
 		print("--------------------------------------")
-		print(res[0][2])
+		for desc in res[0][2]:
+			if desc[0] == 'ams-agent-description':
+				print('Found Agent: {}'.format(desc[1]))
+				state = desc[1]['state']
+
+
+
+
+
+
