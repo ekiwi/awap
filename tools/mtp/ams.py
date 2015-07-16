@@ -54,18 +54,16 @@ class AMS(ACLCommunicator):
 		if answer.performative != Performative.INFORM:
 			print("ERROR: Unexpected answer:\n{}".format(answer))
 			return
-		print("AMS: received answer")
-		print(answer.content)
 		res = self.parser.parse_content(answer.content)
-		ap_description = res[0][3][0][1]
-		if ap_description['name'] != 'ap-description':
+		ap_description = res[0][2][0]
+		if ap_description[0] != 'ap-description':
 			print('ERROR: was not able to find ap-description in `{}`'.format(res))
 			return
-		print("AP Name: ".format(ap_description['terms']['name']))
-		for service in ap_description['terms']['ap-services']:
-			s_name = service[1]['terms']['name']
-			s_type = service[1]['terms']['type']
-			s_addresses = service[1]['terms']['addresses']
+		print("AP Name: ".format(ap_description[1]['name']))
+		for service in ap_description[1]['ap-services']:
+			s_name = service[1]['name']
+			s_type = service[1]['type']
+			s_addresses = service[1]['addresses']
 			print("Found service: {}({}) @ {}".format(s_name, s_type, s_addresses))
 
 	def discover_agents(self, foreign_ams_id):
