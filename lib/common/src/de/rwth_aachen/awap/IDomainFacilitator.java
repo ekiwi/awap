@@ -1,5 +1,7 @@
 package de.rwth_aachen.awap;
 
+import de.rwth_aachen.awap.properties.Property;
+
 /**
  * Interface for a very minimal Domain Facilitator implementation.
  * Probably NOT FIPA compliant.
@@ -19,8 +21,7 @@ public interface IDomainFacilitator {
 	 * @return            node local id that identifies the service and
 	 *                    can be used to later remove it
 	 */
-	// TODO: use correct type for properties
-	public byte registerService(byte serviceType, byte[] properties);
+	public byte registerService(byte serviceType, Property[] properties);
 
 	/**
 	 * Deregister a service, that was registered with the `registerService` method.
@@ -43,8 +44,7 @@ public interface IDomainFacilitator {
 	 *                    and can be used to later remove it
 	 */
 	public byte installServiceListener(IServiceListener listener,
-			byte serviceType, byte[] properties);
-
+			byte serviceType, Property[] properties);
 	/**
 	 * Unregisters a service listener that was installed with the
 	 * `installServiceListener` method
