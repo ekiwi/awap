@@ -23,11 +23,11 @@ public interface IDomainFacilitator {
 	public byte registerService(byte serviceType, byte[] properties);
 
 	/**
-	 * Remove a service, that was registered with the `registerService` method.
+	 * Deregister a service, that was registered with the `registerService` method.
 	 * @param serviceId id returned by the `registerService` method
 	 * @return          `true` if remove was successful
 	 */
-	public boolean removeService(byte serviceId);
+	public boolean deregisterService(byte serviceId);
 
 	/**
 	 * Register a service listener with the Domain Facilitator
