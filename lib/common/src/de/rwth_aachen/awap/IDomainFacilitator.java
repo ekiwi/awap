@@ -34,11 +34,23 @@ public interface IDomainFacilitator {
 	 *
 	 * The callback function will be called when a service, that fits the
 	 * description, is found.
+	 * Fitting services, that are already known to the DF will trigger events
+	 * just like the insertion or removal of a fitting service.
 	 * @param listener    reference to an object that implements the callback
-	 * @param serviceType
-	 * @param properties
-	 * @return
+	 * @param serviceType service type constant
+	 * @param properties  array of properties that need to match
+	 * @return            node local id that identifies the service listener
+	 *                    and can be used to later remove it
 	 */
 	public byte installServiceListener(IServiceListener listener,
 			byte serviceType, byte[] properties);
+
+	/**
+	 * Unregisters a service listener that was installed with the
+	 * `installServiceListener` method
+	 * @param listenerId id returned by the `installServiceListener` method
+	 * @return           `true` if uninstall was successful
+	 */
+	// TODO: should this trigger a service removed event to be handed to the listener?
+	public boolean uninstallServiceListener(byte listenerId);
 }
