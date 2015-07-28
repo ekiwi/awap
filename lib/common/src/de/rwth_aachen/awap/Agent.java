@@ -1,15 +1,24 @@
 package de.rwth_aachen.awap;
 
-public class Agent {
+public abstract class Agent {
 	private byte id;
-	private IDomainFacilitator df;
+	protected IDomainFacilitator df;
 
 	public Agent(byte id, IDomainFacilitator df) {
 		this.id = id;
 		this.df = df;
 	}
 
-	public byte getId() {
+	protected byte getId() {
 		return id;
 	}
+
+	/**
+	 * This method is called when the agent is installed on a node.
+	 */
+	public abstract void setup();
+	/**
+	 * This method is called when the platform is about to shut down.
+	 */
+	public abstract void tearDown();
 }
