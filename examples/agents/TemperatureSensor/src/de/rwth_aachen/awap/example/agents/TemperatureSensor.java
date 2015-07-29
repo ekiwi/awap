@@ -1,4 +1,4 @@
-package de.rwth_aachen.awap.agents.temp_sensor;
+package de.rwth_aachen.awap.example.agents;
 
 import java.util.ArrayList;
 
