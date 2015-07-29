@@ -1,0 +1,23 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<awap version="1.0">
+
+<!-- imports values from common.xml in this modules namespace -->
+<import module="common" as="" />
+
+<service name="TemperatureService">
+	<!-- This defines the service interface that can be used by other agents -->
+	<messages max-id="7">
+		<message name="Subscribe"   direction="rx" performative="SUBSCRIBE" id="0" />
+		<message name="Unsubscribe" direction="rx" performative="SUBSCRIBE" id="1" />
+		<message name="Temperature" direction="tx" performative="INFORM"    id="2">
+			<int name="value" size="">
+		</message>
+	</messages>
+	<!-- This will be used by the DF in order to diferentiate different services of the same kind -->
+	<properties max-id="3">
+		<property name="Building"      type="Building"      id="0" />
+		<property name="SupplyCircuit" type="SupplyCircuit" id="1" />
+		<property name="Room"          type="Room"          id="2" />
+	</properties>
+</service>
+</awap>
