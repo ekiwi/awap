@@ -16,19 +16,17 @@ import de.rwth_aachen.awap.properties.Property;
 public interface IDomainFacilitator {
 	/**
 	 * Register a service with the Domain Facilitator
-	 * @param serviceType service type constant
-	 * @param properties  array of properties
-	 * @return            node local id that identifies the service and
-	 *                    can be used to later remove it
+	 * @param service service instance
+	 * @return        `true` if registration was successful
 	 */
-	public byte registerService(byte serviceType, Property[] properties);
+	public boolean registerService(Service service);
 
 	/**
 	 * Deregister a service, that was registered with the `registerService` method.
-	 * @param serviceId id returned by the `registerService` method
-	 * @return          `true` if remove was successful
+	 * @param service service instance
+	 * @return        `true` if remove was successful
 	 */
-	public boolean deregisterService(byte serviceId);
+	public boolean deregisterService(Service service);
 
 	/**
 	 * Register a service listener with the Domain Facilitator

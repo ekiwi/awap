@@ -17,8 +17,8 @@ public abstract class AbstractTemperatureService extends Service {
 	}
 	public abstract void onReceiveSubscribe(RemoteAgent sender);
 	public abstract void onReceiveUnsubscribe(RemoteAgent sender);
-	public abstract void onFailedToSendTemperature(RemoteAgent receiver, float value);
-	public void sendTemperature(RemoteAgent receiver, float value) {
+	public abstract void onFailedToSendTemperature(RemoteAgent receiver, int value);
+	public void sendTemperature(RemoteAgent receiver, int value) {
 		// TODO: generate message and dispatch
 	}
 }
