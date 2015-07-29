@@ -1,14 +1,17 @@
 package de.rwth_aachen.awap.agents.temp_sensor;
 
+import java.util.ArrayList;
+
 import de.rwth_aachen.awap.Agent;
 import de.rwth_aachen.awap.IDomainFacilitator;
+import de.rwth_aachen.awap.RemoteAgent;
 import de.rwth_aachen.awap.enums.Building;
-import de.rwth_aachen.awap.enums.ServiceType;
-import de.rwth_aachen.awap.properties.PBuilding;
-import de.rwth_aachen.awap.properties.Property;
+import de.rwth_aachen.awap.enums.Room;
+import de.rwth_aachen.awap.enums.SupplyCircuit;
+import de.rwth_aachen.awap.service.AbstractTemperatureService;
 
 public class TemperatureSensor extends Agent {
-	private byte temperatureServiceId;
+	private TemperatureService temperatureService;
 
 
 	public TemperatureSensor(byte id, IDomainFacilitator df) {
@@ -17,12 +20,36 @@ public class TemperatureSensor extends Agent {
 
 
 	public void setup(){
-		Property[] props = { new PBuilding(Building.Build1) };
-		this. temperatureServiceId =
-				this.df.registerService(ServiceType.SensorTempAgent, props);
+		this.temperatureService = new TemperatureService();
 	}
 
 	public void tearDown() {
-		this.df.deregisterService(this.temperatureServiceId);
+
+	}
+
+	private class TemperatureService extends AbstractTemperatureService {
+		public TemperatureService() {
+			super(TemperatureSensor.this, Building.Build1, SupplyCircuit.SC1, Room.R1);
+		}
+
+		private ArrayList<RemoteAgent> subscribers;
+
+		public void onReceiveSubscribe(RemoteAgent sender) {
+			if(!this.subscribers.contains(sender)) {
+				this.subscribers.add(sender);
+			}
+		}
+
+		public void onReceiveUnsubscribe(RemoteAgent sender) {
+			if(this.subscribers.contains(sender)){
+				this.subscribers.remove(sender);
+			}
+		}
+
+		public void onFailedToSendTemperature(RemoteAgent receiver, float value) {
+			// FIXME: give up after x tries
+			this.sendTemperature(receiver, value);
+		}
+
 	}
 }
