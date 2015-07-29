@@ -1,0 +1,12 @@
+# SConscript
+#
+# Copyright (c) 2015 Kevin Laeufer <kevin.laeufer@rwth-aachen.de>
+
+
+Import('env')
+
+base_lib = SConscript([env['OFT_ROOT'] + '/lib/base/SConscript'], exports = 'env')
+
+common = env.OstfriesenteeLibrary('common', ['src'], OFT_LIBS=['base'])
+
+Return('common')

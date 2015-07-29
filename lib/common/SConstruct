@@ -1,0 +1,13 @@
+# SConstruct
+#
+# Copyright (c) 2015 Kevin Laeufer <kevin.laeufer@rwth-aachen.de>
+
+
+import os
+
+env = Environment(toolpath = [os.path.join('..', '..', 'ext', 'ostfriesentee', 'scons')], tools = ['default', 'ostfriesentee'])
+
+env.Architecture("amd64")
+lib = SConscript(['SConscript'], exports = 'env')
+
+env.Default(lib)
