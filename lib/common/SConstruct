@@ -10,4 +10,6 @@ env = Environment(toolpath = [os.path.join('..', '..', 'ext', 'ostfriesentee', '
 env.Architecture("amd64")
 lib = SConscript(['SConscript'], exports = 'env')
 
-env.Default(lib)
+lib_size = env.ShowSize(lib)
+
+env.Default(lib_size)
