@@ -1,5 +1,5 @@
 <?xml version="1.0" encoding="UTF-8" ?>
-<awap version="1.0">
+<awap-ontology version="1.0" module="service.temperature">
 
 <!-- imports values from common.xml in this modules namespace -->
 <import module="common" as="" />
@@ -20,4 +20,4 @@
 		<property name="Room"          type="Room"          id="2" />
 	</properties>
 </service>
-</awap>
+</awap-ontology>

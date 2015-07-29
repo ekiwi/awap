@@ -37,6 +37,8 @@ public class TemperatureSensor extends Agent {
 		public void onReceiveSubscribe(RemoteAgent sender) {
 			if(!this.subscribers.contains(sender)) {
 				this.subscribers.add(sender);
+				// send temperature to new subscriber
+				this.sendTemperature(sender, 1337);
 			}
 		}
 
@@ -46,7 +48,7 @@ public class TemperatureSensor extends Agent {
 			}
 		}
 
-		public void onFailedToSendTemperature(RemoteAgent receiver, float value) {
+		public void onFailedToSendTemperature(RemoteAgent receiver, int value) {
 			// FIXME: give up after x tries
 			this.sendTemperature(receiver, value);
 		}
