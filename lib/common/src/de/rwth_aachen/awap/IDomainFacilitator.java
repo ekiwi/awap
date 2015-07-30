@@ -1,7 +1,5 @@
 package de.rwth_aachen.awap;
 
-import de.rwth_aachen.awap.properties.Property;
-
 /**
  * Interface for a very minimal Domain Facilitator implementation.
  * Probably NOT FIPA compliant.
