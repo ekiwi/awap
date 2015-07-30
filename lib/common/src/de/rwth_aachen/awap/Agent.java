@@ -1,7 +1,10 @@
 package de.rwth_aachen.awap;
 
+import java.util.ArrayList;
+
 public abstract class Agent {
 	private byte id;
+	private ArrayList<Service> services;
 	protected IDomainFacilitator df;
 
 	public Agent(byte id, IDomainFacilitator df) {
@@ -13,6 +16,15 @@ public abstract class Agent {
 		return id;
 	}
 
+	protected boolean registerService(Service service) {
+		if(this.df.registerService(service)) {
+			this.services.add(service);
+			return true;
+		} else {
+			return false;
+		}
+	}
+
 	/**
 	 * This method is called when the agent is installed on a node.
 	 */
@@ -20,5 +32,9 @@ public abstract class Agent {
 	/**
 	 * This method is called when the platform is about to shut down.
 	 */
-	public abstract void tearDown();
+	public void tearDown() {
+		for(Service service : this.services) {
+			this.df.deregisterService(service);
+		}
+	}
 }

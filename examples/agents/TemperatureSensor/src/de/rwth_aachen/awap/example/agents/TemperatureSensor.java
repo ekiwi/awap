@@ -11,20 +11,13 @@ import de.rwth_aachen.awap.enums.SupplyCircuit;
 import de.rwth_aachen.awap.service.AbstractTemperatureService;
 
 public class TemperatureSensor extends Agent {
-	private TemperatureService temperatureService;
-
-
 	public TemperatureSensor(byte id, IDomainFacilitator df) {
 		super(id, df);
 	}
 
-
 	public void setup(){
-		this.temperatureService = new TemperatureService();
-	}
-
-	public void tearDown() {
-
+		// initialize services
+		this.registerService(new TemperatureService());
 	}
 
 	private class TemperatureService extends AbstractTemperatureService {

@@ -10,7 +10,6 @@ public abstract class AbstractTemperatureService extends Service {
 	protected byte room;
 	public AbstractTemperatureService(Agent parent, byte building, byte supplyCircuit, byte room) {
 		super(parent);
-		// TODO: instead of setting protected values => register with df
 		this.building = building;
 		this.supplyCircuit = supplyCircuit;
 		this.room = room;
