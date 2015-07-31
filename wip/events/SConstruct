@@ -1,4 +1,4 @@
-env = Environment(toolpath = ['../ext/ostfriesentee/scons'], tools = ['default', 'oft_java'])
+env = Environment(toolpath = ['../../ext/ostfriesentee/scons'], tools = ['default', 'oft_java'])
 env.Append(JAVACFLAGS = ['-encoding', 'utf8', '-Xlint:deprecation', '-Xlint:unchecked'])
 
 # add dependencies here
