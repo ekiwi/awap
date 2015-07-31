@@ -38,9 +38,22 @@ class Service(object):
 		self.propterties = []
 		self.parse(self.module, self.ee)
 
+	def _determine_max_id(self, mod, ee, max_id_found):
+		max_id = ee.get("max-id")
+		size = ee.get("size")
+		mod.passert(ee, max_id is not None or size is not None,
+			"You need to define either a size or a max-id for reasons of backwards compatibility. " +
+			'e.g. <{} max-id="{}" />'.format(ee.tag, max_id_found))
+		if size 
+
 	def parse(self, mod, ee):
 		mod.passert_singleton(ee, "messages")
 		messages = ee.find("messages")
+		for msg_ee in messages:
+			self.messages.append(Message(mod, self, msg_ee))
+		max_id_found = max([msg.id for msg in self.messages])
+		self.max_message_id = self._determine_max_id(mod, messages, max_id_found)
+
 		mod.passert_singleton(ee, "properties")
 		properties = ee.find("messages")
 
@@ -48,10 +61,10 @@ class Service(object):
 
 class Message(object):
 	def __init__(self, mod, service, ee):
-		
 		self.ee = ee
 		self.module = mod
 		self.service = service
+		self.id = int(ee.get("id"))
 
 class Import(object):
 	def __init__(self, mod, ee):
@@ -123,6 +136,11 @@ class Module(object):
 	def passert_tagname(self, element, tagname):
 		self.passert(element, element.tag == tagname,
 			"Expected <{} /> found <{} />".format(tagname, element.tag))
+
+	def passert_attribute_exists(self, element, attributename):
+		self.passert(element, element.get(attributename) is not None,
+			"Element <{} /> is missing required attribute `{}`".format(
+				element.tag, attributename))
 
 	def passert_singleton(self, element, childname):
 		children = element.findall(childname)
