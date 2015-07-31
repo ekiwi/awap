@@ -1,5 +1,5 @@
 <?xml version="1.0" encoding="UTF-8" ?>
-<awap-communication version="1.0" module="service.temperature">
+<awap-communication version="0.1" module="service.temperature">
 
 <!-- imports values from common.xml in this modules namespace -->
 <import module="common" as="" />
@@ -10,7 +10,7 @@
 		<message name="Subscribe"   direction="rx" performative="SUBSCRIBE" id="0" />
 		<message name="Unsubscribe" direction="rx" performative="SUBSCRIBE" id="1" />
 		<message name="Temperature" direction="tx" performative="INFORM"    id="2">
-			<int name="value" size="">
+			<int name="value" size="10" />
 		</message>
 	</messages>
 	<!-- This will be used by the DF in order to diferentiate different services of the same kind -->
