@@ -54,12 +54,47 @@
 		<xs:element ref="int"/>
 		<xs:element ref="uint"/>
 	</xs:choice>
-	<!-- TODO: specify valid string values-->
-	<xs:attribute name="direction" use="required" type="xs:NCName"/>
+	<xs:attribute name="direction" use="required">
+		<xs:simpleType>
+		<xs:restriction base="xs:string">
+			<xs:enumeration value="rx"/>
+			<xs:enumeration value="tx"/>
+			<!-- the following mean the same -->
+			<xs:enumeration value="rxtx"/>
+			<xs:enumeration value="txrx"/>
+		</xs:restriction>
+		</xs:simpleType>
+	</xs:attribute>
 	<xs:attribute name="id" use="required" type="xs:integer"/>
 	<xs:attribute name="name" use="required" type="xs:NCName"/>
-	<!-- TODO: specify valid string values-->
-	<xs:attribute name="performative" use="required" type="xs:NCName"/>
+	<xs:attribute name="performative" use="required">
+		<xs:simpleType>
+		<xs:restriction base="xs:string">
+			<xs:enumeration value="ACCEPT-PROPOSAL"/>
+			<xs:enumeration value="AGREE"/>
+			<xs:enumeration value="CANCEL"/>
+			<xs:enumeration value="CFP"/>
+			<xs:enumeration value="CONFIRM"/>
+			<xs:enumeration value="DISCONFIRM"/>
+			<xs:enumeration value="FAILURE"/>
+			<xs:enumeration value="INFORM"/>
+			<xs:enumeration value="INFORM-IF"/>
+			<xs:enumeration value="INFORM-REF"/>
+			<xs:enumeration value="NOT-UNDERSTOOD"/>
+			<xs:enumeration value="PROPOSE"/>
+			<xs:enumeration value="QUERY-IF"/>
+			<xs:enumeration value="QUERY-REF"/>
+			<xs:enumeration value="REFUSE"/>
+			<xs:enumeration value="REJECT-PROPOSAL"/>
+			<xs:enumeration value="REQUEST"/>
+			<xs:enumeration value="REQUEST-WHEN"/>
+			<xs:enumeration value="REQUEST-WHENEVER"/>
+			<xs:enumeration value="SUBSCRIBE"/>
+			<xs:enumeration value="PROXY"/>
+			<xs:enumeration value="PROPAGATE"/>
+		</xs:restriction>
+		</xs:simpleType>
+	</xs:attribute>
 </xs:complexType>
 </xs:element>
 
@@ -123,7 +158,4 @@
 </xs:complexType>
 </xs:element>
 
-
-
 </xs:schema>
-
