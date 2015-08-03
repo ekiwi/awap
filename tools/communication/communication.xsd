@@ -61,8 +61,25 @@
 <xs:complexType>
 	<!-- messages can have a content, but do not need to -->
 	<xs:choice minOccurs="0">
-		<xs:element ref="int"/>
-		<xs:element ref="uint"/>
+		<xs:element name="int">
+			<xs:complexType>
+				<xs:attribute name="name" use="required" type="xs:NCName"/>
+				<xs:attribute name="size" use="required" type="xs:integer"/>
+			</xs:complexType>
+		</xs:element>
+		<xs:element name="uint">
+			<xs:complexType>
+				<xs:attribute name="name" use="required" type="xs:NCName"/>
+				<xs:attribute name="size" use="required" type="xs:integer"/>
+			</xs:complexType>
+		</xs:element>
+		<xs:element name="enum">
+			<xs:complexType>
+				<!-- type will be used as a reference to an enum -->
+				<xs:attribute name="name" use="required" type="xs:NCName"/>
+				<xs:attribute name="type" use="required" type="xs:NCName"/>
+			</xs:complexType>
+		</xs:element>
 	</xs:choice>
 	<xs:attribute name="direction" use="required">
 		<xs:simpleType>
@@ -105,21 +122,6 @@
 		</xs:restriction>
 		</xs:simpleType>
 	</xs:attribute>
-</xs:complexType>
-</xs:element>
-
-<!-- service message content -->
-<xs:element name="int">
-<xs:complexType>
-	<xs:attribute name="name" use="required" type="xs:NCName"/>
-	<xs:attribute name="size" use="required" type="xs:integer"/>
-</xs:complexType>
-</xs:element>
-
-<xs:element name="uint">
-<xs:complexType>
-	<xs:attribute name="name" use="required" type="xs:NCName"/>
-	<xs:attribute name="size" use="required" type="xs:integer"/>
 </xs:complexType>
 </xs:element>
 
