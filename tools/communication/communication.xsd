@@ -45,6 +45,16 @@
 	<xs:attribute name="max-id" use="optional" type="xs:integer"/>
 	<xs:attribute name="size" use="optional" type="xs:integer"/>
 </xs:complexType>
+<!-- Make sure there are no duplicate ids or names. see:
+     http://stackoverflow.com/questions/8801645/how-can-i-specify-a-unique-constraint-for-attributes-using-the-xsunique-as-a -->
+<xs:unique name="MessageId">
+	<xs:selector xpath="message"/>
+	<xs:field xpath="@id"/>
+</xs:unique>
+<xs:unique name="MessageName">
+	<xs:selector xpath="message"/>
+	<xs:field xpath="@name"/>
+</xs:unique>
 </xs:element>
 
 <xs:element name="message">
@@ -125,6 +135,16 @@
 	<xs:attribute name="max-id" use="optional" type="xs:integer"/>
 	<xs:attribute name="size" use="optional" type="xs:integer"/>
 </xs:complexType>
+<!-- Make sure there are no duplicate ids or names. see:
+     http://stackoverflow.com/questions/8801645/how-can-i-specify-a-unique-constraint-for-attributes-using-the-xsunique-as-a -->
+<xs:unique name="PropertyId">
+	<xs:selector xpath="property"/>
+	<xs:field xpath="@id"/>
+</xs:unique>
+<xs:unique name="PropertyName">
+	<xs:selector xpath="property"/>
+	<xs:field xpath="@name"/>
+</xs:unique>
 </xs:element>
 
 <xs:element name="property">
@@ -149,6 +169,16 @@
 	<xs:attribute name="max-id" use="optional" type="xs:integer"/>
 	<xs:attribute name="size" use="optional" type="xs:integer"/>
 </xs:complexType>
+<!-- Make sure there are no duplicate ids or names. see:
+     http://stackoverflow.com/questions/8801645/how-can-i-specify-a-unique-constraint-for-attributes-using-the-xsunique-as-a -->
+<xs:unique name="EnumValueId">
+	<xs:selector xpath="element"/>
+	<xs:field xpath="@id"/>
+</xs:unique>
+<xs:unique name="EnumValueName">
+	<xs:selector xpath="element"/>
+	<xs:field xpath="@name"/>
+</xs:unique>
 </xs:element>
 
 <xs:element name="element">
