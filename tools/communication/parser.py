@@ -83,6 +83,12 @@ class Message(object):
 		self.direction = ee.get("direction")
 		if self.direction == "txrx":
 			self.direction = "rxtx"
+		self.fields = []
+		for field_ee in ee:
+			if field_ee.tag in ['int', 'uint']:
+				self.fields.append(Int(field_ee))
+			elif field_ee.tag in ['enum']:
+				self.fields.append()
 
 class Property(object):
 	def __init__(self, mod, service, ee):
@@ -99,6 +105,13 @@ class Import(object):
 		self.module = mod
 		self.alias = ee.get("as", self.import_module)
 		self.ee = ee
+
+class Int(object):
+	def __init__(self, ee):
+		self.ee = ee
+		self.unsigned = (ee.tag == "uint")
+		self.name = ee.get("name")
+		self.size = ee.get("size")
 
 class Module(object):
 	SchemaSingleton = None
