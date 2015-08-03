@@ -1,32 +1,32 @@
 <?xml version="1.0" encoding="UTF-8" ?>
 <awap-communication version="0.1" module="common">
 
-<enum name="Building" size="4"  elements="16">
-	<element name="Build1" value="0" />
+<enum name="Building" size="4"  max-id="16">
+	<element name="Build1" id="0" />
 </enum>
 
-<enum name="Room" size="8" elements="256">
-	<element name="R1" value="0" />
+<enum name="Room" size="8" max-id="256">
+	<element name="R1" id="0" />
 </enum>
 
-<enum name="SupplyCircuit" size="8" elements="256">
-	<element name="SC1" value="0" />
+<enum name="SupplyCircuit" size="8" max-id="256">
+	<element name="SC1" id="0" />
 </enum>
 
-<enum name="SensorType" size="4" elements="16">
-	<element name="NotSet"   value="0" />
-	<element name="Tflow"    value="1" />
-	<element name="Treturn"  value="2" />
-	<element name="Toutside" value="3" />
-	<element name="Troom"    value="4" />
+<enum name="SensorType" size="4" max-id="16">
+	<element name="NotSet"   id="0" />
+	<element name="Tflow"    id="1" />
+	<element name="Treturn"  id="2" />
+	<element name="Toutside" id="3" />
+	<element name="Troom"    id="4" />
 </enum>
 
-<enum name="ServiceType" size="4" elements="16">
-	<element name="ActorValveAgent"   value="0" />
-	<element name="ComfortAgent"      value="1" />
-	<element name="RoomAgent"         value="2" />
-	<element name="SensorTempAgent"   value="3" />
-	<element name="EnergySupplyAgent" value="4" />
+<enum name="ServiceType" size="4" max-id="16">
+	<element name="ActorValveAgent"   id="0" />
+	<element name="ComfortAgent"      id="1" />
+	<element name="RoomAgent"         id="2" />
+	<element name="SensorTempAgent"   id="3" />
+	<element name="EnergySupplyAgent" id="4" />
 </enum>
 
 </awap-communication>

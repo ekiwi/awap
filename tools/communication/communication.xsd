@@ -1,0 +1,129 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<xs:schema xmlns:xs="http://www.w3.org/2001/XMLSchema">
+
+<!-- root element -->
+<xs:element name="awap-communication">
+<xs:complexType>
+	<xs:choice maxOccurs="unbounded">
+		<xs:element ref="import"/>
+		<xs:element ref="service"/>
+		<xs:element ref="enum"/>
+	</xs:choice>
+	<xs:attribute name="module" use="required" type="xs:NCName"/>
+	<xs:attribute name="version" use="required" type="xs:decimal"/>
+</xs:complexType>
+</xs:element>
+
+<!-- import directive -->
+<xs:element name="import">
+<xs:complexType>
+	<xs:attribute name="as" use="optional"/>
+	<xs:attribute name="module" use="required" type="xs:NCName"/>
+</xs:complexType>
+</xs:element>
+
+<!-- service specification -->
+<xs:element name="service">
+<xs:complexType>
+	<xs:sequence>
+		<xs:element ref="messages"/>
+		<xs:element ref="properties"/>
+	</xs:sequence>
+	<xs:attribute name="name" use="required" type="xs:NCName"/>
+</xs:complexType>
+</xs:element>
+
+<!-- service messages -->
+<xs:element name="messages">
+<xs:complexType>
+	<xs:sequence>
+		<xs:element maxOccurs="unbounded" ref="message"/>
+	</xs:sequence>
+	<!-- actually, a message can provide size, max-id or both
+	     unfortunately we haven't found a reliable way to express that in
+	     XSD, thus it will need to be checked in python -->
+	<xs:attribute name="max-id" use="optional" type="xs:integer"/>
+	<xs:attribute name="size" use="optional" type="xs:integer"/>
+</xs:complexType>
+</xs:element>
+
+<xs:element name="message">
+<xs:complexType>
+	<!-- messages can have a content, but do not need to -->
+	<xs:choice minOccurs="0">
+		<xs:element ref="int"/>
+		<xs:element ref="uint"/>
+	</xs:choice>
+	<!-- TODO: specify valid string values-->
+	<xs:attribute name="direction" use="required" type="xs:NCName"/>
+	<xs:attribute name="id" use="required" type="xs:integer"/>
+	<xs:attribute name="name" use="required" type="xs:NCName"/>
+	<!-- TODO: specify valid string values-->
+	<xs:attribute name="performative" use="required" type="xs:NCName"/>
+</xs:complexType>
+</xs:element>
+
+<!-- service message content -->
+<xs:element name="int">
+<xs:complexType>
+	<xs:attribute name="name" use="required" type="xs:NCName"/>
+	<xs:attribute name="size" use="required" type="xs:integer"/>
+</xs:complexType>
+</xs:element>
+
+<xs:element name="uint">
+<xs:complexType>
+	<xs:attribute name="name" use="required" type="xs:NCName"/>
+	<xs:attribute name="size" use="required" type="xs:integer"/>
+</xs:complexType>
+</xs:element>
+
+<!-- service properties -->
+<xs:element name="properties">
+<xs:complexType>
+	<xs:sequence>
+		<xs:element maxOccurs="unbounded" ref="property"/>
+	</xs:sequence>
+	<!-- actually, a property can provide size, max-id or both
+	     unfortunately we haven't found a reliable way to express that in
+	     XSD, thus it will need to be checked in python -->
+	<xs:attribute name="max-id" use="optional" type="xs:integer"/>
+	<xs:attribute name="size" use="optional" type="xs:integer"/>
+</xs:complexType>
+</xs:element>
+
+<xs:element name="property">
+<xs:complexType>
+	<xs:attribute name="id" use="required" type="xs:integer"/>
+	<xs:attribute name="name" use="required" type="xs:NCName"/>
+	<xs:attribute name="type" use="required" type="xs:NCName"/>
+</xs:complexType>
+</xs:element>
+
+
+<!-- "enum" specification, this will be turned into "class" or something similar -->
+<xs:element name="enum">
+<xs:complexType>
+	<xs:sequence>
+		<xs:element maxOccurs="unbounded" ref="element"/>
+	</xs:sequence>
+	<xs:attribute name="name" use="required" type="xs:NCName"/>
+	<!-- actually, a enum can provide size, max-id or both
+	     unfortunately we haven't found a reliable way to express that in
+	     XSD, thus it will need to be checked in python -->
+	<xs:attribute name="max-id" use="optional" type="xs:integer"/>
+	<xs:attribute name="size" use="optional" type="xs:integer"/>
+</xs:complexType>
+</xs:element>
+
+<xs:element name="element">
+<xs:complexType>
+	<xs:attribute name="name" use="required" type="xs:NCName"/>
+	<xs:attribute name="id" use="required" type="xs:integer"/>
+</xs:complexType>
+</xs:element>
+
+
+
+</xs:schema>
+

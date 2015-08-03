@@ -107,7 +107,15 @@ class Context(object):
 #			self.imports.append(())
 
 class Module(object):
+	SchemaSingleton = None
+
 	def __init__(self, parser, name):
+		path = os.path.dirname(os.path.realpath(__file__))
+		self.schema_path = os.path.join(path, 'communication.xsd')
+		if Module.SchemaSingleton is None:
+			xml = ET.parse(self.schema_path)
+			Module.SchemaSingleton = ET.XMLSchema(xml)
+		self.xmlschema = Module.SchemaSingleton
 		self.parser = parser
 		self.name = name
 		self.loaded = False
@@ -130,6 +138,9 @@ class Module(object):
 		# open xml file
 		tree = ET.parse(self.filename)
 		root = tree.getroot()
+
+		# validate
+		valid = self.xmlschema.assertValid(tree)
 
 		# parse root element
 		self.passert_tagname(root, "awap-communication")
