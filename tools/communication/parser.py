@@ -54,7 +54,6 @@ class Service(object):
 			return int(max_id)
 
 	def parse(self, mod, ee):
-		mod.passert_singleton(ee, "messages")
 		messages = ee.find("messages")
 		for msg_ee in messages:
 			self.messages.append(Message(mod, self, msg_ee))
@@ -63,7 +62,6 @@ class Service(object):
 		mod.passert(ee, self.max_message_id >= max_id_found,
 			'Found id "{}", but the maximum id is "{}"!'.format(max_id_found, self.max_message_id))
 
-		mod.passert_singleton(ee, "properties")
 		properties = ee.find("properties")
 		for prop_ee in properties:
 			self.properties.append(Property(mod, self, prop_ee))
@@ -143,7 +141,6 @@ class Module(object):
 		valid = self.xmlschema.assertValid(tree)
 
 		# parse root element
-		self.passert_tagname(root, "awap-communication")
 		self.passert(root, root.get("version") == "0.1",
 			"Only version 0.1 supported at the moment.")
 		self.passert(root, root.get("module") == self.name,
@@ -166,21 +163,11 @@ class Module(object):
 		if not value:
 			raise ParserException(self.filename, element, msg)
 
-	def passert_tagname(self, element, tagname):
-		self.passert(element, element.tag == tagname,
-			"Expected <{} /> found <{} />".format(tagname, element.tag))
 
 	def passert_attribute_exists(self, element, attributename):
 		self.passert(element, element.get(attributename) is not None,
 			"Element <{} /> is missing required attribute `{}`".format(
 				element.tag, attributename))
-
-	def passert_singleton(self, element, childname):
-		children = element.findall(childname)
-		self.passert(element, len(children) <= 1,
-			'Only one <{} /> tag allowed. Found tags @ line {}.'.format(
-				childname,
-				" and ".join([str(cc.sourceline) for cc in children])))
 
 
 class CommunicationParser(object):
