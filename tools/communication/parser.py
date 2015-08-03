@@ -78,6 +78,11 @@ class Message(object):
 		self.module = mod
 		self.service = service
 		self.id = int(ee.get("id"))
+		self.name = ee.get("name")
+		self.performative = ee.get("performative")
+		self.direction = ee.get("direction")
+		if self.direction == "txrx":
+			self.direction = "rxtx"
 
 class Property(object):
 	def __init__(self, mod, service, ee):
@@ -85,6 +90,7 @@ class Property(object):
 		self.module = mod
 		self.service = service
 		self.id = int(ee.get("id"))
+		self.name = ee.get("name")
 
 class Import(object):
 	def __init__(self, mod, ee):
@@ -93,16 +99,6 @@ class Import(object):
 		self.module = mod
 		self.alias = ee.get("as", self.import_module)
 		self.ee = ee
-
-
-class Context(object):
-	def __init__(self, module):
-		self.module = module
-		self.imports = []
-
-#	def import(self, module, as=None):
-#		if as is not None:
-#			self.imports.append(())
 
 class Module(object):
 	SchemaSingleton = None
