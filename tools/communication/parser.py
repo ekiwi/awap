@@ -35,7 +35,7 @@ class Service(object):
 		self.module = mod
 		self.name = name
 		self.messages = []
-		self.propterties = []
+		self.properties = []
 		self.parse(self.module, self.ee)
 
 	def _determine_max_id(self, mod, ee, max_id_found):
@@ -44,7 +44,14 @@ class Service(object):
 		mod.passert(ee, max_id is not None or size is not None,
 			"You need to define either a size or a max-id for reasons of backwards compatibility. " +
 			'e.g. <{} max-id="{}" />'.format(ee.tag, max_id_found))
-		if size 
+		if size is not None and max_id is not None:
+			mod.passert(ee, int(max_id) == (1 << int(size))-1,
+				'max-id="{}" does not match size="{}"'.format(max_id, size))
+			return int(max_id)
+		elif size is not None:
+			return ((1 << int(size)) -1)
+		elif max_id is not None:
+			return int(max_id)
 
 	def parse(self, mod, ee):
 		mod.passert_singleton(ee, "messages")
@@ -53,13 +60,28 @@ class Service(object):
 			self.messages.append(Message(mod, self, msg_ee))
 		max_id_found = max([msg.id for msg in self.messages])
 		self.max_message_id = self._determine_max_id(mod, messages, max_id_found)
+		mod.passert(ee, self.max_message_id >= max_id_found,
+			'Found id "{}", but the maximum id is "{}"!'.format(max_id_found, self.max_message_id))
 
 		mod.passert_singleton(ee, "properties")
-		properties = ee.find("messages")
+		properties = ee.find("properties")
+		for prop_ee in properties:
+			self.properties.append(Property(mod, self, prop_ee))
+		max_id_found = max([prop.id for prop in self.properties])
+		self.max_property_id = self._determine_max_id(mod, properties, max_id_found)
+		mod.passert(ee, self.max_property_id >= max_id_found,
+			'Found id "{}", but the maximum id is "{}"!'.format(max_id_found, self.max_property_id))
 
 
 
 class Message(object):
+	def __init__(self, mod, service, ee):
+		self.ee = ee
+		self.module = mod
+		self.service = service
+		self.id = int(ee.get("id"))
+
+class Property(object):
 	def __init__(self, mod, service, ee):
 		self.ee = ee
 		self.module = mod

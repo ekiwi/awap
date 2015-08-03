@@ -6,7 +6,7 @@
 
 <service name="TemperatureService">
 	<!-- This defines the service interface that can be used by other agents -->
-	<messages max-id="7">
+	<messages max-id="7" size="3">
 		<message name="Subscribe"   direction="rx" performative="SUBSCRIBE" id="0" />
 		<message name="Unsubscribe" direction="rx" performative="SUBSCRIBE" id="1" />
 		<message name="Temperature" direction="tx" performative="INFORM"    id="2">
