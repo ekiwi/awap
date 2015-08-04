@@ -11,17 +11,17 @@ path_awap_agents = os.path.join(path_awap_root, 'agents')
 # create the scons environment which contains the custom awap build tools
 env = Environment(toolpath = [path_awap_scons], tools = ['awap'])
 # tell awap where to look for agents
-env['AWAP_AGENT_PATH'] = [path_awap_agents]
+#env['AWAP_AGENT_PATH'] = [path_awap_agents]
 # tell awap where to look for xml modules
-env['AWAP_XML_PATH']   = 
+#env['AWAP_XML_PATH']   = 
 
 
 
-manifest = env.Manifest(target='build/MANIFEST.MF', mainclass="events.Main")
-app = env.JavaToJar('build/enums.jar', ['src', 'build/MANIFEST.MF'])
+#manifest = env.Manifest(target='build/MANIFEST.MF', mainclass="events.Main")
+#app = env.JavaToJar('build/enums.jar', ['src', 'build/MANIFEST.MF'])
 
 
-env.Alias('app', app)
-env.Alias('run', env.RunJar(app))
+#env.Alias('app', app)
+#env.Alias('run', env.RunJar(app))
 
-env.Default('app')
+#env.Default('app')
