@@ -135,7 +135,6 @@ class Reference(NamedCommunicationElement):
 		mod.passert(self.node, self.name in mod.combined_index,
 			'Could not resolve reference to "{}"'.format(self.name))
 		self.value = mod.combined_index[self.name]
-		print("Resolved `{}` to `{}`".format(self.name, self.value))
 
 class EnumType(NamedCommunicationElement):
 	def __init__(self, parent, node):
@@ -229,7 +228,6 @@ class Module(object):
 		return self
 
 	def resolve(self):
-		print("resolve called on " + self.name)
 		# 1.) build combined index
 		self.combined_index = self.index.copy()
 		[imp.add_to_index(self.combined_index) for imp in self.imports]
