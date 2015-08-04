@@ -52,14 +52,18 @@ def awap_method(env, configuration):
 		can be executed in order to build different parts of awap.
 	"""
 	print("Awap({})".format(configuration))
+	# load and validate awap configuration which in turn loads the communication
+	env.LoadAwapConfiguration(configuration)
+	# load libcommon SConscript
+	env.Alias('libcommon', env.SConscript(env['AWAP_LIB_COMMON'], exports = 'env'))
 
 def generate(env):
 	# define some paths
 	env['AWAP_SCONS_TOOLS'] = os.path.dirname(os.path.abspath(__file__))
 	env['AWAP_ROOT'] = os.path.join(env['AWAP_SCONS_TOOLS'], '..')
-	env['AWAP_LIB_COMMON'] = os.path.join(env['AWAP_ROOT'], 'lib', 'common')
-	env['AWAP_LIB_JADE'] = os.path.join(env['AWAP_ROOT'], 'lib', 'jade')
-	env['AWAP_LIB_NODE'] = os.path.join(env['AWAP_ROOT'], 'lib', 'node')
+	env['AWAP_LIB_COMMON'] = os.path.join(env['AWAP_ROOT'], 'lib', 'common', 'SConscript')
+	env['AWAP_LIB_JADE'] = os.path.join(env['AWAP_ROOT'], 'lib', 'jade', 'SConscript')
+	env['AWAP_LIB_NODE'] = os.path.join(env['AWAP_ROOT'], 'lib', 'node', 'SConscript')
 
 	# import terminal type to enable gcc/clang to print colored output
 	# http://stackoverflow.com/questions/9922521/why-doesnt-clang-show-color-output-under-scons
@@ -83,6 +87,7 @@ def generate(env):
 
 	# load awap specific tools
 	env.Tool('communication')
+	env.Tool('configuration')
 
 	# add pseudo builder to generate targets for a specific awap configuration
 	env.AddMethod(awap_method, 'Awap')
