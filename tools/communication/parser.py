@@ -42,99 +42,99 @@ class ParserException(Exception):
 		msg += '    Error: "{}"'.format(message)
 		super().__init__(msg)
 
+class NamedCommunicationElement(object):
+	def __init__(self, parent, node):
+		self.node = node
+		self.name = node.get('name')
+		self.parent = parent
+		self.mod = parent.module
+		self.full_name = parent.register(self, self.name)
 
-class Service(object):
-	def __init__(self, mod, ee):
-		name = ee.get("name")
-		mod.passert(ee, (name not in mod.services),
-			'Service "{}" was already defined!'.format(name))
-		self.ee = ee
-		self.module = mod
-		self.name = name
+	def register(self, child, name):
+		return self.parent.register(child, self.name + "." + name)
+
+	@property
+	def module(self):
+		return self.mod
+
+
+class Service(NamedCommunicationElement):
+	def __init__(self, parent, node):
+		super().__init__(parent, node)
 		self.messages = []
 		self.properties = []
 
-		messages = ee.find("messages")
+		messages = node.find("messages")
 		for msg_ee in messages:
-			self.messages.append(Message(mod, self, msg_ee))
+			self.messages.append(Message(self, msg_ee))
 		max_id_found = max([msg.id for msg in self.messages])
-		self.max_message_id = determine_max_id(mod, messages, max_id_found)
-		mod.passert(ee, self.max_message_id >= max_id_found,
+		self.max_message_id = determine_max_id(self.mod, messages, max_id_found)
+		self.mod.passert(node, self.max_message_id >= max_id_found,
 			'Found id "{}", but the maximum id is "{}"!'.format(max_id_found, self.max_message_id))
 
-		properties = ee.find("properties")
+		properties = node.find("properties")
 		for prop_ee in properties:
-			self.properties.append(Property(mod, self, prop_ee))
+			self.properties.append(Property(self, prop_ee))
 		max_id_found = max([prop.id for prop in self.properties])
-		self.max_property_id = determine_max_id(mod, properties, max_id_found)
-		mod.passert(ee, self.max_property_id >= max_id_found,
+		self.max_property_id = determine_max_id(self.mod, properties, max_id_found)
+		self.mod.passert(node, self.max_property_id >= max_id_found,
 			'Found id "{}", but the maximum id is "{}"!'.format(max_id_found, self.max_property_id))
 
 
-class Message(object):
-	def __init__(self, mod, service, ee):
-		self.ee = ee
-		self.module = mod
-		self.service = service
-		self.id = int(ee.get("id"))
-		self.name = ee.get("name")
-		self.performative = ee.get("performative")
-		self.direction = ee.get("direction")
+class Message(NamedCommunicationElement):
+	def __init__(self, parent, node):
+		super().__init__(parent, node)
+		self.id = int(node.get("id"))
+		self.performative = node.get("performative")
+		self.direction = node.get("direction")
 		if self.direction == "txrx":
 			self.direction = "rxtx"
 		self.fields = []
-		for field_ee in ee:
+		for field_ee in node:
 			if field_ee.tag in ['int', 'uint']:
-				self.fields.append(Int(field_ee))
+				self.fields.append(Int(self, field_ee))
 			elif field_ee.tag in ['enum']:
-				self.fields.append(EnumField(field_ee))
+				self.fields.append(EnumField(self, field_ee))
 
-class Property(object):
-	def __init__(self, mod, service, ee):
-		self.ee = ee
-		self.module = mod
-		self.service = service
-		self.id = int(ee.get("id"))
-		self.name = ee.get("name")
+class Property(NamedCommunicationElement):
+	def __init__(self, parent, node):
+		super().__init__(parent, node)
+		self.id = int(node.get("id"))
 
 class Import(object):
-	def __init__(self, mod, ee):
-		self.import_module = ee.get("module", None)
-		mod.passert(ee, self.import_module is not None, 'Missing `module` attribute!')
+	def __init__(self, mod, node):
+		self.import_module = node.get("module")
 		self.module = mod
-		self.alias = ee.get("as", self.import_module)
-		self.ee = ee
+		self.alias = node.get("as", self.import_module)
+		self.node = node
 
-class Int(object):
-	def __init__(self, ee):
-		self.ee = ee
-		self.unsigned = (ee.tag == "uint")
-		self.name = ee.get("name")
-		self.size = ee.get("size")
+class Int(NamedCommunicationElement):
+	def __init__(self, parent, node):
+		super().__init__(parent, node)
+		self.unsigned = (node.tag == "uint")
+		self.size = node.get("size")
 
-class EnumField(object):
-	def __init__(self, ee):
-		self.module = mod
-		self.name = ee.get("name")
-		self.type_name = ee.get("type")
+class EnumField(NamedCommunicationElement):
+	def __init__(self, parent, node):
+		super().__init__(parent, node)
+		self.type_name = node.get("type")
 
-class EnumType(object):
-	def __init__(self, mod, ee):
-		self.name = ee.get('name')
+class EnumType(NamedCommunicationElement):
+	def __init__(self, parent, node):
+		super().__init__(parent, node)
 		self.elements = []
 
-		for el_ee in ee:
-			self.elements.append(EnumElement(mod, el_ee))
+		for el_ee in node:
+			self.elements.append(EnumElement(self, el_ee))
 		max_id_found = max([el.id for el in self.elements])
-		self.max_id = determine_max_id(mod, ee, max_id_found)
-		mod.passert(ee, self.max_id >= max_id_found,
+		self.max_id = determine_max_id(self.mod, node, max_id_found)
+		self.mod.passert(node, self.max_id >= max_id_found,
 			'Found id "{}", but the maximum id is "{}"!'.format(max_id_found, self.max_id))
 
-class EnumElement(object):
-	def __init__(self, mod, ee):
-		self.module = mod
-		self.name = ee.get('name')
-		self.id = int(ee.get('id'))
+class EnumElement(NamedCommunicationElement):
+	def __init__(self, parent, node):
+		super().__init__(parent, node)
+		self.id = int(node.get('id'))
 
 class Module(object):
 	SchemaSingleton = None
@@ -153,6 +153,7 @@ class Module(object):
 		self.imports = []
 		self.services = []
 		self.enums = []
+		self.index = {}		# this will hold all possible references
 
 	def _find_file(self):
 		# search for module file
@@ -164,6 +165,37 @@ class Module(object):
 			if os.path.isfile(filename):
 				return filename
 		raise Exception('File for module "{}" not found.\nPath: "{}"'.format(self.name, self.parser.path))
+
+	def register(self, child, name):
+		""" insert unique reference into index """
+		full_name = self.name + "." + name
+		if full_name in self.index:
+			oc0 = self.index[full_name].node
+			oc1 = child.node
+			with open(self.filename) as ff:
+				lines = ff.readlines()
+				line0 = lines[oc0.sourceline - 1]
+				line1 = lines[oc1.sourceline - 1]
+			msg  = 'Duplicate Element "{}".\n'.format(name)
+			msg += 'First occurence:\n'
+			msg += '\tFile "{}", line {}\n'.format(self.filename, oc0.sourceline)
+			msg += '\t\t' + line0
+			msg += 'Second occurence:\n'
+			msg += '\tFile "{}", line {}\n'.format(self.filename, oc1.sourceline)
+			msg += '\t\t' + line1
+			raise Exception(msg)
+		else:
+			self.index[full_name] = child
+		return full_name
+
+	@property
+	def module(self):
+		return self
+
+	def resolve(self):
+		print("resolve called on " + self.name)
+		# 1.) build index using imports
+		print("\n".join(self.index.keys()))
 
 	def parse(self):
 		# open xml file
@@ -222,7 +254,8 @@ class CommunicationParser(object):
 		for mod in modules:
 			self._load(mod)
 		# resolve references
-		# TODO
+		for mod in self.modules.values():
+			mod.resolve()
 
 
 	def _load(self, module):
