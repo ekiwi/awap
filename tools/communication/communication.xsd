@@ -57,6 +57,14 @@
 </xs:unique>
 </xs:element>
 
+<!-- types commen to message and property specification -->
+<xs:simpleType name="IntegerSize">
+<xs:restriction base="xs:integer">
+	<xs:minInclusive value="1"/>
+	<xs:maxInclusive value="32"/>
+</xs:restriction>
+</xs:simpleType>
+
 <xs:element name="message">
 <xs:complexType>
 	<!-- messages can have a content, but do not need to -->
@@ -64,13 +72,13 @@
 		<xs:element name="int">
 			<xs:complexType>
 				<xs:attribute name="name" use="required" type="xs:NCName"/>
-				<xs:attribute name="size" use="required" type="xs:integer"/>
+				<xs:attribute name="size" use="required" type="IntegerSize"/>
 			</xs:complexType>
 		</xs:element>
 		<xs:element name="uint">
 			<xs:complexType>
 				<xs:attribute name="name" use="required" type="xs:NCName"/>
-				<xs:attribute name="size" use="required" type="xs:integer"/>
+				<xs:attribute name="size" use="required" type="IntegerSize"/>
 			</xs:complexType>
 		</xs:element>
 		<xs:element name="enum">
@@ -137,14 +145,14 @@
 			<xs:complexType>
 				<xs:attribute name="id" use="required" type="xs:integer"/>
 				<xs:attribute name="name" use="required" type="xs:NCName"/>
-				<xs:attribute name="size" use="required" type="xs:integer"/>
+				<xs:attribute name="size" use="required" type="IntegerSize"/>
 			</xs:complexType>
 		</xs:element>
 		<xs:element name="uint">
 			<xs:complexType>
 				<xs:attribute name="id" use="required" type="xs:integer"/>
 				<xs:attribute name="name" use="required" type="xs:NCName"/>
-				<xs:attribute name="size" use="required" type="xs:integer"/>
+				<xs:attribute name="size" use="required" type="IntegerSize"/>
 			</xs:complexType>
 		</xs:element>
 		<xs:element name="enum">
@@ -175,6 +183,19 @@
 </xs:element>
 
 <!-- "enum" specification, this will be turned into "class" or something similar -->
+<xs:simpleType name="EnumSize">
+<xs:restriction base="xs:integer">
+	<xs:minInclusive value="1"/>
+	<xs:maxInclusive value="32"/>
+</xs:restriction>
+</xs:simpleType>
+<xs:simpleType name="EnumMaxId">
+<xs:restriction base="xs:integer">
+	<xs:minInclusive value="0"/>
+	<xs:maxInclusive value="4294967295"/>
+</xs:restriction>
+</xs:simpleType>
+
 <xs:element name="enum">
 <xs:complexType>
 	<xs:sequence>
@@ -184,8 +205,8 @@
 	<!-- actually, a enum can provide size, max-id or both
 	     unfortunately we haven't found a reliable way to express that in
 	     XSD, thus it will need to be checked in python -->
-	<xs:attribute name="max-id" use="optional" type="xs:integer"/>
-	<xs:attribute name="size" use="optional" type="xs:integer"/>
+	<xs:attribute name="max-id" use="optional" type="EnumMaxId"/>
+	<xs:attribute name="size" use="optional" type="EnumSize"/>
 </xs:complexType>
 <!-- Make sure there are no duplicate ids or names. see:
      http://stackoverflow.com/questions/8801645/how-can-i-specify-a-unique-constraint-for-attributes-using-the-xsunique-as-a -->
