@@ -1,0 +1,4 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<awap-agent version="0.1" name="TemperatureSensor">
+	<service module="service.temperature" name="TemperatureService" />
+</awap-agent>
