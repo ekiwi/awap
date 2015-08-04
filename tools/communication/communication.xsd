@@ -60,7 +60,7 @@
 <xs:element name="message">
 <xs:complexType>
 	<!-- messages can have a content, but do not need to -->
-	<xs:choice minOccurs="0">
+	<xs:choice minOccurs="0" maxOccurs="unbounded">
 		<xs:element name="int">
 			<xs:complexType>
 				<xs:attribute name="name" use="required" type="xs:NCName"/>
@@ -75,9 +75,9 @@
 		</xs:element>
 		<xs:element name="enum">
 			<xs:complexType>
-				<!-- type will be used as a reference to an enum -->
+				<!-- class will be used as a reference to an enum -->
 				<xs:attribute name="name" use="required" type="xs:NCName"/>
-				<xs:attribute name="type" use="required" type="xs:NCName"/>
+				<xs:attribute name="class" use="required" type="xs:NCName"/>
 			</xs:complexType>
 		</xs:element>
 	</xs:choice>
@@ -128,9 +128,30 @@
 <!-- service properties -->
 <xs:element name="properties">
 <xs:complexType>
-	<xs:sequence>
-		<xs:element maxOccurs="unbounded" ref="property"/>
-	</xs:sequence>
+	<xs:choice minOccurs="0" maxOccurs="unbounded">
+		<xs:element name="int">
+			<xs:complexType>
+				<xs:attribute name="id" use="required" type="xs:integer"/>
+				<xs:attribute name="name" use="required" type="xs:NCName"/>
+				<xs:attribute name="size" use="required" type="xs:integer"/>
+			</xs:complexType>
+		</xs:element>
+		<xs:element name="uint">
+			<xs:complexType>
+				<xs:attribute name="id" use="required" type="xs:integer"/>
+				<xs:attribute name="name" use="required" type="xs:NCName"/>
+				<xs:attribute name="size" use="required" type="xs:integer"/>
+			</xs:complexType>
+		</xs:element>
+		<xs:element name="enum">
+			<xs:complexType>
+				<xs:attribute name="id" use="required" type="xs:integer"/>
+				<!-- class will be used as a reference to an enum -->
+				<xs:attribute name="name" use="required" type="xs:NCName"/>
+				<xs:attribute name="class" use="required" type="xs:NCName"/>
+			</xs:complexType>
+		</xs:element>
+	</xs:choice>
 	<!-- actually, a property can provide size, max-id or both
 	     unfortunately we haven't found a reliable way to express that in
 	     XSD, thus it will need to be checked in python -->
@@ -140,23 +161,14 @@
 <!-- Make sure there are no duplicate ids or names. see:
      http://stackoverflow.com/questions/8801645/how-can-i-specify-a-unique-constraint-for-attributes-using-the-xsunique-as-a -->
 <xs:unique name="PropertyId">
-	<xs:selector xpath="property"/>
+	<xs:selector xpath="child::*"/>
 	<xs:field xpath="@id"/>
 </xs:unique>
 <xs:unique name="PropertyName">
-	<xs:selector xpath="property"/>
+	<xs:selector xpath="child::*"/>
 	<xs:field xpath="@name"/>
 </xs:unique>
 </xs:element>
-
-<xs:element name="property">
-<xs:complexType>
-	<xs:attribute name="id" use="required" type="xs:integer"/>
-	<xs:attribute name="name" use="required" type="xs:NCName"/>
-	<xs:attribute name="type" use="required" type="xs:NCName"/>
-</xs:complexType>
-</xs:element>
-
 
 <!-- "enum" specification, this will be turned into "class" or something similar -->
 <xs:element name="enum">
