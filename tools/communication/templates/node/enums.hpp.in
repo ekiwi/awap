@@ -15,3 +15,11 @@ enum class {{ enum.name }} : {{ enum.cpp.type }}
 %% endfor
 } // namespace {{ module.name }}
 %% endfor
+
+// TODO: assign correct constants and use correct size...
+enum class Service
+{
+%% for service in services
+	{{ service.name }}
+%% endfor
+};
