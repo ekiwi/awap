@@ -75,8 +75,10 @@ class Service(NamedCommunicationElement):
 
 		properties = node.find("properties")
 		for prop_ee in properties:
-			if prop_ee.tag is not ET.Comment:
-				self.properties.append(Property(self, prop_ee))
+			if prop_ee.tag in ['int', 'uint']:
+				self.properties.append(IntProperty(self, prop_ee))
+			elif prop_ee.tag in ['enum']:
+				self.properties.append(EnumProperty(self, prop_ee))
 		if len(self.properties) > 0:
 			max_id_found = max([prop.id for prop in self.properties])
 		else:
@@ -97,17 +99,11 @@ class Message(NamedCommunicationElement):
 		self.fields = []
 		for field_ee in node:
 			if field_ee.tag in ['int', 'uint']:
-				self.fields.append(Int(self, field_ee))
+				self.fields.append(IntField(self, field_ee))
 			elif field_ee.tag in ['enum']:
 				self.fields.append(EnumField(self, field_ee))
 
-class Property(NamedCommunicationElement):
-	def __init__(self, parent, node):
-		super().__init__(parent, node)
-		self.id = int(node.get("id"))
-		self.type = Reference(self.mod, node, node.get("type"))
-
-class Int(NamedCommunicationElement):
+class IntField(NamedCommunicationElement):
 	def __init__(self, parent, node):
 		super().__init__(parent, node)
 		self.unsigned = (node.tag == "uint")
@@ -117,6 +113,16 @@ class EnumField(NamedCommunicationElement):
 	def __init__(self, parent, node):
 		super().__init__(parent, node)
 		self.enum_class = Reference(self.mod, node, node.get("class"))
+
+class IntProperty(IntField):
+	def __init__(self, parent, node):
+		super().__init__(parent, node)
+		self.id = int(node.get("id"))
+
+class EnumProperty(EnumField):
+	def __init__(self, parent, node):
+		super().__init__(parent, node)
+		self.id = int(node.get("id"))
 
 class Reference(NamedCommunicationElement):
 	def __init__(self, module, node, name):
