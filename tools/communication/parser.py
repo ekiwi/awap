@@ -100,6 +100,7 @@ class Property(NamedCommunicationElement):
 	def __init__(self, parent, node):
 		super().__init__(parent, node)
 		self.id = int(node.get("id"))
+		self.type = Reference(self.mod, node, node.get("type"))
 
 class Int(NamedCommunicationElement):
 	def __init__(self, parent, node):
@@ -110,7 +111,20 @@ class Int(NamedCommunicationElement):
 class EnumField(NamedCommunicationElement):
 	def __init__(self, parent, node):
 		super().__init__(parent, node)
-		self.type_name = node.get("type")
+		self.type = Reference(self.mod, node, node.get("type"))
+
+class Reference(NamedCommunicationElement):
+	def __init__(self, module, node, name):
+		self.node = node # for error reporting
+		self.name = name
+		self.value = None
+		module.references.append(self)
+
+	def resolve(self, mod):
+		mod.passert(self.node, self.name in mod.combined_index,
+			'Could not resolve reference to "{}"'.format(self.name))
+		self.value = mod.combined_index[self.name]
+		print("Resolved `{}` to `{}`".format(self.name, self.value))
 
 class EnumType(NamedCommunicationElement):
 	def __init__(self, parent, node):
@@ -160,6 +174,7 @@ class Module(object):
 		self.imports = []
 		self.services = []
 		self.enums = []
+		self.references = []	# will be resolved in the `resolve` stage
 		# this will hold all possible references in this module
 		self.index = {}
 		# this will contain all references available in this module
@@ -207,7 +222,8 @@ class Module(object):
 		# 1.) build combined index
 		self.combined_index = self.index.copy()
 		[imp.add_to_index(self.combined_index) for imp in self.imports]
-		print ("\n".join(self.combined_index.keys()))
+		# 2.) call resolve on references
+		[ref.resolve(self) for ref in self.references]
 
 	def parse(self):
 		# open xml file
