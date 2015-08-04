@@ -14,6 +14,23 @@ The second pass will resolve all cross references.
 import os
 import lxml.etree as ET
 
+def determine_max_id(mod, ee, max_id_found):
+	""" Tries to determine the max-id from max-id and or size arguments
+	"""
+	max_id = ee.get("max-id")
+	size = ee.get("size")
+	mod.passert(ee, max_id is not None or size is not None,
+		"You need to define either a size or a max-id for reasons of backwards compatibility. " +
+		'e.g. <{} max-id="{}" />'.format(ee.tag, max_id_found))
+	if size is not None and max_id is not None:
+		mod.passert(ee, int(max_id) == (1 << int(size))-1,
+			'max-id="{}" does not match size="{}"'.format(max_id, size))
+		return int(max_id)
+	elif size is not None:
+		return ((1 << int(size)) -1)
+	elif max_id is not None:
+		return int(max_id)
+
 class ParserException(Exception):
 	def __init__(self, file, element, message):
 		with open(file) as ff:
@@ -36,29 +53,12 @@ class Service(object):
 		self.name = name
 		self.messages = []
 		self.properties = []
-		self.parse(self.module, self.ee)
 
-	def _determine_max_id(self, mod, ee, max_id_found):
-		max_id = ee.get("max-id")
-		size = ee.get("size")
-		mod.passert(ee, max_id is not None or size is not None,
-			"You need to define either a size or a max-id for reasons of backwards compatibility. " +
-			'e.g. <{} max-id="{}" />'.format(ee.tag, max_id_found))
-		if size is not None and max_id is not None:
-			mod.passert(ee, int(max_id) == (1 << int(size))-1,
-				'max-id="{}" does not match size="{}"'.format(max_id, size))
-			return int(max_id)
-		elif size is not None:
-			return ((1 << int(size)) -1)
-		elif max_id is not None:
-			return int(max_id)
-
-	def parse(self, mod, ee):
 		messages = ee.find("messages")
 		for msg_ee in messages:
 			self.messages.append(Message(mod, self, msg_ee))
 		max_id_found = max([msg.id for msg in self.messages])
-		self.max_message_id = self._determine_max_id(mod, messages, max_id_found)
+		self.max_message_id = determine_max_id(mod, messages, max_id_found)
 		mod.passert(ee, self.max_message_id >= max_id_found,
 			'Found id "{}", but the maximum id is "{}"!'.format(max_id_found, self.max_message_id))
 
@@ -66,10 +66,9 @@ class Service(object):
 		for prop_ee in properties:
 			self.properties.append(Property(mod, self, prop_ee))
 		max_id_found = max([prop.id for prop in self.properties])
-		self.max_property_id = self._determine_max_id(mod, properties, max_id_found)
+		self.max_property_id = determine_max_id(mod, properties, max_id_found)
 		mod.passert(ee, self.max_property_id >= max_id_found,
 			'Found id "{}", but the maximum id is "{}"!'.format(max_id_found, self.max_property_id))
-
 
 
 class Message(object):
@@ -88,7 +87,7 @@ class Message(object):
 			if field_ee.tag in ['int', 'uint']:
 				self.fields.append(Int(field_ee))
 			elif field_ee.tag in ['enum']:
-				self.fields.append()
+				self.fields.append(EnumField(field_ee))
 
 class Property(object):
 	def __init__(self, mod, service, ee):
@@ -113,6 +112,30 @@ class Int(object):
 		self.name = ee.get("name")
 		self.size = ee.get("size")
 
+class EnumField(object):
+	def __init__(self, ee):
+		self.module = mod
+		self.name = ee.get("name")
+		self.type_name = ee.get("type")
+
+class EnumType(object):
+	def __init__(self, mod, ee):
+		self.name = ee.get('name')
+		self.elements = []
+
+		for el_ee in ee:
+			self.elements.append(EnumElement(mod, el_ee))
+		max_id_found = max([el.id for el in self.elements])
+		self.max_id = determine_max_id(mod, ee, max_id_found)
+		mod.passert(ee, self.max_id >= max_id_found,
+			'Found id "{}", but the maximum id is "{}"!'.format(max_id_found, self.max_id))
+
+class EnumElement(object):
+	def __init__(self, mod, ee):
+		self.module = mod
+		self.name = ee.get('name')
+		self.id = int(ee.get('id'))
+
 class Module(object):
 	SchemaSingleton = None
 
@@ -129,6 +152,7 @@ class Module(object):
 		self.filename = self._find_file()
 		self.imports = []
 		self.services = []
+		self.enums = []
 
 	def _find_file(self):
 		# search for module file
@@ -162,6 +186,8 @@ class Module(object):
 				self.imports.append(Import(self, ee))
 			elif ee.tag == "service":
 				self.services.append(Service(self, ee))
+			elif ee.tag == "enum":
+				self.enums.append(EnumType(self, ee))
 			elif ee.tag is ET.Comment:
 				pass	# ignore comments
 			else:

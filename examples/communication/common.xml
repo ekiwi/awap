@@ -1,19 +1,19 @@
 <?xml version="1.0" encoding="UTF-8" ?>
 <awap-communication version="0.1" module="common">
 
-<enum name="Building" size="4"  max-id="16">
+<enum name="Building" size="4"  max-id="15">
 	<element name="Build1" id="0" />
 </enum>
 
-<enum name="Room" size="8" max-id="256">
+<enum name="Room" size="8" max-id="255">
 	<element name="R1" id="0" />
 </enum>
 
-<enum name="SupplyCircuit" size="8" max-id="256">
+<enum name="SupplyCircuit" size="8" max-id="255">
 	<element name="SC1" id="0" />
 </enum>
 
-<enum name="SensorType" size="4" max-id="16">
+<enum name="SensorType" size="4" max-id="15">
 	<element name="NotSet"   id="0" />
 	<element name="Tflow"    id="1" />
 	<element name="Treturn"  id="2" />
@@ -21,7 +21,7 @@
 	<element name="Troom"    id="4" />
 </enum>
 
-<enum name="ServiceType" size="4" max-id="16">
+<enum name="ServiceType" size="4" max-id="15">
 	<element name="ActorValveAgent"   id="0" />
 	<element name="ComfortAgent"      id="1" />
 	<element name="RoomAgent"         id="2" />
