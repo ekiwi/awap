@@ -93,9 +93,9 @@ class Message(NamedCommunicationElement):
 		super().__init__(parent, node)
 		self.id = int(node.get("id"))
 		self.performative = node.get("performative")
-		self.direction = node.get("direction")
-		if self.direction == "txrx":
-			self.direction = "rxtx"
+		direction = node.get("direction")
+		self.tx = "tx" in direction
+		self.rx = "rx" in direction
 		self.fields = []
 		for field_ee in node:
 			if field_ee.tag in ['int', 'uint']:
