@@ -66,7 +66,8 @@ class Service(NamedCommunicationElement):
 
 		messages = node.find("messages")
 		for msg_ee in messages:
-			self.messages.append(Message(self, msg_ee))
+			if msg_ee.tag is not ET.Comment:
+				self.messages.append(Message(self, msg_ee))
 		max_id_found = max([msg.id for msg in self.messages])
 		self.max_message_id = determine_max_id(self.mod, messages, max_id_found)
 		self.mod.passert(node, self.max_message_id >= max_id_found,
@@ -74,8 +75,12 @@ class Service(NamedCommunicationElement):
 
 		properties = node.find("properties")
 		for prop_ee in properties:
-			self.properties.append(Property(self, prop_ee))
-		max_id_found = max([prop.id for prop in self.properties])
+			if prop_ee.tag is not ET.Comment:
+				self.properties.append(Property(self, prop_ee))
+		if len(self.properties) > 0:
+			max_id_found = max([prop.id for prop in self.properties])
+		else:
+			max_id_found = 0
 		self.max_property_id = determine_max_id(self.mod, properties, max_id_found)
 		self.mod.passert(node, self.max_property_id >= max_id_found,
 			'Found id "{}", but the maximum id is "{}"!'.format(max_id_found, self.max_property_id))
@@ -111,7 +116,7 @@ class Int(NamedCommunicationElement):
 class EnumField(NamedCommunicationElement):
 	def __init__(self, parent, node):
 		super().__init__(parent, node)
-		self.type = Reference(self.mod, node, node.get("type"))
+		self.enum_class = Reference(self.mod, node, node.get("class"))
 
 class Reference(NamedCommunicationElement):
 	def __init__(self, module, node, name):
