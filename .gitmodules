@@ -4,3 +4,6 @@
 [submodule "ext/ostfriesentee"]
 	path = ext/ostfriesentee
 	url = git@github.com:RWTH-OS/ostfriesentee.git
+[submodule "ext/ekiwi-scons-tools"]
+	path = ext/ekiwi-scons-tools
+	url = git@github.com:ekiwi/ekiwi-scons-tools.git
