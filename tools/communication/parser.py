@@ -101,13 +101,6 @@ class Property(NamedCommunicationElement):
 		super().__init__(parent, node)
 		self.id = int(node.get("id"))
 
-class Import(object):
-	def __init__(self, mod, node):
-		self.import_module = node.get("module")
-		self.module = mod
-		self.alias = node.get("as", self.import_module)
-		self.node = node
-
 class Int(NamedCommunicationElement):
 	def __init__(self, parent, node):
 		super().__init__(parent, node)
@@ -136,6 +129,21 @@ class EnumElement(NamedCommunicationElement):
 		super().__init__(parent, node)
 		self.id = int(node.get('id'))
 
+class Import(object):
+	def __init__(self, mod, node):
+		self.import_module_name = node.get("module")
+		self.module = mod
+		self.alias = node.get("as", self.import_module_name)
+		self.node = node
+		# will later be filled in by the parser
+		self.import_module = None
+
+	def add_to_index(self, index):
+		imp_name = self.import_module.name + "."
+		imp_alias = self.alias
+		for key, value in self.import_module.index.items():
+			index[key.replace(imp_name, imp_alias)] = value
+
 class Module(object):
 	SchemaSingleton = None
 
@@ -153,7 +161,11 @@ class Module(object):
 		self.imports = []
 		self.services = []
 		self.enums = []
-		self.index = {}		# this will hold all possible references
+		# this will hold all possible references in this module
+		self.index = {}
+		# this will contain all references available in this module
+		# as well as from other modules
+		self.combined_index = {}
 
 	def _find_file(self):
 		# search for module file
@@ -194,8 +206,10 @@ class Module(object):
 
 	def resolve(self):
 		print("resolve called on " + self.name)
-		# 1.) build index using imports
-		print("\n".join(self.index.keys()))
+		# 1.) build combined index
+		self.combined_index = self.index.copy()
+		[imp.add_to_index(self.combined_index) for imp in self.imports]
+		print ("\n".join(self.combined_index.keys()))
 
 	def parse(self):
 		# open xml file
@@ -261,7 +275,7 @@ class CommunicationParser(object):
 	def _load(self, module):
 		# make sure module is not already loaded
 		if module in self.modules:
-			return
+			return self.modules[module]
 
 		# create module object
 		mod = Module(self, module)
@@ -271,7 +285,9 @@ class CommunicationParser(object):
 
 		# load imported modules
 		for imp in mod.imports:
-			self._load(imp.import_module)
+			imp.import_module = self._load(imp.import_module_name)
+
+		return mod
 
 
 if __name__ == "__main__":
