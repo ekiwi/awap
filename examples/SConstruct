@@ -10,7 +10,7 @@
 import os
 
 # root path of the awap repo
-path_awap_root = os.path.join('..', '..')
+path_awap_root = os.path.abspath('..')
 # path to awap scons tools
 path_awap_scons = os.path.join(path_awap_root, 'scons')
 
