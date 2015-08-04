@@ -1,0 +1,17 @@
+#include <stdint.h>
+
+%% for module in modules
+namespace {{ module.name }}
+{
+
+%% for enum in module.enums
+enum class {{ enum.name }} : {{ enum.cpp.type }}
+{
+	%% for element in enum.elements
+	{{ element.name }} = {{ element.id }},
+	%% endfor
+};
+
+%% endfor
+} // namespace {{ module.name }}
+%% endfor

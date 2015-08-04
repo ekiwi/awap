@@ -1,0 +1,36 @@
+package de.rwth_aachen.awap.service;
+
+import de.rwth_aachen.awap.Agent;
+import de.rwth_aachen.awap.RemoteAgent;
+import de.rwth_aachen.awap.Service;
+
+public abstract class Abstract{{service.name}} extends Service {
+%% for prop in service.properties
+	protected {{ prop.java.type }} {{ prop.name }};
+%% endfor
+	public Abstract{{service.name}}(
+		Agent parent,
+%% for prop in service.properties
+		{{ prop.java.type }} {{ prop.name }},
+%% endfor
+		) {
+		super(parent);
+%% for prop in service.properties
+		this.{{ prop.name }} = {{ prop.name }};
+%% endfor
+	}
+%% for msg in service.messages
+	//--------------------------------------------------------------------------
+	// Message: {{ msg.name }}
+	%% if msg.rx
+	public abstract void onReceive{{ msg.name }}(RemoteAgent sender{{ msg.java.arglist }});
+	%% endif
+	%% if msg.tx
+	public abstract void onFailedToSend{{ msg.name }}(RemoteAgent receiver{{ msg.java.arglist }});
+	public void send{{ msg.name }}(RemoteAgent receiver{{ msg.java.arglist }}) {
+		// TODO: generate message and dispatch
+	}
+	%% endif
+%% endfor
+}
+
