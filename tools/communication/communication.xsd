@@ -123,6 +123,10 @@
 		</xs:simpleType>
 	</xs:attribute>
 </xs:complexType>
+<xs:unique name="MessageFieldName">
+	<xs:selector xpath="child::*"/>
+	<xs:field xpath="@name"/>
+</xs:unique>
 </xs:element>
 
 <!-- service properties -->
