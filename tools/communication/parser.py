@@ -2,6 +2,7 @@
 # -*- coding: utf-8 -*-
 
 # parser.py
+# Copyright (c) 2015, Kevin Laeufer <kevin.laeufer@rwth-aachen.de>
 
 """
 This python module is able to parse awap communication
@@ -11,7 +12,7 @@ The first pass will commit all objects to memory.
 The second pass will resolve all cross references.
 """
 
-import os
+import os, math
 import lxml.etree as ET
 
 def determine_max_id(mod, ee, max_id_found):
@@ -57,6 +58,14 @@ class NamedCommunicationElement(object):
 	def module(self):
 		return self.mod
 
+	def to_dict(self):
+		return {
+			'name': self.name,
+			'full_name': self.full_name,
+			'cpp':  {'name': self.full_name.replace('.', '::')},
+			'java': {'name': self.full_name }
+		}
+
 
 class Service(NamedCommunicationElement):
 	def __init__(self, parent, node):
@@ -87,6 +96,15 @@ class Service(NamedCommunicationElement):
 		self.mod.passert(node, self.max_property_id >= max_id_found,
 			'Found id "{}", but the maximum id is "{}"!'.format(max_id_found, self.max_property_id))
 
+	def to_dict(self):
+		dd = super().to_dict()
+		dd['messages']   = [msg.to_dict()  for msg  in self.messages]
+		dd['max_message_id']  = self.max_message_id
+		dd['message_id_size'] = int(math.log(self.max_message_id,2) + 1)
+		dd['properties'] = [prop.to_dict() for prop in self.properties]
+		dd['max_property_id']  = self.max_property_id
+		dd['property_id_size'] = int(math.log(self.max_property_id,2) + 1)
+		return dd
 
 class Message(NamedCommunicationElement):
 	def __init__(self, parent, node):
@@ -103,26 +121,64 @@ class Message(NamedCommunicationElement):
 			elif field_ee.tag in ['enum']:
 				self.fields.append(EnumField(self, field_ee))
 
+	def to_dict(self):
+		dd = super().to_dict()
+		dd['id'] = self.id
+		dd['performative'] = self.performative
+		dd['tx'] = self.tx
+		dd['rx'] = self.rx
+		dd['fields'] = [field.to_dict() for field in self.fields]
+		return dd
+
 class IntField(NamedCommunicationElement):
 	def __init__(self, parent, node):
 		super().__init__(parent, node)
 		self.unsigned = (node.tag == "uint")
-		self.size = node.get("size")
+		self.size = int(node.get("size"))
+
+	def cpp_type(self):
+		if self.size <= 8:    tt = "int8_t"
+		elif self.size <= 16: tt = "int16_t"
+		elif self.size <= 32: tt = "int32_t"
+		return ("u" + tt) if self.unsigned else tt
+
+	def to_dict(self):
+		dd = super().to_dict()
+		dd['unsigned'] = self.unsigned
+		dd['size'] = self.size
+		dd['cpp'] = {'type': self.cpp_type()}
+		return dd
 
 class EnumField(NamedCommunicationElement):
 	def __init__(self, parent, node):
 		super().__init__(parent, node)
 		self.enum_class = Reference(self.mod, node, node.get("class"))
 
+	def to_dict(self):
+		dd = super().to_dict()
+		dd['size'] = self.enum_class.value.size
+		dd['cpp'] = { 'type': self.enum_class.value.name }
+		return dd
+
 class IntProperty(IntField):
 	def __init__(self, parent, node):
 		super().__init__(parent, node)
 		self.id = int(node.get("id"))
 
+	def to_dict(self):
+		dd = super().to_dict()
+		dd['id'] = self.id
+		return dd
+
 class EnumProperty(EnumField):
 	def __init__(self, parent, node):
 		super().__init__(parent, node)
 		self.id = int(node.get("id"))
+
+	def to_dict(self):
+		dd = super().to_dict()
+		dd['id'] = self.id
+		return dd
 
 class Reference(NamedCommunicationElement):
 	def __init__(self, module, node, name):
@@ -148,10 +204,24 @@ class EnumType(NamedCommunicationElement):
 		self.mod.passert(node, self.max_id >= max_id_found,
 			'Found id "{}", but the maximum id is "{}"!'.format(max_id_found, self.max_id))
 
+	@property
+	def size(self):
+		return int(math.log(self.max_id,2) + 1)
+
+	def to_dict(self):
+		dd = super().to_dict()
+		dd['elements'] = [element.to_dict() for element in self.elements]
+		return dd
+
 class EnumElement(NamedCommunicationElement):
 	def __init__(self, parent, node):
 		super().__init__(parent, node)
 		self.id = int(node.get('id'))
+
+	def to_dict(self):
+		dd = super().to_dict()
+		dd['id'] = self.id
+		return dd
 
 class Import(object):
 	def __init__(self, mod, node):
@@ -179,7 +249,6 @@ class Module(object):
 		self.xmlschema = Module.SchemaSingleton
 		self.parser = parser
 		self.name = name
-		self.loaded = False
 		self.filename = self._find_file()
 		self.imports = []
 		self.services = []
@@ -262,6 +331,13 @@ class Module(object):
 			else:
 				print('Warn: unknown tag "{}" in "{}" line {}'.format(ee.tag, self.filename, ee.sourceline))
 
+	def to_dict(self):
+		dd = {'name': self.name, 'filename': self.filename }
+		dd['services'] = [service.to_dict() for service in self.services]
+		dd['enums'] = [enum.to_dict() for enum in self.enums]
+		dd['messages'] = [msg.to_dict() for service in self.services for msg in service.messages]
+		return dd
+
 	def passert(self, element, value, msg):
 		""" Parser Assert """
 		if not value:
@@ -320,3 +396,8 @@ if __name__ == "__main__":
 	p = CommunicationParser()
 	p.path.append(exampl_path)
 	p.parse('service.temperature')
+
+	for key, value in p.modules.items():
+		print("--------------------------------")
+		print("Module: {}".format(key))
+		print(value.to_dict())
