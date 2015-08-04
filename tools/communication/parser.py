@@ -139,10 +139,9 @@ class Import(object):
 		self.import_module = None
 
 	def add_to_index(self, index):
-		imp_name = self.import_module.name + "."
-		imp_alias = self.alias
+		prefix = (self.alias + ".") if len(self.alias) > 0 else ""
 		for key, value in self.import_module.index.items():
-			index[key.replace(imp_name, imp_alias)] = value
+			index[prefix + key] = value
 
 class Module(object):
 	SchemaSingleton = None
@@ -180,9 +179,8 @@ class Module(object):
 
 	def register(self, child, name):
 		""" insert unique reference into index """
-		full_name = self.name + "." + name
-		if full_name in self.index:
-			oc0 = self.index[full_name].node
+		if name in self.index:
+			oc0 = self.index[name].node
 			oc1 = child.node
 			with open(self.filename) as ff:
 				lines = ff.readlines()
@@ -197,8 +195,8 @@ class Module(object):
 			msg += '\t\t' + line1
 			raise Exception(msg)
 		else:
-			self.index[full_name] = child
-		return full_name
+			self.index[name] = child
+		return name
 
 	@property
 	def module(self):
