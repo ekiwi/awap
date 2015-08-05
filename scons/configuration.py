@@ -25,10 +25,14 @@ def load_awap_confguration_method(env, configuration):
 	env['AWAP_CONFIGURATION_XSD'].assertValid(tree)
 	# parse
 	services = root.find("services")
-	env['AWAP_MAX_SERVICE_ID'] = services.get('max-id')
-	for service in services:
-		env.LoadService(service.get('module'),
-			service.get('name'), service.get('id'))
+	env['AWAP_MAX_SERVICE_ID'] = int(services.get('max-id'))
+	# a list that contains all services that were loaded
+	env['AWAP_SERVICES_BY_ID'] = [None] * env['AWAP_MAX_SERVICE_ID']
+	env['AWAP_SERVICES_BY_NAME'] = {}
+	for serv_node in services:
+		service = env.LoadService(serv_node.get('module'), serv_node.get('name'))
+		env['AWAP_SERVICES_BY_ID'][int(serv_node.get('id'))] = service
+		env['AWAP_SERVICES_BY_NAME'][service.name] = service
 	agents = root.find("agents")
 	for agent in agents:
 		load_awap_agent(env, agent.get("name"))
