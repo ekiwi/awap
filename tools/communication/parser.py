@@ -251,8 +251,8 @@ class Module(object):
 		self.name = name
 		self.filename = self._find_file()
 		self.imports = []
-		self.services = []
-		self.enums = []
+		self.services = {}
+		self.enums = {}
 		self.references = []	# will be resolved in the `resolve` stage
 		# this will hold all possible references in this module
 		self.index = {}
@@ -323,9 +323,11 @@ class Module(object):
 			if ee.tag == "import":
 				self.imports.append(Import(self, ee))
 			elif ee.tag == "service":
-				self.services.append(Service(self, ee))
+				service = Service(self, ee)
+				self.services[service.name] = service
 			elif ee.tag == "enum":
-				self.enums.append(EnumType(self, ee))
+				enum = EnumType(self, ee)
+				self.enums[enum.name] = enum
 			elif ee.tag is ET.Comment:
 				pass	# ignore comments
 			else:
@@ -333,9 +335,9 @@ class Module(object):
 
 	def to_dict(self):
 		dd = {'name': self.name, 'filename': self.filename }
-		dd['services'] = [service.to_dict() for service in self.services]
-		dd['enums'] = [enum.to_dict() for enum in self.enums]
-		dd['messages'] = [msg.to_dict() for service in self.services for msg in service.messages]
+		dd['services'] = [service.to_dict() for service in self.services.values()]
+		dd['enums'] = [enum.to_dict() for enum in self.enums.values()]
+		dd['messages'] = [msg.to_dict() for service in self.services.values() for msg in service.messages]
 		return dd
 
 	def passert(self, element, value, msg):
