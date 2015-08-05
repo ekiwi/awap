@@ -12,14 +12,16 @@ libname = 'common'
 generated_path = os.path.join(env['AWAP_BUILDPATH'], 'lib', libname, 'generated')
 generated_files = []
 
+communication = env.GetCommunicationDict()
+
 service_path = os.path.join(generated_path, *("de.rwth_aachen.awap.service".split('.')))
 service_template = os.path.join('templates', 'abstract_service.java.in')
-for service in env['AWAP_SERVICES']:
-	target = os.path.join(service_path, "Abstract{}.java".format(service.name))
+for service in communication['services']:
+	target = os.path.join(service_path, "Abstract{name}.java".format(**service))
 	generated_files.append(env.Template(
 		target=target,
 		source=service_template,
-		substitutions=service.to_dict()))
+		substitutions=service))
 
 
 

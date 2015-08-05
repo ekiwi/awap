@@ -85,7 +85,7 @@ def generate(env):
 	# make sure to include all needed external tools
 	env.Tool('default')
 	env['toolpath'].append(os.path.join(env['AWAP_ROOT'], 'ext', 'ekiwi-scons-tools', 'tools'))
-	# env.Tool('java2jar')
+	env.Tool('template')
 	env['toolpath'].append(os.path.join(env['AWAP_ROOT'], 'ext', 'ostfriesentee', 'scons'))
 	env.Tool('ostfriesentee')
 
