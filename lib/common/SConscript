@@ -18,10 +18,10 @@ service_path = os.path.join(generated_path, *("de.rwth_aachen.awap.service".spli
 service_template = os.path.join('templates', 'abstract_service.java.in')
 for service in communication['services']:
 	target = os.path.join(service_path, "Abstract{name}.java".format(**service))
-	generated_files.append(env.Template(
+	generated_files += env.Template(
 		target=target,
 		source=service_template,
-		substitutions=service))
+		substitutions={'service': service})
 
 
 
@@ -30,7 +30,7 @@ base_lib = SConscript([env['OFT_ROOT'] + '/lib/base/SConscript'], exports = 'env
 util_lib = SConscript([env['OFT_ROOT'] + '/lib/util/SConscript'], exports = 'env')
 
 source = ['java'] + generated_files
-lib = env.OstfriesenteeLibrary('libname', source, OFT_LIBS=['base', 'util'])
+lib = env.OstfriesenteeLibrary(libname, source, OFT_LIBS=['base', 'util'])
 
 # TODO: build host library
 
