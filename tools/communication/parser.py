@@ -70,6 +70,8 @@ class NamedCommunicationElement(object):
 class Service(NamedCommunicationElement):
 	def __init__(self, parent, node):
 		super(Service, self).__init__(parent, node)
+		self.id = -1    # needs to be set on a per configuration basis
+		                # the external code is responsible for avoiding clashes
 		self.messages = []
 		self.properties = []
 
@@ -98,6 +100,8 @@ class Service(NamedCommunicationElement):
 
 	def to_dict(self):
 		dd = super(Service, self).to_dict()
+		if self.id >= 0:
+			dd['id'] = self.id
 		dd['messages']   = [msg.to_dict()  for msg  in self.messages]
 		dd['max_message_id']  = self.max_message_id
 		dd['message_id_size'] = int(math.log(self.max_message_id,2) + 1)
