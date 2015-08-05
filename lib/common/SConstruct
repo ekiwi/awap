@@ -5,7 +5,7 @@
 
 import os
 
-env = Environment(toolpath = [os.path.join('..', '..', 'ext', 'ostfriesentee', 'scons')], tools = ['default', 'ostfriesentee'])
+env = Environment(toolpath = [os.path.join('..', '..', 'scons')], tools = ['awap'])
 
 env.Architecture("amd64")
 lib = SConscript(['SConscript'], exports = 'env')

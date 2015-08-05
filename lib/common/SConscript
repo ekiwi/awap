@@ -6,7 +6,8 @@
 Import('env')
 
 base_lib = SConscript([env['OFT_ROOT'] + '/lib/base/SConscript'], exports = 'env')
+util_lib = SConscript([env['OFT_ROOT'] + '/lib/util/SConscript'], exports = 'env')
 
-common = env.OstfriesenteeLibrary('common', ['java'], OFT_LIBS=['base'])
+common = env.OstfriesenteeLibrary('common', ['java'], OFT_LIBS=['base', 'util'])
 
 Return('common')
