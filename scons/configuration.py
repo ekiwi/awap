@@ -24,6 +24,11 @@ def load_awap_confguration_method(env, configuration):
 	# validate
 	env['AWAP_CONFIGURATION_XSD'].assertValid(tree)
 	# parse
+	services = root.find("services")
+	env['AWAP_MAX_SERVICE_ID'] = services.get('max-id')
+	for service in services:
+		env.LoadService(service.get('module'),
+			service.get('name'), service.get('id'))
 	agents = root.find("agents")
 	for agent in agents:
 		load_awap_agent(env, agent.get("name"))
@@ -44,6 +49,20 @@ def load_awap_agent(env, name):
 	root = tree.getroot()
 	# validate
 	env['AWAP_AGENT_XSD'].assertValid(tree)
+	# make sure agent name matches
+	if root.get('name') != name:
+		env.Error('Name specified in "{}" ("{}") '.format(filename, root.get('name')) +
+			' does not match directory name "{}"!'.format(name))
+		exit(1)
+	# make sure required services are available
+	services = root.findall('service')
+	for service in services:
+		if not env.IsServiceLoaded(service.get('module'), service.get('name')):
+			env.Error('Service "{}.{}"'.format(service.get('module'), service.get('name')) +
+				' required for agent "{}" was not found.\n'.format(name) +
+				'Did you load that service in your configuration xml file?')
+			exit(1)
+	# TODO: add agent to some sort of database...
 
 
 def generate(env):
