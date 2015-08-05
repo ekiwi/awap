@@ -4,10 +4,32 @@
 
 
 Import('env')
+import os
 
+libname = 'common'
+
+# tell scons how to generate some files
+generated_path = os.path.join(env['AWAP_BUILDPATH'], 'lib', libname, 'generated')
+generated_files = []
+
+service_path = os.path.join(generated_path, *("de.rwth_aachen.awap.service".split('.')))
+service_template = os.path.join('templates', 'abstract_service.java.in')
+for service in env['AWAP_SERVICES']:
+	target = os.path.join(service_path, "Abstract{}.java".format(service.name))
+	generated_files.append(env.Template(
+		target=target,
+		source=service_template,
+		substitutions=service.to_dict()))
+
+
+
+# build ostfriesentee library
 base_lib = SConscript([env['OFT_ROOT'] + '/lib/base/SConscript'], exports = 'env')
 util_lib = SConscript([env['OFT_ROOT'] + '/lib/util/SConscript'], exports = 'env')
 
-common = env.OstfriesenteeLibrary('common', ['java'], OFT_LIBS=['base', 'util'])
+source = ['java'] + generated_files
+lib = env.OstfriesenteeLibrary('libname', source, OFT_LIBS=['base', 'util'])
 
-Return('common')
+# TODO: build host library
+
+Return('lib')
