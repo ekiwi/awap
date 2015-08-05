@@ -25,18 +25,25 @@
 </xs:complexType>
 </xs:element>
 
+<xs:simpleType name="ServiceId">
+<xs:restriction base="xs:integer">
+	<xs:minInclusive value="0"/>
+	<xs:maxInclusive value="255"/>
+</xs:restriction>
+</xs:simpleType>
+
 <xs:element name="services">
 <xs:complexType>
 	<xs:sequence>
 		<xs:element ref="service"/>
 	</xs:sequence>
-	<xs:attribute name="max-id" use="required" type="xs:integer"/>
+	<xs:attribute name="max-id" use="required" type="ServiceId"/>
 </xs:complexType>
 </xs:element>
 
 <xs:element name="service">
 <xs:complexType>
-	<xs:attribute name="id" use="required" type="xs:integer"/>
+	<xs:attribute name="id" use="required" type="ServiceId"/>
 	<xs:attribute name="module" use="required" type="xs:NCName"/>
 	<xs:attribute name="name" use="required" type="xs:NCName"/>
 </xs:complexType>
