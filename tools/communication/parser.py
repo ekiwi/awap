@@ -390,6 +390,68 @@ class CommunicationParser(object):
 
 		return mod
 
+	def get_dict(self, required_services, required_enums=[]):
+		""" Returns a dictionary that contains all elements required
+		    by the `services` and `enums` specified as well as the
+		    `services` and `enums` themselves.
+		"""
+		# reference lists
+		modules = []
+		messages = []
+		properties = []
+		services = []
+		enums = []
+		# collect messages, properties and services
+		# as well as enums that a message or property depends on
+		for service_name in required_services:
+			mod = self.modules[service_name.rsplit('.', 1)[0]]
+			if not mod in modules: modules.append(mod)
+			service = mod.services[service_name.rsplit('.', 1)[1]]
+			services.append(service)
+			# a service can depend on enums
+			for msg in service.messages:
+				messages.append(msg)
+				enum_fields = (ff for ff in msg.fields if isinstance(ff, EnumField))
+				for ff in enum_fields:
+					if not ff.enum_class.value in enums:
+						enums.append(ff.enum_class.value)
+			for prop in service.properties:
+				properties.append(prop)
+				if isinstance(prop, EnumProperty) and not prop.enum_class.value in enums:
+					enums.append(prop.enum_class.value)
+		# collect enums that are required
+		for enum_name in required_enums:
+			mod = self.modules[enum_name.rsplit('.', 1)[0]]
+			if not mod in modules: modules.append(mod)
+			enum = mod.enums[enum_name.rsplit('.', 1)[1]]
+			if not enum in enums:
+				enums.append(enum)
+		# the return dictionary
+		output = { 'modules': [], 'messages': None, 'properties': None, 'services': None, 'enums': None }
+		# create module dictionaries
+		# unfortunately we cannot use the `to_dict` method, as this would
+		# create a dictionary of the complete module
+		# here we only want the subset, that is required, in order to
+		# avoid including unused enums in our library
+		for module in modules:
+			dd = {'name': module.name, 'filename': module.filename }
+			dd['services'] = [serv.to_dict() for serv
+			                  in module.services.values() if serv in services]
+			dd['enums'] = [enum.to_dict() for enum
+			               in module.enums.values() if enum in enums]
+			dd['messages'] = [msg.to_dict() for serv
+			                  in module.services.values() if serv in services
+			                  for msg in service.messages]
+			dd['properties']= [prop.to_dict() for serv
+			                   in module.services.values() if serv in services
+			                   for prop in service.properties]
+			output['modules'].append(dd)
+		# create other dicts
+		output['messages']   = [msg.to_dict()  for msg  in messages]
+		output['properties'] = [prop.to_dict() for prop in properties]
+		output['services']   = [serv.to_dict() for serv in services]
+		output['enums']      = [enum.to_dict() for enum in enums]
+		return output
 
 if __name__ == "__main__":
 	path = os.path.dirname(os.path.realpath(__file__))
@@ -399,7 +461,11 @@ if __name__ == "__main__":
 	p.path.append(exampl_path)
 	p.parse('service.temperature')
 
-	for key, value in p.modules.items():
-		print("--------------------------------")
-		print("Module: {}".format(key))
-		print(value.to_dict())
+#	for key, value in p.modules.items():
+#		print("--------------------------------")
+#		print("Module: {}".format(key))
+#		print(value.to_dict())
+
+	import pprint
+	pp = pprint.PrettyPrinter(indent=2)
+	pp.pprint(p.get_dict(['service.temperature.TemperatureService']))
