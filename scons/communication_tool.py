@@ -24,7 +24,11 @@ def load_service_method(env, module, name, id):
 	# make sure path is up to date
 	parser.path = env['AWAP_COMMUNICATION_PATH']
 	# make sure module is parsed
-	parser.parse(module)
+	try: parser.parse(module)
+	except Exception as ee:
+		env.Error('Failed to parse module "{}":'.format(module))
+		env.Error(ee)
+		exit(1)
 
 def is_service_loaded_method(env, module, name):
 	""" Returns true if the service specified by name has been loaded
