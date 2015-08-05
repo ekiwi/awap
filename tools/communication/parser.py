@@ -1,4 +1,4 @@
-#!/usr/bin/env python3
+#!/usr/bin/env python2
 # -*- coding: utf-8 -*-
 
 # parser.py
@@ -41,7 +41,7 @@ class ParserException(Exception):
 		msg += 'File "{}", line {}\n'.format(file, element.sourceline)
 		msg += '    ' + line
 		msg += '    Error: "{}"'.format(message)
-		super().__init__(msg)
+		super(ParserException, self).__init__(msg)
 
 class NamedCommunicationElement(object):
 	def __init__(self, parent, node):
@@ -69,7 +69,7 @@ class NamedCommunicationElement(object):
 
 class Service(NamedCommunicationElement):
 	def __init__(self, parent, node):
-		super().__init__(parent, node)
+		super(Service, self).__init__(parent, node)
 		self.messages = []
 		self.properties = []
 
@@ -97,7 +97,7 @@ class Service(NamedCommunicationElement):
 			'Found id "{}", but the maximum id is "{}"!'.format(max_id_found, self.max_property_id))
 
 	def to_dict(self):
-		dd = super().to_dict()
+		dd = super(Service, self).to_dict()
 		dd['messages']   = [msg.to_dict()  for msg  in self.messages]
 		dd['max_message_id']  = self.max_message_id
 		dd['message_id_size'] = int(math.log(self.max_message_id,2) + 1)
@@ -108,7 +108,7 @@ class Service(NamedCommunicationElement):
 
 class Message(NamedCommunicationElement):
 	def __init__(self, parent, node):
-		super().__init__(parent, node)
+		super(Message, self).__init__(parent, node)
 		self.id = int(node.get("id"))
 		self.performative = node.get("performative")
 		direction = node.get("direction")
@@ -122,7 +122,7 @@ class Message(NamedCommunicationElement):
 				self.fields.append(EnumField(self, field_ee))
 
 	def to_dict(self):
-		dd = super().to_dict()
+		dd = super(Message, self).to_dict()
 		dd['id'] = self.id
 		dd['performative'] = self.performative
 		dd['tx'] = self.tx
@@ -132,7 +132,7 @@ class Message(NamedCommunicationElement):
 
 class IntField(NamedCommunicationElement):
 	def __init__(self, parent, node):
-		super().__init__(parent, node)
+		super(IntField, self).__init__(parent, node)
 		self.unsigned = (node.tag == "uint")
 		self.size = int(node.get("size"))
 
@@ -143,7 +143,7 @@ class IntField(NamedCommunicationElement):
 		return ("u" + tt) if self.unsigned else tt
 
 	def to_dict(self):
-		dd = super().to_dict()
+		dd = super(IntField, self).to_dict()
 		dd['unsigned'] = self.unsigned
 		dd['size'] = self.size
 		dd['cpp'] = {'type': self.cpp_type()}
@@ -151,36 +151,36 @@ class IntField(NamedCommunicationElement):
 
 class EnumField(NamedCommunicationElement):
 	def __init__(self, parent, node):
-		super().__init__(parent, node)
+		super(EnumField, self).__init__(parent, node)
 		self.enum_class = Reference(self.mod, node, node.get("class"))
 
 	def to_dict(self):
-		dd = super().to_dict()
+		dd = super(EnumField, self).to_dict()
 		dd['size'] = self.enum_class.value.size
 		dd['cpp'] = { 'type': self.enum_class.value.name }
 		return dd
 
 class IntProperty(IntField):
 	def __init__(self, parent, node):
-		super().__init__(parent, node)
+		super(IntProperty, self).__init__(parent, node)
 		self.id = int(node.get("id"))
 
 	def to_dict(self):
-		dd = super().to_dict()
+		dd = super(IntProperty, self).to_dict()
 		dd['id'] = self.id
 		return dd
 
 class EnumProperty(EnumField):
 	def __init__(self, parent, node):
-		super().__init__(parent, node)
+		super(EnumProperty, self).__init__(parent, node)
 		self.id = int(node.get("id"))
 
 	def to_dict(self):
-		dd = super().to_dict()
+		dd = super(EnumProperty, self).to_dict()
 		dd['id'] = self.id
 		return dd
 
-class Reference(NamedCommunicationElement):
+class Reference(object):
 	def __init__(self, module, node, name):
 		self.node = node # for error reporting
 		self.name = name
@@ -194,7 +194,7 @@ class Reference(NamedCommunicationElement):
 
 class EnumType(NamedCommunicationElement):
 	def __init__(self, parent, node):
-		super().__init__(parent, node)
+		super(EnumType, self).__init__(parent, node)
 		self.elements = []
 
 		for el_ee in node:
@@ -209,17 +209,17 @@ class EnumType(NamedCommunicationElement):
 		return int(math.log(self.max_id,2) + 1)
 
 	def to_dict(self):
-		dd = super().to_dict()
+		dd = super(EnumType, self).to_dict()
 		dd['elements'] = [element.to_dict() for element in self.elements]
 		return dd
 
 class EnumElement(NamedCommunicationElement):
 	def __init__(self, parent, node):
-		super().__init__(parent, node)
+		super(EnumElement, self).__init__(parent, node)
 		self.id = int(node.get('id'))
 
 	def to_dict(self):
-		dd = super().to_dict()
+		dd = super(EnumElement, self).to_dict()
 		dd['id'] = self.id
 		return dd
 
