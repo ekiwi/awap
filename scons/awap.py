@@ -90,7 +90,7 @@ def generate(env):
 	env.Tool('ostfriesentee')
 
 	# load awap specific tools
-	env.Tool('communication')
+	env.Tool('communication_tool')
 	env.Tool('configuration')
 
 	# add pseudo builder to generate targets for a specific awap configuration
