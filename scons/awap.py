@@ -65,6 +65,10 @@ def generate(env):
 	env['AWAP_LIB_JADE'] = os.path.join(env['AWAP_ROOT'], 'lib', 'jade', 'SConscript')
 	env['AWAP_LIB_NODE'] = os.path.join(env['AWAP_ROOT'], 'lib', 'node', 'SConscript')
 
+	# lists that need to be filled by the user
+	env['AWAP_AGENT_PATH'] = []
+	env['AWAP_COMMUNICATION_PATH'] = []
+
 	# import terminal type to enable gcc/clang to print colored output
 	# http://stackoverflow.com/questions/9922521/why-doesnt-clang-show-color-output-under-scons
 	env['ENV']['TERM'] = os.environ['TERM']

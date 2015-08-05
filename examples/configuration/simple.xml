@@ -1,7 +1,7 @@
 <?xml version="1.0" encoding="UTF-8" ?>
 <awap-configuration version="0.1" name="Simple">
 	<agents>
-		<agent name="TemperatureService" />
+		<agent name="TemperatureSensor" />
 	</agents>
 	<!-- max-id is needed for domain facilitator table field size -->
 	<services max-id="7">
