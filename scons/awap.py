@@ -86,6 +86,10 @@ def generate(env):
 	env.Tool('default')
 	env['toolpath'].append(os.path.join(env['AWAP_ROOT'], 'ext', 'ekiwi-scons-tools', 'tools'))
 	env.Tool('template')
+	# only works if indentifier is camelCase or CamelCase ....
+	def filter_camelCase(identifier):
+		return identifier[0].lower() + identifier[1:]
+	env.AddTemplateFilter('camelCase', filter_camelCase)
 	env['toolpath'].append(os.path.join(env['AWAP_ROOT'], 'ext', 'ostfriesentee', 'scons'))
 	env.Tool('ostfriesentee')
 
