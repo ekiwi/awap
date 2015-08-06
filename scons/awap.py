@@ -51,15 +51,13 @@ def awap_method(env, configuration):
 	""" This is a pseudo builder that generates a number of targets that
 		can be executed in order to build different parts of awap.
 	"""
-	print("Awap({})".format(configuration))
 	# load and validate awap configuration which in turn loads the communication
 	agents = env.LoadAwapConfiguration(configuration)
 	# load libcommon SConscript
 	env.Alias('libcommon', env.SConscript(env['AWAP_LIB_COMMON'], exports = 'env'))
 	# build agents
 	for agent in agents:
-		print(agent)
-		#env.Agent(*agent)
+		env.Agent(**agent)
 
 def generate(env):
 	# define some paths
@@ -99,6 +97,7 @@ def generate(env):
 
 	# load awap specific tools
 	env.Tool('configuration')
+	env.Tool('agent')
 
 	# add pseudo builder to generate targets for a specific awap configuration
 	env.AddMethod(awap_method, 'Awap')
