@@ -232,6 +232,7 @@ class EnumType(NamedCommunicationElement):
 		dd = super(EnumType, self).to_dict()
 		dd['elements'] = [element.to_dict() for element in self.elements]
 		dd['size'] = self.size
+		dd['max_id'] = self.max_id
 		dd['cpp'] = { 'type': self.name }
 		dd['java'] = { 'type': self.java_type() }
 		return dd
