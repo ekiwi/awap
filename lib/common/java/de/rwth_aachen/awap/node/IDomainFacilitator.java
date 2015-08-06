@@ -1,4 +1,7 @@
-package de.rwth_aachen.awap;
+package de.rwth_aachen.awap.node;
+
+import de.rwth_aachen.awap.Property;
+import de.rwth_aachen.awap.Service;
 
 /**
  * Interface for a very minimal Domain Facilitator implementation.

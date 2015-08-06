@@ -1,4 +1,4 @@
-package de.rwth_aachen.awap;
+package de.rwth_aachen.awap.node;
 
 public interface IServiceListener {
 	public void serviceFound(byte listenerId, int remoteAgentId);
