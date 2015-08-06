@@ -1,6 +1,6 @@
 package de.rwth_aachen.awap.service;
 
-import de.rwth_aachen.awap.Agent;
+import de.rwth_aachen.awap.LocalAgent;
 import de.rwth_aachen.awap.RemoteAgent;
 import de.rwth_aachen.awap.Service;
 
@@ -8,24 +8,14 @@ public abstract class Abstract{{service.name}} extends Service {
 %% for prop in service.properties
 	protected {{ prop.java.type }} {{ prop.name | camelCase }};
 %% endfor
-	public Abstract{{service.name}}(
-		Agent parent,
-%% for prop in service.properties
-	%% if loop.last
-		{{ prop.java.type }} {{ prop.name | camelCase }}
-	%% else
-		{{ prop.java.type }} {{ prop.name | camelCase }},
-	%% endif
-%% endfor
-		) {
+	public Abstract{{service.name}}(LocalAgent parent{{ service.java.initializer_list }}) {
 		super(parent);
 %% for prop in service.properties
 		this.{{ prop.name | camelCase }} = {{ prop.name | camelCase }};
 %% endfor
 	}
+	// message handlers
 %% for msg in service.messages
-	//--------------------------------------------------------------------------
-	// Message: {{ msg.name }}
 	%% if msg.rx
 	public abstract void onReceive{{ msg.name }}(RemoteAgent sender{{ msg.java.arglist }});
 	%% endif
@@ -36,5 +26,23 @@ public abstract class Abstract{{service.name}} extends Service {
 	}
 	%% endif
 %% endfor
+	// message classes
+	static class Message {
+%% for msg in service.messages
+		static class {{ msg.name }} extends de.rwth_aachen.awap.Message {
+	%% for field in msg.fields
+			public {{ field.java.type }} {{ field.name }};
+	%% endfor
+	%% if msg.tx
+			public {{ msg.name }}(RemoteAgent receiver{{ msg.java.initializer_list }}){
+				this.receiver = receiver;
+		%% for field in msg.field
+				this.{{ field.name }} = {{ field.name}};
+		%% endfor
+			}
+	%% endif
+		}
+%% endfor
+	}
 }
 
