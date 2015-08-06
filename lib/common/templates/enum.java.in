@@ -4,5 +4,5 @@ public final class {{ enum.name }} {
 %% for element in enum.elements
 	public static final {{ enum.java.type }} {{ element.name }} = {{ element.id }};
 %% endfor
-	public static final int NumberOfValues = {{ enum.max_id }};
+	public static final int NumberOfValues = {{ enum.elements | length }};
 }
