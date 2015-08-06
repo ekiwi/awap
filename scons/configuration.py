@@ -36,12 +36,11 @@ def load_awap_confguration_method(env, configuration):
 		full_name = "{}.{}".format(service.module.name, service.name)
 		env['AWAP_SERVICE_NAMES'].append(full_name)
 	# TODO: enums
-	agents = root.find("agents")
-	for agent in agents:
-		load_awap_agent(env, agent.get("name"))
+	agents = [load_awap_agent(env, agent.get("name")) for agent in root.find("agents")]
 	# at the end of this method, the communication has to be complete!
 	pp = env['AWAP_COMMUNICATION_PARSER']
 	env['AWAP_COMMUNICATION_DICT'] = pp.get_dict(env['AWAP_SERVICE_NAMES'], enum_names)
+	return agents
 
 def get_communication_dict_method(env):
 	""" returns a dictionary containing all communication elements
@@ -54,7 +53,8 @@ def load_awap_agent(env, name):
 	# search for {{ agent_name }}/agent.xml in agent path
 	tree = None
 	for path in env['AWAP_AGENT_PATH']:
-		filename = os.path.join(path, name, 'agent.xml')
+		agent_path = os.path.join(path, name)
+		filename = os.path.join(agent_path, 'agent.xml')
 		try: tree = ET.parse(filename)
 		except: continue
 	# show error and exit if agent was not found (this is fatal)
@@ -79,7 +79,8 @@ def load_awap_agent(env, name):
 				' required for agent "{}" was not found.\n'.format(name) +
 				'Did you load that service in your configuration xml file?')
 			exit(1)
-	# TODO: add agent to some sort of database...
+	# agent was successfuly validated!
+	return (name, agent_path)
 
 def load_service(env, module, name):
 	""" Tries to load the service specified by name from the

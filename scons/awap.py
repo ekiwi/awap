@@ -53,9 +53,13 @@ def awap_method(env, configuration):
 	"""
 	print("Awap({})".format(configuration))
 	# load and validate awap configuration which in turn loads the communication
-	env.LoadAwapConfiguration(configuration)
+	agents = env.LoadAwapConfiguration(configuration)
 	# load libcommon SConscript
 	env.Alias('libcommon', env.SConscript(env['AWAP_LIB_COMMON'], exports = 'env'))
+	# build agents
+	for agent in agents:
+		print(agent)
+		#env.Agent(*agent)
 
 def generate(env):
 	# define some paths
@@ -94,7 +98,6 @@ def generate(env):
 	env.Tool('ostfriesentee')
 
 	# load awap specific tools
-	env.Tool('communication_tool')
 	env.Tool('configuration')
 
 	# add pseudo builder to generate targets for a specific awap configuration
