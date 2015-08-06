@@ -6,21 +6,21 @@ import de.rwth_aachen.awap.Service;
 
 public abstract class Abstract{{service.name}} extends Service {
 %% for prop in service.properties
-	protected {{ prop.java.type }} {{ prop.name }};
+	protected {{ prop.java.type }} {{ prop.name | camelCase }};
 %% endfor
 	public Abstract{{service.name}}(
 		Agent parent,
 %% for prop in service.properties
 	%% if loop.last
-		{{ prop.java.type }} {{ prop.name }}
+		{{ prop.java.type }} {{ prop.name | camelCase }}
 	%% else
-		{{ prop.java.type }} {{ prop.name }},
+		{{ prop.java.type }} {{ prop.name | camelCase }},
 	%% endif
 %% endfor
 		) {
 		super(parent);
 %% for prop in service.properties
-		this.{{ prop.name }} = {{ prop.name }};
+		this.{{ prop.name | camelCase }} = {{ prop.name | camelCase }};
 %% endfor
 	}
 %% for msg in service.messages
