@@ -11,7 +11,11 @@ public abstract class Abstract{{service.name}} extends Service {
 	public Abstract{{service.name}}(
 		Agent parent,
 %% for prop in service.properties
+	%% if loop.last
+		{{ prop.java.type }} {{ prop.name }}
+	%% else
 		{{ prop.java.type }} {{ prop.name }},
+	%% endif
 %% endfor
 		) {
 		super(parent);

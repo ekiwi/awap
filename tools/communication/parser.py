@@ -146,11 +146,21 @@ class IntField(NamedCommunicationElement):
 		elif self.size <= 32: tt = "int32_t"
 		return ("u" + tt) if self.unsigned else tt
 
+	def java_type(self):
+		# there seem to be no unsigened Java types, therefore we need
+		# one bit more, if our input was a positive number
+		if self.unsigned: size = self.size - 1
+		else:             size = self.size
+		if size <= 8:    return "byte"
+		elif size <= 16: return "short"
+		elif size <= 32: return "int"
+
 	def to_dict(self):
 		dd = super(IntField, self).to_dict()
 		dd['unsigned'] = self.unsigned
 		dd['size'] = self.size
-		dd['cpp'] = {'type': self.cpp_type()}
+		dd['cpp']  = {'type': self.cpp_type()}
+		dd['java'] = {'type': self.java_type()}
 		return dd
 
 class EnumField(NamedCommunicationElement):
@@ -162,6 +172,7 @@ class EnumField(NamedCommunicationElement):
 		dd = super(EnumField, self).to_dict()
 		dd['size'] = self.enum_class.value.size
 		dd['cpp'] = { 'type': self.enum_class.value.name }
+		dd['java'] = { 'type': self.enum_class.value.java_type() }
 		return dd
 
 class IntProperty(IntField):
@@ -212,9 +223,17 @@ class EnumType(NamedCommunicationElement):
 	def size(self):
 		return int(math.log(self.max_id,2) + 1)
 
+	def java_type(self):
+		if self.size <= 8:    return "byte"
+		elif self.size <= 16: return "short"
+		elif self.size <= 32: return "int"
+
 	def to_dict(self):
 		dd = super(EnumType, self).to_dict()
 		dd['elements'] = [element.to_dict() for element in self.elements]
+		dd['size'] = self.size
+		dd['cpp'] = { 'type': self.name }
+		dd['java'] = { 'type': self.java_type() }
 		return dd
 
 class EnumElement(NamedCommunicationElement):
