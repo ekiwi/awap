@@ -19,7 +19,7 @@ public abstract class Abstract{{service.name}} extends Service {
 	// message handlers
 %% for msg in service.messages
 	%% if msg.rx
-	static class {{ msg.name }} extends RxMessage {
+	public static class {{ msg.name }} extends RxMessage {
 	%% for field in msg.fields
 			public {{ field.java.type }} {{ field.name }};
 	%% endfor
@@ -27,7 +27,7 @@ public abstract class Abstract{{service.name}} extends Service {
 	public abstract void onReceive({{ msg.name }} msg);
 	%% endif
 	%% if msg.tx
-	static class {{ msg.name }} extends TxMessage {
+	public static class {{ msg.name }} extends TxMessage {
 	%% for field in msg.fields
 			public {{ field.java.type }} {{ field.name }};
 	%% endfor
