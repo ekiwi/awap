@@ -1,7 +1,6 @@
 package de.rwth_aachen.awap;
 
-public abstract class Message {
-	public Agent sender;
+public abstract class TxMessage {
 	public Agent receiver;
 
 	/**
