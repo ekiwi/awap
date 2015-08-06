@@ -16,7 +16,15 @@ import os
 import lxml.etree as ET
 
 def agent_method(env, path, name):
-	print("Agent({}, {})".format(path, name))
+	source_loc = (os.path.join(path, src) for src in ['src', 'java'])
+	source = [src for src in source_loc if os.path.isdir(src)]
+	# build ostfriesentee and regular jar
+	agent_oft = env.OstfriesenteeApplication(name, source, OFT_LIBS=['base', 'util', 'awap-common'])
+	jar_target = os.path.join(env['AWAP_AGENT_BUILDPATH'], name, name + '.jar')
+	agent_jar = env.JavaToJar(jar_target, source)
+	env.Alias(name + '.oft', agent_oft)
+	env.Alias(name + '.size', env.ShowSize(agent_oft))
+	env.Alias(name + '.jar', agent_jar)
 
 def load_agent_method(env, name):
 	# search for {{ agent_name }}/agent.xml in agent path
@@ -57,6 +65,7 @@ def generate(env):
 	agent_xsd = os.path.join(env['AWAP_SCONS_TOOLS'], 'agent.xsd')
 	env['AWAP_AGENT_XSD'] = ET.XMLSchema(ET.parse(agent_xsd))
 
+	env['AWAP_AGENT_BUILDPATH'] = os.path.join(env['AWAP_BUILDPATH'], 'agents')
 	# public methods
 	env.AddMethod(load_agent_method, 'LoadAgent')
 	env.AddMethod(agent_method, 'Agent')
