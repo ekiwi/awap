@@ -16,6 +16,8 @@ env.LoadAwapConfiguration(os.path.join(awap_root, 'examples', 'configuration', '
 env.Architecture("amd64")
 lib = SConscript(['SConscript'], exports = 'env')
 
+env.Alias("generate", "libcommon.generate")
+
 lib_size = env.ShowSize(lib)
 
 env.Default(lib_size)

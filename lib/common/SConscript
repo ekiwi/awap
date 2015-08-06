@@ -33,6 +33,7 @@ for enum in communication['enums']:
 		substitutions={'enum': enum})
 
 
+env.Alias("libcommon.generate", generated_files)
 
 # build ostfriesentee library
 base_lib = SConscript([env['OFT_ROOT'] + '/lib/base/SConscript'], exports = 'env')
