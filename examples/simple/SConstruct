@@ -10,7 +10,7 @@
 import os
 
 # root path of the awap repo
-path_awap_root = os.path.abspath('..')
+path_awap_root = os.path.abspath('../..')
 # path to awap scons tools
 path_awap_scons = os.path.join(path_awap_root, 'scons')
 
@@ -18,12 +18,12 @@ path_awap_scons = os.path.join(path_awap_root, 'scons')
 # create the scons environment which contains the custom awap build tools
 env = Environment(toolpath = [path_awap_scons], tools = ['awap'])
 # tell awap where to look for agents
-env.AppendUnique(AWAP_AGENT_PATH = 'agents')
+env.AppendUnique(AWAP_AGENT_PATH = '../agents')
 # tell awap where to look for communication modules
-env.AppendUnique(AWAP_COMMUNICATION_PATH = 'communication')
+env.AppendUnique(AWAP_COMMUNICATION_PATH = '../communication')
 
 # build awap configuration
-env.Awap(configuration = 'configuration/simple.xml')
+env.Awap(configuration = 'configuration.xml')
 
 # build libcommon by default
 env.Default('libcommon')
