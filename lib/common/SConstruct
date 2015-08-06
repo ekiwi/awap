@@ -5,7 +5,13 @@
 
 import os
 
-env = Environment(toolpath = [os.path.join('..', '..', 'scons')], tools = ['awap'])
+awap_root = os.path.join('..', '..')
+
+env = Environment(toolpath = [os.path.join(awap_root, 'scons')], tools = ['awap'])
+
+env.AppendUnique(AWAP_AGENT_PATH = os.path.join(awap_root, 'examples', 'agents'))
+env.AppendUnique(AWAP_COMMUNICATION_PATH = os.path.join(awap_root, 'examples', 'communication'))
+env.LoadAwapConfiguration(os.path.join(awap_root, 'examples', 'configuration', 'simple.xml'))
 
 env.Architecture("amd64")
 lib = SConscript(['SConscript'], exports = 'env')
