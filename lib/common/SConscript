@@ -7,9 +7,10 @@ Import('env')
 import os
 
 libname = 'common'
+lib_path =  os.path.join(env['AWAP_BUILDPATH'], 'lib', libname)
 
 # tell scons how to generate some files
-generated_path = os.path.join(env['AWAP_BUILDPATH'], 'lib', libname, 'generated')
+generated_path = os.path.join(lib_path, 'generated')
 generated_files = []
 
 communication = env.GetCommunicationDict()
@@ -32,16 +33,19 @@ for enum in communication['enums']:
 		source=enum_template,
 		substitutions={'enum': enum})
 
-
 env.Alias("libcommon.generate", generated_files)
+
+# Java sources
+source = ['java'] + generated_files
 
 # build ostfriesentee library
 base_lib = SConscript([env['OFT_ROOT'] + '/lib/base/SConscript'], exports = 'env')
 util_lib = SConscript([env['OFT_ROOT'] + '/lib/util/SConscript'], exports = 'env')
+libcommon_oft = env.OstfriesenteeLibrary(libname, source, OFT_LIBS=['base', 'util'])
+env.Alias('libcommon.oft', libcommon_oft)
 
-source = ['java'] + generated_files
-lib = env.OstfriesenteeLibrary(libname, source, OFT_LIBS=['base', 'util'])
+# build library for jade
+libcommon_java = env.JavaToJar(os.path.join(lib_path, libname + ".jar"), source)
+env.Alias('libcommon.java', libcommon_java)
 
-# TODO: build host library
-
-Return('lib')
+Return('libcommon_oft')
