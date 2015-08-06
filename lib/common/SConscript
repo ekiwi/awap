@@ -6,7 +6,7 @@
 Import('env')
 import os
 
-libname = 'common'
+libname = 'awap-common'
 lib_path =  os.path.join(env['AWAP_BUILDPATH'], 'lib', libname)
 
 # tell scons how to generate some files
@@ -33,7 +33,7 @@ for enum in communication['enums']:
 		source=enum_template,
 		substitutions={'enum': enum})
 
-env.Alias("libcommon.generate", generated_files)
+env.Alias("awap-common.generate", generated_files)
 
 # Java sources
 source = ['java'] + generated_files
@@ -42,10 +42,10 @@ source = ['java'] + generated_files
 base_lib = SConscript([env['OFT_ROOT'] + '/lib/base/SConscript'], exports = 'env')
 util_lib = SConscript([env['OFT_ROOT'] + '/lib/util/SConscript'], exports = 'env')
 libcommon_oft = env.OstfriesenteeLibrary(libname, source, OFT_LIBS=['base', 'util'])
-env.Alias('libcommon.oft', libcommon_oft)
+env.Alias('awap-common.oft', libcommon_oft)
 
 # build library for jade
 libcommon_java = env.JavaToJar(os.path.join(lib_path, libname + ".jar"), source)
-env.Alias('libcommon.java', libcommon_java)
+env.Alias('awap-common.java', libcommon_java)
 
 Return('libcommon_oft')
