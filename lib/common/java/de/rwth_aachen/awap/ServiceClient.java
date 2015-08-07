@@ -1,12 +1,16 @@
 package de.rwth_aachen.awap;
 
-public class ServiceClient {
-	protected LocalAgent parent;
-	public ServiceClient(LocalAgent parent) {
+public abstract class ServiceClient {
+	private LocalAgent parent;
+	private byte serviceId;
+	public ServiceClient(LocalAgent parent, byte serviceId) {
 		this.parent = parent;
 	}
 
-	public void registerListener() {
-		// TODO: implement!
+	public void registerListener(Property... properties) {
+		this.parent.df.installServiceListener(this, this.serviceId, properties);
 	}
+
+	public abstract void serviceFound(byte listenerId, RemoteAgent remoteAgent);
+	public abstract void serviceRemoved(byte listenerId, RemoteAgent remoteAgent);
 }

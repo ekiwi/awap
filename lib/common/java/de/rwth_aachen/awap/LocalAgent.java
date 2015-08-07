@@ -7,7 +7,7 @@ import de.rwth_aachen.awap.node.IDomainFacilitator;
 public abstract class LocalAgent extends Agent {
 	private byte id;
 	private ArrayList<ServiceProvider> services;
-	private IDomainFacilitator df;
+	IDomainFacilitator df;
 
 	public LocalAgent(byte id, IDomainFacilitator df) {
 		this.id = id;

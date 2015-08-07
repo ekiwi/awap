@@ -1,6 +1,7 @@
 package de.rwth_aachen.awap.node;
 
 import de.rwth_aachen.awap.Property;
+import de.rwth_aachen.awap.ServiceClient;
 import de.rwth_aachen.awap.ServiceProvider;
 
 /**
@@ -42,7 +43,7 @@ public interface IDomainFacilitator {
 	 * @return            node local id that identifies the service listener
 	 *                    and can be used to later remove it
 	 */
-	public byte installServiceListener(IServiceListener listener,
+	public byte installServiceListener(ServiceClient listener,
 			byte serviceType, Property... properties);
 	/**
 	 * Unregisters a service listener that was installed with the
