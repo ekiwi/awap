@@ -9,8 +9,8 @@ import de.rwth_aachen.awap.service.{{ service.name }}Client;
 import de.rwth_aachen.awap.service.{{ service.name }}Provider;
 %% endfor
 
-class Communication {
-	static ACLMessage awapToJade(TxMessage generic_tx) {
+public class Communication {
+	public static ACLMessage awapToJade(TxMessage generic_tx) {
 		int performative = ACLMessage.UNKNOWN;
 		JSONObject content=new JSONObject();
 

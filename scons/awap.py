@@ -71,6 +71,7 @@ def generate(env):
 	# lists that need to be filled by the user
 	env['AWAP_AGENT_PATH'] = []
 	env['AWAP_COMMUNICATION_PATH'] = []
+	env['AWAP_JADE_JAR'] = ""
 
 	# import terminal type to enable gcc/clang to print colored output
 	# http://stackoverflow.com/questions/9922521/why-doesnt-clang-show-color-output-under-scons

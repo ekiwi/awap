@@ -28,15 +28,15 @@ env.Alias(libname + ".generate", generated_files)
 # Java sources
 source = ['java'] + generated_files
 
-# build library for jade
-env.AppendUnique(JAVACLASSPATH='../../../jade-mirror/lib/jade.jar')
-env.AppendUnique(JAVACLASSPATH='/usr/share/java/json-smart.jar')
+# build library for jade using a local java enironment
+env_java = env.Clone()
+env_java.AppendUnique(JAVACLASSPATH=env['AWAP_JADE_JAR'])
+env_java.AppendUnique(JAVACLASSPATH='/usr/share/java/json-smart.jar')
 
-libcommon_jar = os.path.join(env['AWAP_BUILDPATH'], 'lib', 'awap-common', 'awap-common.jar')
-target = os.path.join(lib_path, libname + ".jar")
-env.AppendUnique(JAVACLASSPATH=libcommon_jar)
-env.Depends(target, libcommon_jar)
-libjade_jar = env.JavaToJar(target, source)
+env['AWAP_LIB_JADE_JAR'] = os.path.join(lib_path, libname + ".jar")
+env_java.AppendUnique(JAVACLASSPATH=env['AWAP_LIB_COMMON_JAR'])
+env_java.Depends(env['AWAP_LIB_JADE_JAR'], env['AWAP_LIB_COMMON_JAR'])
+libjade_jar = env_java.JavaToJar(env['AWAP_LIB_JADE_JAR'], source)
 env.Alias(libname + '.jar', libjade_jar)
 
 Return('libjade_jar')

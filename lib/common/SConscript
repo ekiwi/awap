@@ -52,7 +52,8 @@ env.Alias('awap-common.oft', libcommon_oft)
 env.Alias('awap-common.size', env.ShowSize(libcommon_oft))
 
 # build library for jade
-libcommon_jar = env.JavaToJar(os.path.join(lib_path, libname + ".jar"), source)
+env['AWAP_LIB_COMMON_JAR'] = os.path.join(lib_path, libname + ".jar")
+libcommon_jar = env.JavaToJar(env['AWAP_LIB_COMMON_JAR'], source)
 env.Alias('awap-common.jar', libcommon_jar)
 
 Return('libcommon_oft')
