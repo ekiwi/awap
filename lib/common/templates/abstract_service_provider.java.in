@@ -33,7 +33,7 @@ public abstract class {{service.name}}Provider extends ServiceProvider {
 	%% endfor
 			public {{ msg.name }}(RemoteAgent receiver{{ msg.java.initializer_list }}){
 				this.receiver = receiver;
-		%% for field in msg.field
+		%% for field in msg.fields
 				this.{{ field.name }} = {{ field.name}};
 		%% endfor
 			}
