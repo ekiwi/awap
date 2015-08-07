@@ -8,7 +8,7 @@ import de.rwth_aachen.awap.enums.Building;
 import de.rwth_aachen.awap.enums.Room;
 import de.rwth_aachen.awap.enums.SupplyCircuit;
 import de.rwth_aachen.awap.node.IDomainFacilitator;
-import de.rwth_aachen.awap.service.AbstractTemperatureService;
+import de.rwth_aachen.awap.service.TemperatureServiceProvider;
 
 public class TemperatureSensor extends LocalAgent {
 	public TemperatureSensor(byte id, IDomainFacilitator df) {
@@ -17,10 +17,10 @@ public class TemperatureSensor extends LocalAgent {
 
 	public void setup(){
 		// initialize services
-		this.registerService(new TemperatureService());
+		new TemperatureService();
 	}
 
-	private class TemperatureService extends AbstractTemperatureService {
+	private class TemperatureService extends TemperatureServiceProvider {
 		public TemperatureService() {
 			super(TemperatureSensor.this, Building.Build1, SupplyCircuit.SC1, Room.R1);
 		}
