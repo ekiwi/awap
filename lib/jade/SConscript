@@ -1,0 +1,39 @@
+# SConscript
+#
+# Copyright (c) 2015 Kevin Laeufer <kevin.laeufer@rwth-aachen.de>
+
+
+Import('env')
+import os
+
+libname = 'awap-jade'
+lib_path = os.path.join(env['AWAP_BUILDPATH'], 'lib', libname)
+
+# tell scons how to generate some files
+generated_path = os.path.join(lib_path, 'generated')
+generated_files = []
+
+communication = env.GetCommunicationDict()
+
+generated_path = os.path.join(generated_path, *("de.rwth_aachen.awap.jade.generated".split('.')))
+
+# generate communication class
+generated_files += env.Template(
+	target=os.path.join(generated_path, "Communication.java"),
+	source=os.path.join('templates', 'communication.java.in'),
+	substitutions={'messages': communication['messages'] })
+
+env.Alias(libname + ".generate", generated_files)
+
+# Java sources
+source = ['java'] + generated_files
+
+# build library for jade
+libcommon_jar = os.path.join(env['AWAP_BUILDPATH'], 'lib', 'awap-common', 'awap-common.jar')
+target = os.path.join(lib_path, libname + ".jar")
+env.AppendUnique(JAVACLASSPATH=libcommon_jar)
+env.Depends(target, libcommon_jar)
+libjade_jar = env.JavaToJar(target, source)
+env.Alias(libname + '.jar', libjade_jar)
+
+Return('libjade_jar')
