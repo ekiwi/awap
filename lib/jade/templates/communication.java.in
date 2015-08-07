@@ -1,6 +1,7 @@
 package de.rwth_aachen.awap.jade.generated;
 import jade.lang.acl.ACLMessage;
 import net.minidev.json.JSONObject;
+import net.minidev.json.JSONValue;
 import de.rwth_aachen.awap.RxMessage;
 import de.rwth_aachen.awap.TxMessage;
 // service classes that contain the messages
@@ -44,9 +45,41 @@ public class Communication {
 	}
 
 
-//	static RxMessage jadeToAwap(ACLMessage msg) {
-//		RxMessage rmsg;
-//		return rmsg;
-//	}
 
+	public static RxMessage jadeToAwap(ACLMessage msg) throws Exception {
+		JSONObject content = (JSONObject) JSONValue.parse(msg.getContent());
+		String service = (String)content.get("service");
+		String message = (String)content.get("message");
+		int performative = msg.getPerformative();
+
+%% for service in services
+	%% if loop.first
+		if(service.equals("{{ service.name }}")) {
+	%% else
+		} else if(service.equals("{{ service.name }}")) {
+	%% endif
+
+	%% for msg in service.messages
+		%# tx/rx is reversed since we are receiving here!
+		%% if msg.tx
+		%% set type = service.name ~ "Client." ~ msg.name
+		%% else
+		%% set type = service.name ~ "Provider." ~ msg.name
+		%% endif
+		%% if loop.first
+			if(message.equals("{{ msg.name }}") && performative == ACLMessage.{{ msg.performative }}) {
+		%% else
+			} else if(message.equals("{{ msg.name }}") && performative == ACLMessage.{{ msg.performative }}) {
+		%% endif
+				{{ type }} rx = new {{ type }}();
+			%% for field in msg.fields
+				rx.{{ field.name }} = ({{ field.java.box }}) content.get("{{ field.name }}");
+			%% endfor
+				return rx;
+	%% endfor
+			}
+%% endfor
+		}
+		throw new Exception("Invalid Message!");
+	}
 }
