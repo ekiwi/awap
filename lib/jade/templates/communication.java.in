@@ -73,7 +73,11 @@ public class Communication {
 		%% endif
 				{{ type }} rx = new {{ type }}();
 			%% for field in msg.fields
-				rx.{{ field.name }} = ({{ field.java.box }}) content.get("{{ field.name }}");
+				// unboxing...
+				// FIXME: this only works as long as all of our values are either int, short or byte...
+				int {{ field.name }} = (Integer)content.get("{{ field.name }}");
+				rx.{{ field.name }} = ({{ field.java.type }}){{ field.name }};
+
 			%% endfor
 				return rx;
 	%% endfor
