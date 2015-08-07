@@ -20,3 +20,6 @@ build/
 # java
 bin/
 *.class
+
+# g++
+a.out
