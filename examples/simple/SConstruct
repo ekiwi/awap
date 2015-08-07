@@ -26,4 +26,4 @@ env.AppendUnique(AWAP_COMMUNICATION_PATH = '../communication')
 env.Awap(configuration = 'configuration.xml')
 
 # print the size of the resulting temperature sensor
-env.Default(['awap-common.size', 'TemperatureSensor.size'])
+env.Default(['awap-common.size', 'TemperatureSensor.size', 'SimpleTemperatureSubscriber.size'])

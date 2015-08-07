@@ -1,9 +1,10 @@
 package de.rwth_aachen.awap.example.agents;
 
-import de.rwth_aachen.awap.Agent;
-import de.rwth_aachen.awap.IDomainFacilitator;
+import de.rwth_aachen.awap.LocalAgent;
+import de.rwth_aachen.awap.node.IDomainFacilitator;
+import de.rwth_aachen.awap.service.TemperatureServiceClient;
 
-public class SimpleTemperatureSubscriber extends Agent {
+public class SimpleTemperatureSubscriber extends LocalAgent {
 
 	public SimpleTemperatureSubscriber(byte id, IDomainFacilitator df) {
 		super(id, df);
@@ -11,9 +12,31 @@ public class SimpleTemperatureSubscriber extends Agent {
 
 
 	public void setup() {
+		new TemperatureClient(this);
 	}
 
-	public void tearDown() {
+	private class TemperatureClient extends TemperatureServiceClient {
+
+		public TemperatureClient(LocalAgent parent) {
+			super(parent);
+		}
+
+		public void onFailedToSend(Subscribe msg) {
+			if(msg.retransmissions < 2) {
+				this.send(msg);
+			}
+		}
+
+		public void onFailedToSend(Unsubscribe msg) {
+			if(msg.retransmissions < 2) {
+				this.send(msg);
+			}
+		}
+
+		public void onReceive(Temperature msg) {
+			System.out.println("Received Temperature: " + msg.value);
+			System.out.println("From: " + msg.sender.id);
+		}
 
 	}
 }
