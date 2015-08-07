@@ -7,12 +7,12 @@ import de.rwth_aachen.awap.RemoteAgent;
 import de.rwth_aachen.awap.enums.Building;
 import de.rwth_aachen.awap.enums.Room;
 import de.rwth_aachen.awap.enums.SupplyCircuit;
-import de.rwth_aachen.awap.node.IDomainFacilitator;
+import de.rwth_aachen.awap.node.AbstractNode;
 import de.rwth_aachen.awap.service.TemperatureServiceProvider;
 
 public class TemperatureSensor extends LocalAgent {
-	public TemperatureSensor(byte id, IDomainFacilitator df) {
-		super(id, df);
+	public TemperatureSensor(byte id, AbstractNode node) {
+		super(id, node);
 	}
 
 	public void setup(){

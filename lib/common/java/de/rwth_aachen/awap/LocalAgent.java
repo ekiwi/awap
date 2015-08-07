@@ -2,16 +2,23 @@ package de.rwth_aachen.awap;
 
 import java.util.ArrayList;
 
+import de.rwth_aachen.awap.node.AbstractNode;
+import de.rwth_aachen.awap.node.ICommunication;
 import de.rwth_aachen.awap.node.IDomainFacilitator;
+import de.rwth_aachen.awap.node.IHardware;
 
 public abstract class LocalAgent extends Agent {
 	private byte id;
 	private ArrayList<ServiceProvider> services;
 	IDomainFacilitator df;
+	ICommunication com;
+	IHardware hw;
 
-	public LocalAgent(byte id, IDomainFacilitator df) {
+	public LocalAgent(byte id, AbstractNode node) {
 		this.id = id;
-		this.df = df;
+		this.df = node;
+		this.com = node;
+		this.hw = node;
 	}
 
 	protected byte getId() {
