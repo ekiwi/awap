@@ -1,7 +1,7 @@
 package de.rwth_aachen.awap;
 
 public abstract class ServiceClient {
-	private LocalAgent parent;
+	protected LocalAgent parent;
 	private byte serviceId;
 	public ServiceClient(LocalAgent parent, byte serviceId) {
 		this.parent = parent;

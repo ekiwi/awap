@@ -1,7 +1,8 @@
 package de.rwth_aachen.awap;
 
 public abstract class TxMessage {
-	public Agent receiver;
+	public RemoteAgent receiver;
+	public LocalAgent sender;
 
 	/**
 	 * Tracks the number of retransmission attempts.

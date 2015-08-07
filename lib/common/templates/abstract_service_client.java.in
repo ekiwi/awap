@@ -37,7 +37,7 @@ public abstract class {{service.name}}Client extends ServiceClient{
 	}
 	// public abstract void onFailedToSend({{ msg.name }} msg);
 	public void send({{ msg.name }} msg) {
-		// TODO: dispatch
+		this.parent.send(msg);
 	}
 	%% endif
 %% endfor

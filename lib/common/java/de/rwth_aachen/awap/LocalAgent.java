@@ -46,4 +46,9 @@ public abstract class LocalAgent extends Agent {
 			this.df.deregisterService(service);
 		}
 	}
+
+	public void send(TxMessage msg) {
+		msg.sender = this;
+		this.com.send(msg);
+	}
 }
