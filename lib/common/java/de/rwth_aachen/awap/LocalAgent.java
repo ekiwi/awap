@@ -6,8 +6,8 @@ import de.rwth_aachen.awap.node.IDomainFacilitator;
 
 public abstract class LocalAgent extends Agent {
 	private byte id;
-	private ArrayList<Service> services;
-	protected IDomainFacilitator df;
+	private ArrayList<ServiceProvider> services;
+	private IDomainFacilitator df;
 
 	public LocalAgent(byte id, IDomainFacilitator df) {
 		this.id = id;
@@ -18,7 +18,7 @@ public abstract class LocalAgent extends Agent {
 		return id;
 	}
 
-	protected boolean registerService(Service service) {
+	protected boolean registerService(ServiceProvider service) {
 		if(this.df.registerService(service)) {
 			this.services.add(service);
 			return true;
@@ -35,7 +35,7 @@ public abstract class LocalAgent extends Agent {
 	 * This method is called when the platform is about to shut down.
 	 */
 	public void tearDown() {
-		for(Service service : this.services) {
+		for(ServiceProvider service : this.services) {
 			this.df.deregisterService(service);
 		}
 	}

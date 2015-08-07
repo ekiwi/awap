@@ -16,12 +16,18 @@ generated_files = []
 communication = env.GetCommunicationDict()
 
 service_path = os.path.join(generated_path, *("de.rwth_aachen.awap.service".split('.')))
-service_template = os.path.join('templates', 'abstract_service.java.in')
+service_provider_template = os.path.join('templates', 'abstract_service_provider.java.in')
+service_client_template = os.path.join('templates', 'abstract_service_client.java.in')
 for service in communication['services']:
-	target = os.path.join(service_path, "Abstract{name}.java".format(**service))
+	provider = os.path.join(service_path, "{name}Provider.java".format(**service))
 	generated_files += env.Template(
-		target=target,
-		source=service_template,
+		target=provider,
+		source=service_provider_template,
+		substitutions={'service': service})
+	client = os.path.join(service_path, "{name}Client.java".format(**service))
+	generated_files += env.Template(
+		target=client,
+		source=service_client_template,
 		substitutions={'service': service})
 
 enum_path = os.path.join(generated_path, *("de.rwth_aachen.awap.enums".split('.')))

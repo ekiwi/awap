@@ -1,7 +1,7 @@
 package de.rwth_aachen.awap.node;
 
 import de.rwth_aachen.awap.Property;
-import de.rwth_aachen.awap.Service;
+import de.rwth_aachen.awap.ServiceProvider;
 
 /**
  * Interface for a very minimal Domain Facilitator implementation.
@@ -20,21 +20,21 @@ public interface IDomainFacilitator {
 	 * @param service service instance
 	 * @return        `true` if registration was successful
 	 */
-	public boolean registerService(Service service);
+	public boolean registerService(ServiceProvider service);
 
 	/**
 	 * Deregister a service, that was registered with the `registerService` method.
 	 * @param service service instance
 	 * @return        `true` if remove was successful
 	 */
-	public boolean deregisterService(Service service);
+	public boolean deregisterService(ServiceProvider service);
 
 	/**
 	 * Register a service listener with the Domain Facilitator
 	 *
 	 * The callback function will be called when a service, that fits the
 	 * description, is found.
-	 * Fitting services, that are already known to the DF will trigger events
+	 * Fitting services, that are already known to the DF will trigger e.. vs []vents
 	 * just like the insertion or removal of a fitting service.
 	 * @param listener    reference to an object that implements the callback
 	 * @param serviceType service type constant
@@ -43,7 +43,7 @@ public interface IDomainFacilitator {
 	 *                    and can be used to later remove it
 	 */
 	public byte installServiceListener(IServiceListener listener,
-			byte serviceType, Property[] properties);
+			byte serviceType, Property... properties);
 	/**
 	 * Unregisters a service listener that was installed with the
 	 * `installServiceListener` method

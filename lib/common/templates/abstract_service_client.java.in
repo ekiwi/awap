@@ -1,0 +1,11 @@
+package de.rwth_aachen.awap.service;
+
+//import de.rwth_aachen.awap.LocalAgent;
+//import de.rwth_aachen.awap.RemoteAgent;
+//import de.rwth_aachen.awap.TxMessage;
+//import de.rwth_aachen.awap.RxMessage;
+
+public abstract class {{service.name}}Client {
+
+}
+
