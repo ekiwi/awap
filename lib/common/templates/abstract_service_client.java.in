@@ -1,11 +1,45 @@
 package de.rwth_aachen.awap.service;
 
-//import de.rwth_aachen.awap.LocalAgent;
-//import de.rwth_aachen.awap.RemoteAgent;
-//import de.rwth_aachen.awap.TxMessage;
-//import de.rwth_aachen.awap.RxMessage;
+import de.rwth_aachen.awap.ServiceClient;
+import de.rwth_aachen.awap.LocalAgent;
+import de.rwth_aachen.awap.RemoteAgent;
+import de.rwth_aachen.awap.TxMessage;
+import de.rwth_aachen.awap.RxMessage;
 
-public abstract class {{service.name}}Client {
+public abstract class {{service.name}}Client extends ServiceClient{
+	public {{service.name}}Client(LocalAgent parent) {
+		super(parent);
+	}
 
+	// message handlers
+%% for msg in service.messages
+	%# Remember, that tx and rx are reversed, now that we are the client!
+	%% if msg.tx
+	public static class {{ msg.name }} extends RxMessage {
+	%% for field in msg.fields
+			public {{ field.java.type }} {{ field.name }};
+	%% endfor
+	}
+	public abstract void onReceive({{ msg.name }} msg);
+	%% endif
+	%# Remember, that tx and rx are reversed, now that we are the client!
+	%% if msg.rx
+	public static class {{ msg.name }} extends TxMessage {
+	%% for field in msg.fields
+			public {{ field.java.type }} {{ field.name }};
+	%% endfor
+			public {{ msg.name }}(RemoteAgent receiver{{ msg.java.initializer_list }}){
+				this.receiver = receiver;
+		%% for field in msg.field
+				this.{{ field.name }} = {{ field.name}};
+		%% endfor
+			}
+	}
+	public abstract void onFailedToSend({{ msg.name }} msg);
+	public void send({{ msg.name }} msg) {
+		// TODO: generate message and dispatch
+	}
+	%% endif
+%% endfor
 }
 
