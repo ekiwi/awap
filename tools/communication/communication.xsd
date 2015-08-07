@@ -95,8 +95,8 @@
 			<xs:enumeration value="rx"/>
 			<xs:enumeration value="tx"/>
 			<!-- the following mean the same -->
-			<xs:enumeration value="rxtx"/>
-			<xs:enumeration value="txrx"/>
+			<!-- <xs:enumeration value="rxtx"/> -->
+			<!-- <xs:enumeration value="txrx"/> -->
 		</xs:restriction>
 		</xs:simpleType>
 	</xs:attribute>
