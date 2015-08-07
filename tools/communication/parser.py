@@ -134,6 +134,7 @@ class Message(NamedCommunicationElement):
 		dd = super(Message, self).to_dict()
 		dd['id'] = self.id
 		dd['performative'] = self.performative
+		dd['service'] = self.parent.name
 		dd['tx'] = self.tx
 		dd['rx'] = self.rx
 		dd['fields'] = [field.to_dict() for field in self.fields]

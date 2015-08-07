@@ -21,7 +21,7 @@ generated_path = os.path.join(generated_path, *("de.rwth_aachen.awap.jade.genera
 generated_files += env.Template(
 	target=os.path.join(generated_path, "Communication.java"),
 	source=os.path.join('templates', 'communication.java.in'),
-	substitutions={'messages': communication['messages'] })
+	substitutions=communication)
 
 env.Alias(libname + ".generate", generated_files)
 
@@ -29,6 +29,9 @@ env.Alias(libname + ".generate", generated_files)
 source = ['java'] + generated_files
 
 # build library for jade
+env.AppendUnique(JAVACLASSPATH='../../../jade-mirror/lib/jade.jar')
+env.AppendUnique(JAVACLASSPATH='/usr/share/java/json-smart.jar')
+
 libcommon_jar = os.path.join(env['AWAP_BUILDPATH'], 'lib', 'awap-common', 'awap-common.jar')
 target = os.path.join(lib_path, libname + ".jar")
 env.AppendUnique(JAVACLASSPATH=libcommon_jar)

@@ -1,3 +1,52 @@
 package de.rwth_aachen.awap.jade.generated;
+import jade.lang.acl.ACLMessage;
+import net.minidev.json.JSONObject;
+import de.rwth_aachen.awap.RxMessage;
+import de.rwth_aachen.awap.TxMessage;
+// service classes that contain the messages
+%% for service in services
+import de.rwth_aachen.awap.service.{{ service.name }}Client;
+import de.rwth_aachen.awap.service.{{ service.name }}Provider;
+%% endfor
 
-class Communication {}
+class Communication {
+	static ACLMessage awapToJade(TxMessage generic_tx) {
+		int performative = ACLMessage.UNKNOWN;
+		JSONObject content=new JSONObject();
+
+%% for msg in messages
+	%% if msg.tx
+		%% set type = msg.service ~ "Provider." ~ msg.name
+	%% else
+		%% set type = msg.service ~ "Client." ~ msg.name
+	%% endif
+	%% if loop.first
+		if(generic_tx instanceof {{ type }}) {
+	%% else
+		} else if(generic_tx instanceof {{ type }}) {
+	%% endif
+			performative = ACLMessage.{{ msg.performative }};
+			content.put("service", "{{ msg.service }}");
+			content.put("message", "{{ msg.name }}");
+	%% for field in msg.fields
+		%% if loop.first
+			{{ type }} tx = ({{ type }}) generic_tx;
+		%% endif
+			content.put("{{ field.name }}", tx.{{ field.name }});
+	%% endfor
+%% endfor
+		} else {
+			System.out.println("Error: unknown TxMessage in Communication.awapToJade");
+		}
+		ACLMessage msg = new ACLMessage(performative);
+		msg.setContent(content.toJSONString());
+		return msg;
+	}
+
+
+//	static RxMessage jadeToAwap(ACLMessage msg) {
+//		RxMessage rmsg;
+//		return rmsg;
+//	}
+
+}
