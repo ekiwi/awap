@@ -38,9 +38,9 @@ public abstract class {{service.name}}Provider extends ServiceProvider {
 		%% endfor
 			}
 	}
-	public abstract void onFailedToSend({{ msg.name }} msg);
+	// public abstract void onFailedToSend({{ msg.name }} msg);
 	public void send({{ msg.name }} msg) {
-		// TODO: generate message and dispatch
+		// TODO:  dispatch
 	}
 	%% endif
 %% endfor

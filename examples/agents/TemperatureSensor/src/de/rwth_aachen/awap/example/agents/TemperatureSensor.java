@@ -40,12 +40,5 @@ public class TemperatureSensor extends LocalAgent {
 				this.subscribers.remove(msg.sender);
 			}
 		}
-
-		public void onFailedToSend(Temperature msg) {
-			if(msg.retransmissions < 2) {
-				this.send(msg);
-			}
-		}
-
 	}
 }

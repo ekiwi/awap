@@ -21,18 +21,6 @@ public class SimpleTemperatureSubscriber extends LocalAgent {
 			super(parent);
 		}
 
-		public void onFailedToSend(Subscribe msg) {
-			if(msg.retransmissions < 2) {
-				this.send(msg);
-			}
-		}
-
-		public void onFailedToSend(Unsubscribe msg) {
-			if(msg.retransmissions < 2) {
-				this.send(msg);
-			}
-		}
-
 		public void onReceive(Temperature msg) {
 			System.out.println("Received Temperature: " + msg.value);
 			System.out.println("From: " + msg.sender.id);
