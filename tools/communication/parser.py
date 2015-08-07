@@ -173,7 +173,9 @@ class IntField(NamedCommunicationElement):
 		dd['unsigned'] = self.unsigned
 		dd['size'] = self.size
 		dd['cpp']  = { 'type': self.cpp_type }
-		dd['java'] = { 'type': self.java_type }
+		java_box = self.java_type
+		java_box = java_box[0].upper() + java_box[1:]
+		dd['java'] = { 'type': self.java_type, 'box': java_box}
 		return dd
 
 class EnumField(NamedCommunicationElement):
