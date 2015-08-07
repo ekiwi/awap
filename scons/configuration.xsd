@@ -13,7 +13,7 @@
 
 <xs:element name="agents">
 <xs:complexType>
-	<xs:sequence>
+	<xs:sequence minOccurs="0" maxOccurs="unbounded">
 		<xs:element ref="agent"/>
 	</xs:sequence>
 </xs:complexType>
