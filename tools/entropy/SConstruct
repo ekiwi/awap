@@ -1,0 +1,35 @@
+env = Environment()
+
+env.VariantDir(variant_dir='build', src_dir='src')
+
+# flags for C and C++
+env['CCFLAGS'] = [
+	"-Os",
+	"-gdwarf-3",
+	"-Wall",
+	"-Werror=maybe-uninitialized",
+	"-Wformat",
+	"-Wextra",
+	"-Wundef",
+	"-Winit-self",
+	"-Wcast-qual",
+	"-Wshadow",
+	"-Wpointer-arith",
+	"-Wunused",
+	"-fdiagnostics-color=auto",
+]
+
+# C++ flags
+env['CXXFLAGS'] = [
+	"-std=c++14",
+	"-Woverloaded-virtual",
+	"-Wnon-virtual-dtor",
+	"-Weffc++",
+]
+
+bin = env.Program('build/entropy', env.Glob('build/*.cpp'))
+
+arguments = '../../examples/simple/build/ostfriesentee/app/TemperatureSensor/TemperatureSensor.di'
+run = env.Command('run_program', bin, '{} {}'.format(bin[0].abspath, arguments))
+
+env.Default(run)
