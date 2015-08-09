@@ -1,5 +1,10 @@
 env = Environment()
 
+# import terminal type to enable gcc/clang to print colored output
+# http://stackoverflow.com/questions/9922521/why-doesnt-clang-show-color-output-under-scons
+import os
+env['ENV']['TERM'] = os.environ['TERM']
+
 env.VariantDir(variant_dir='build', src_dir='src')
 
 # flags for C and C++
