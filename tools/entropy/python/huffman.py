@@ -130,10 +130,11 @@ class HuffmanCode(object):
 		symbols[0].propagate_code("")
 
 	def to_dict(self):
-		""" Returns a list containing a dict for every symbol.
+		""" Returns a dict that contains information about symbols and codes.
 		    It can be used to generate encoder/decoder.
 		"""
-		return [s.to_dict() for s in self.symbols]
+		dd = {'map': [s.to_dict() for s in self.symbols] }
+		dd['max_code_bits'] = max([len(s.code) for s in self.symbols])
 
 	def print_symbols(self):
 		symbols = sorted(self.symbols, key=lambda s: -s.p)
@@ -170,3 +171,5 @@ if __name__ == "__main__":
 			inp = ff.read()
 		print(os.path.basename(filename))
 		hc.print_compression_statistics(inp)
+
+	hc.to_dict()
