@@ -9,6 +9,14 @@
 
 import string
 
+def bitstring_to_int(string):
+	value = 0
+	for cc in string:
+		value = value << 1
+		if cc == '1':
+			value = value | 1
+	return value
+
 class HuffmanLeaf(object):
 	""" Represents a symbol of the source langugage
 	"""
@@ -27,6 +35,18 @@ class HuffmanLeaf(object):
 		else:
 			value = self.value
 		return ('"{:<6}": {:4} ({:.2%}) => {}'.format(value, self.count, self.p, self.code))
+
+	def to_dict(self):
+		dd = {}
+		dd['value'] = {
+			'lenght': len(self.value),
+			'data': ['0x{:02X}'.format(ord(cc)).lower() for cc in self.value]}
+		dd['code'] = {
+			'length': len(self.code),
+			'bits': self.code,
+			'int': bitstring_to_int(self.code),
+			'hex': '0x{:02X}'.format(bitstring_to_int(self.code)).lower()}
+		return dd
 
 class HuffmanNode(object):
 	def __init__(self, p0, p1):
@@ -108,6 +128,12 @@ class HuffmanCode(object):
 
 		# assign code to all leafs
 		symbols[0].propagate_code("")
+
+	def to_dict(self):
+		""" Returns a list containing a dict for every symbol.
+		    It can be used to generate encoder/decoder.
+		"""
+		return [s.to_dict() for s in self.symbols]
 
 	def print_symbols(self):
 		symbols = sorted(self.symbols, key=lambda s: -s.p)
