@@ -62,7 +62,13 @@ public class NodeAdapter extends AbstractNode{
 	@Override
 	public boolean deregisterService(ServiceProvider service) {
 		System.out.println("Agent " + this.wrapper.getName() + " called deregisterService.");
-		return false;
+		try {
+			DFService.deregister(this.wrapper);
+			return true;
+		} catch (FIPAException fe) {
+			fe.printStackTrace();
+			return false;
+		}
 	}
 
 	@Override
