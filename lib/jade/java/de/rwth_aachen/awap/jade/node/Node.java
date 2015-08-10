@@ -1,10 +1,12 @@
 package de.rwth_aachen.awap.jade.node;
 
-import de.rwth_aachen.awap.Property;
-import de.rwth_aachen.awap.ServiceClient;
-import de.rwth_aachen.awap.ServiceProvider;
-import de.rwth_aachen.awap.TxMessage;
-import de.rwth_aachen.awap.node.AbstractNode;
+import jade.wrapper.AgentController;
+import jade.wrapper.ContainerController;
+import jade.wrapper.StaleProxyException;
+
+import java.util.Stack;
+
+import de.rwth_aachen.awap.jade.WrapperAgent;
 
 /**
  * This class simulates a Node for JADE Agents.
@@ -12,40 +14,31 @@ import de.rwth_aachen.awap.node.AbstractNode;
  * @author Kevin Laeufer <kevin.laeufer@rwth-aachen.de>
  *
  */
-public class Node extends AbstractNode{
+public class Node {
 	private String name;
+	private Stack<Byte> ids;
+	//private LocalAgent[] agents;
 
 	public Node(String name) {
+		this.ids = new Stack<Byte>();
+		for(byte ii = 0; ii < 8; ++ii){
+			this.ids.push(ii);
+		}
+		//this.agents = new LocalAgent[this.ids.size()];
 		this.name = name;
 	}
 
-	@Override
-	public void send(TxMessage msg) {
-		System.out.println("Node " + this.name + " wants to send a message");
+	public String getName() {
+		return this.name;
 	}
 
-	@Override
-	public boolean registerService(ServiceProvider service) {
-		// TODO Auto-generated method stub
-		return false;
+	public AgentController createNewAgent(ContainerController cc, String agent_name, String agent_class) throws StaleProxyException {
+		// tell JADE to construct a wrapper for the newly created agent
+		Object[] args = { this, agent_class, this.ids.pop() };
+		return cc.createNewAgent(agent_name, WrapperAgent.class.getName(), args);
 	}
 
-	@Override
-	public boolean deregisterService(ServiceProvider service) {
-		// TODO Auto-generated method stub
-		return false;
-	}
-
-	@Override
-	public byte installServiceListener(ServiceClient listener,
-			byte serviceType, Property... properties) {
-		// TODO Auto-generated method stub
-		return 0;
-	}
-
-	@Override
-	public boolean uninstallServiceListener(byte listenerId) {
-		// TODO Auto-generated method stub
-		return false;
+	public void deregisterAgent(byte id) {
+		this.ids.push(id);
 	}
 }
