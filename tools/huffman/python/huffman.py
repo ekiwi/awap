@@ -153,6 +153,7 @@ class HuffmanCode(object):
 		"""
 		dd = {'map': [s.to_dict() for s in self.symbols] }
 		dd['max_code_bits'] = max([len(s.code) for s in self.symbols])
+		return dd
 
 	def print_symbols(self):
 		symbols = sorted(self.symbols, key=lambda s: -s.p)

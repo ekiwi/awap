@@ -1,8 +1,8 @@
-env = Environment()
+env = Environment(toolpath=['../../ext/ekiwi-scons-tools/tools'], tools=['default', 'template'])
 
 # import terminal type to enable gcc/clang to print colored output
 # http://stackoverflow.com/questions/9922521/why-doesnt-clang-show-color-output-under-scons
-import os
+import os, sys
 env['ENV']['TERM'] = os.environ['TERM']
 
 env.VariantDir(variant_dir='build', src_dir='src')
@@ -32,9 +32,38 @@ env['CXXFLAGS'] = [
 	"-Weffc++",
 ]
 
-bin = env.Program('build/entropy', env.Glob('build/*.cpp'))
-
+# entropy calculator in c++
+entropy = env.Program('build/entropy', env.Glob('build/entropy.cpp'))
+env.Alias('entropy', entropy)
 arguments = '../../examples/simple/build/ostfriesentee/app/TemperatureSensor/TemperatureSensor.di'
-run = env.Command('run_program', bin, '{} {}'.format(bin[0].abspath, arguments))
+env.Alias('entropy.run', env.Command('run_program', entropy, '{} {}'.format(entropy[0].abspath, arguments)))
 
-env.Default(run)
+
+
+# huffman code progam
+sys.path.append(os.path.abspath('python'))
+from huffman import HuffmanCode, HuffmanEncoder
+
+# generate code
+hc = HuffmanCode()
+files = ['../../examples/simple/build/ostfriesentee/app/TemperatureSensor/TemperatureSensor.di',
+	'../../examples/simple/build/ostfriesentee/app/SimpleTemperatureSubscriber/SimpleTemperatureSubscriber.di']
+for filename in files: hc.count_symbols_in_file(filename)
+hc.generate()
+code = hc.to_dict()
+
+# encode files
+enc = HuffmanEncoder(hc)
+for filename in files: 
+	output = os.path.join('python', 'temp', os.path.basename(filename))
+	enc.compress_file(filename, output)
+
+# tell scons how to build encoder template
+env.Template(target='build/code.hpp', source='templates/code.hpp.in', substitutions=code)
+
+
+huffman = env.Program('build/huffman', env.Glob('build/huffman.cpp'))
+env.Alias('huffman', huffman)
+
+
+env.Default('huffman')

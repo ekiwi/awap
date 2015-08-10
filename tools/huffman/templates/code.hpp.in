@@ -1,0 +1,14 @@
+
+namespace Code {
+
+template<typename T>
+struct Slice
+{
+	T* data;
+	size_t length;
+};
+
+static inline Slice<uint8_t> decode(const uint32_t input, const uint8_t bits) {
+}
+
+}
