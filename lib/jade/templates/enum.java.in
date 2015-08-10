@@ -1,0 +1,19 @@
+package de.rwth_aachen.awap.jade.generated;
+
+%% for enum in enums
+import de.rwth_aachen.awap.enums.{{ enum.name }};
+%% endfor
+
+
+public class Enum {
+%% for enum in enums
+	public static String {{ enum.name | camelCase }}ToString({{ enum.java.type }} value) throws Exception {
+		switch(value) {
+	%% for element in enum.elements
+		case {{ element.id }}: return "{{ element.name }}";
+	%% endfor
+		}
+		throw new Exception("Invalid value for enum {{ enum.name }}: " + value);
+	}
+%% endfor
+}

@@ -23,6 +23,16 @@ generated_files += env.Template(
 	source=os.path.join('templates', 'communication.java.in'),
 	substitutions=communication)
 
+generated_files += env.Template(
+	target=os.path.join(generated_path, "Service.java"),
+	source=os.path.join('templates', 'service.java.in'),
+	substitutions=communication)
+
+generated_files += env.Template(
+	target=os.path.join(generated_path, "Enum.java"),
+	source=os.path.join('templates', 'enum.java.in'),
+	substitutions=communication)
+
 env.Alias(libname + ".generate", generated_files)
 
 # Java sources

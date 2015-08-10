@@ -15,11 +15,15 @@ import de.rwth_aachen.awap.jade.WrapperAgent;
  *
  */
 public class Node {
+	private static int nodeCounter = 0;
 	private String name;
 	private Stack<Byte> ids;
+	private int address;
 	//private LocalAgent[] agents;
 
 	public Node(String name) {
+		this.address = nodeCounter;
+		nodeCounter++;
 		this.ids = new Stack<Byte>();
 		for(byte ii = 0; ii < 8; ++ii){
 			this.ids.push(ii);
