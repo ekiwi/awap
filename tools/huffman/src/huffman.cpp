@@ -6,17 +6,15 @@
 
 
 int main(int argc, char* argv[]) {
-	if(argc < 3 || (argv[1][0] != 'e' && argv[1][0] != 'd')) {
-		std::cout << argv[0] << "[e]ncode/[d]ecode INPUT" << std::endl;
+	if(argc < 2) {
+		std::cout << argv[0] << " COMPRESSED [ORIGINAL]" << std::endl;
 		return 1;
 	}
-	std::string filename(argv[2]);
+	std::string compressed(argv[2]);
 
-	std::cout << "input: " << filename << std::endl;
-
-	std::ifstream input(filename, std::ios::in|std::ios::binary|std::ios::ate);
+	std::ifstream input(compressed, std::ios::in|std::ios::binary|std::ios::ate);
 	if(!input.is_open()) {
-		std::cout << "could not open " << filename << std::endl;
+		std::cout << "could not open " << compressed << std::endl;
 		return 2;
 	}
 
@@ -27,7 +25,9 @@ int main(int argc, char* argv[]) {
 	input.read (content, size);
 	input.close();
 
-	std::cout << "read content from " << filename << std::endl;
+	std::cout << "Trying to decompress input: " << compressed << std::endl;
+
+	
 
 
 //	const uint8_t* input = reinterpret_cast<uint8_t*>(content);
