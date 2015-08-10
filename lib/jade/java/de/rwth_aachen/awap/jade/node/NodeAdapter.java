@@ -1,5 +1,8 @@
 package de.rwth_aachen.awap.jade.node;
 
+import jade.domain.DFService;
+import jade.domain.FIPAException;
+import jade.domain.FIPAAgentManagement.DFAgentDescription;
 import jade.lang.acl.ACLMessage;
 import de.rwth_aachen.awap.Property;
 import de.rwth_aachen.awap.ServiceClient;
@@ -7,6 +10,7 @@ import de.rwth_aachen.awap.ServiceProvider;
 import de.rwth_aachen.awap.TxMessage;
 import de.rwth_aachen.awap.jade.WrapperAgent;
 import de.rwth_aachen.awap.jade.generated.Communication;
+import de.rwth_aachen.awap.jade.generated.Service;
 import de.rwth_aachen.awap.node.AbstractNode;
 
 
@@ -36,7 +40,23 @@ public class NodeAdapter extends AbstractNode{
 	@Override
 	public boolean registerService(ServiceProvider service) {
 		System.out.println("Agent " + this.wrapper.getName() + " called registerService.");
-		return false;
+
+		DFAgentDescription dfd = new DFAgentDescription();
+		dfd.setName(this.wrapper.getAID());
+		try {
+			dfd.addServices(Service.providerToDescription(service));
+		} catch(Exception e) {
+			e.printStackTrace();
+			return false;
+		}
+
+		try {
+			DFService.register(this.wrapper, dfd);
+			return true;
+		} catch (FIPAException fe) {
+			fe.printStackTrace();
+			return false;
+		}
 	}
 
 	@Override
