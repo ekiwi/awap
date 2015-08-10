@@ -1,7 +1,6 @@
 #include <iostream>
 #include <fstream>
 #include <cmath>
-#include "huffman.hpp"
 
 
 int main(int argc, char* argv[]) {
