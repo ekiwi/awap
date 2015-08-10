@@ -21,7 +21,7 @@ public abstract class LocalAgent extends Agent {
 		this.hw = node;
 	}
 
-	protected byte getId() {
+	public byte getId() {
 		return id;
 	}
 
@@ -48,7 +48,6 @@ public abstract class LocalAgent extends Agent {
 	}
 
 	public void send(TxMessage msg) {
-		msg.sender = this;
 		this.com.send(msg);
 	}
 }
