@@ -39,4 +39,46 @@ public class Service {
 
 		return sd;
 	}
+
+	public static ServiceDescription clientToDescription(ServiceClient client, de.rwth_aachen.awap.Property... properties) throws Exception {
+		ServiceDescription sd = new ServiceDescription();
+
+%% for service in services
+	%% if loop.first
+		if(client instanceof {{ service.name }}Client) {
+	%% else
+		} else if(client instanceof {{ service.name }}Client) {
+	%% endif
+			sd.setType("{{ service.name }}");
+			// sd.setName("{{ service.name }}");
+			for(de.rwth_aachen.awap.Property prop : properties) {
+				sd.addProperties({{ service.name | camelCase }}PropertyToJadeProperty(prop));
+			}
+		}
+%% endfor
+
+		return sd;
+	}
+
+%% for service in services
+	public static Property {{ service.name | camelCase }}PropertyToJadeProperty(de.rwth_aachen.awap.Property prop) throws Exception {
+	%% for prop in service.properties
+		%% set type = service.name ~ "Client." ~ prop.name ~ "Property"
+		%% if loop.first
+		if(prop instanceof {{ type }}) {
+		%% else
+		} else if(prop instanceof {{ type }}) {
+		%% endif
+			{{ type }} pp = ({{ type }})prop;
+		%% if prop.is_enum
+			Object value = de.rwth_aachen.awap.jade.generated.Enum.{{ prop.enum_name | camelCase }}ToString(pp.value);
+		%% else
+			Object value = pp.value;
+		%% endif
+			return new Property("{{ prop.name }}", value);
+	%% endfor
+		}
+		throw new Exception("Invalid value for property of {{ service.name }}");
+	}
+%% endfor
 }

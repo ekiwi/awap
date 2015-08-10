@@ -4,6 +4,10 @@ import jade.domain.DFService;
 import jade.domain.FIPAException;
 import jade.domain.FIPAAgentManagement.DFAgentDescription;
 import jade.lang.acl.ACLMessage;
+import jade.proto.SubscriptionInitiator;
+
+import java.util.ArrayList;
+
 import de.rwth_aachen.awap.Property;
 import de.rwth_aachen.awap.ServiceClient;
 import de.rwth_aachen.awap.ServiceProvider;
@@ -24,6 +28,7 @@ public class NodeAdapter extends AbstractNode{
 	private Node node;
 	private WrapperAgent wrapper;
 	// private LocalAgent agent;
+	private ArrayList<ACLMessage> subscriptionMessages = new ArrayList<ACLMessage>();
 
 	public NodeAdapter(Node node, WrapperAgent wrapper){
 		this.node = node;
@@ -75,7 +80,52 @@ public class NodeAdapter extends AbstractNode{
 	public byte installServiceListener(ServiceClient listener,
 			byte serviceType, Property... properties) {
 		System.out.println("Agent " + this.wrapper.getName() + " called installServiceListener.");
-		return 0;
+
+		// define search parameters
+		DFAgentDescription dfd = new DFAgentDescription();
+		try {
+			dfd.addServices(Service.clientToDescription(listener, properties));
+		} catch (Exception e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+			return -1;
+		}
+
+		// create the subscription message using the created description
+		ACLMessage subscriptionMessage =
+				DFService.createSubscriptionMessage(this.wrapper, this.wrapper.getDefaultDF(), dfd, null);
+
+		// create and add the notification behavior
+		this.wrapper.addBehaviour(new SubscriptionInitiator(this.wrapper, subscriptionMessage)
+		{
+			private static final long serialVersionUID = 1L;
+
+			// this method handles incoming INFORM messages sent by the directory service
+			// whenever an agent of the given type with fitting properties is registered/deregistered
+			protected void handleInform(ACLMessage inform)
+			{
+				try
+				{
+					// decode message content
+					DFAgentDescription[] result = DFService.decodeNotification(inform.getContent());
+
+					// process agent description entries
+					for (int i = 0; i < result.length; ++i)
+					{
+						// TODO: notify agent!
+						System.out.println(result);
+					}
+				}
+				catch (FIPAException fe)
+				{
+					fe.printStackTrace();
+				}
+			}
+		});
+
+		// save subscription message for later cancelation
+		this.subscriptionMessages.add(subscriptionMessage);
+		return (byte)(this.subscriptionMessages.size() - 1);
 	}
 
 	@Override
