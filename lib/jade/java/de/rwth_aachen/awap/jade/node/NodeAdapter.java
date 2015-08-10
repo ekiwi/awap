@@ -30,31 +30,31 @@ public class NodeAdapter extends AbstractNode{
 	public void send(TxMessage tx_msg) {
 		ACLMessage msg = Communication.awapToJade(tx_msg);
 		msg.setSender(this.wrapper.getAID());
-		// TODO: determine receiver AID
+		System.out.println("Agent " + this.wrapper.getName() + " called send.");
 	}
 
 	@Override
 	public boolean registerService(ServiceProvider service) {
-		// TODO Auto-generated method stub
+		System.out.println("Agent " + this.wrapper.getName() + " called registerService.");
 		return false;
 	}
 
 	@Override
 	public boolean deregisterService(ServiceProvider service) {
-		// TODO Auto-generated method stub
+		System.out.println("Agent " + this.wrapper.getName() + " called deregisterService.");
 		return false;
 	}
 
 	@Override
 	public byte installServiceListener(ServiceClient listener,
 			byte serviceType, Property... properties) {
-		// TODO Auto-generated method stub
+		System.out.println("Agent " + this.wrapper.getName() + " called installServiceListener.");
 		return 0;
 	}
 
 	@Override
 	public boolean uninstallServiceListener(byte listenerId) {
-		// TODO Auto-generated method stub
+		System.out.println("Agent " + this.wrapper.getName() + " called uninstallServiceListener.");
 		return false;
 	}
 
