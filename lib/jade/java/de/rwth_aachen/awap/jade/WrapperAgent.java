@@ -37,7 +37,7 @@ public class WrapperAgent extends Agent {
 		// create agent
 		try {
 			Class<?> c = Class.forName(agent_class);
-			Constructor<?> ctor = c.getConstructor(Byte.class, AbstractNode.class);
+			Constructor<?> ctor = c.getConstructor(byte.class, AbstractNode.class);
 			this.agent = (LocalAgent)ctor.newInstance(agentId, this.adapter);
 		} catch (Exception e) {
 			e.printStackTrace();
