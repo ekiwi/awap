@@ -88,6 +88,11 @@ class HuffmanCode(object):
 		else:
 			self.symbols.append(HuffmanLeaf(symbol))
 
+	def count_symbols_in_file(self, filename):
+		with open(filename, 'rb') as ff:
+			inp = ff.read()
+		self.count_symbols(inp)
+
 	def count_symbols(self, inp):
 		# sort symbols
 		sorted_symbols = sorted(self.symbols, key=lambda s: -len(s.value))
@@ -145,10 +150,10 @@ class HuffmanCode(object):
 		symbols = sorted(self.symbols, key=lambda s: -s.p)
 		print('\n'.join([str(s) for s in symbols]))
 
-	def print_compression_statistics(self, inp):
+	def print_compression_statistics_for_file(self, filename):
 		# FIXME: very hacky right now! resets count in symbols...
 		for s in self.symbols: s.count = 0
-		self.count_symbols(inp)
+		self.count_symbols_in_file(filename)
 		old_size = sum([len(s.value) * s.count  for s in self.symbols])
 		new_size = sum([len(s.code) * s.count for s in self.symbols]) / 8.0
 		print("Size: {} => {} ({:.2%})".format(old_size, new_size, new_size / old_size))
@@ -163,18 +168,14 @@ if __name__ == "__main__":
 		'../../../examples/simple/build/ostfriesentee/app/SimpleTemperatureSubscriber/SimpleTemperatureSubscriber.di']
 
 	for filename in files: 
-		with open(filename, 'rb') as ff:
-			inp = ff.read()
-		hc.count_symbols(inp)
+		hc.count_symbols_in_file(filename)
 
 	hc.generate()
 
 	hc.print_symbols()
 
 	for filename in files: 
-		with open(filename, 'rb') as ff:
-			inp = ff.read()
 		print(os.path.basename(filename))
-		hc.print_compression_statistics(inp)
+		hc.print_compression_statistics_for_file(filename)
 
 	hc.to_dict()
