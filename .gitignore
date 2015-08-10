@@ -23,3 +23,10 @@ bin/
 
 # g++
 a.out
+
+# JADE
+APDescription.txt
+MTPs-Main-Container.txt
+
+# log files
+*.log
