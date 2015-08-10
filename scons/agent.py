@@ -21,10 +21,13 @@ def agent_method(env, path, name):
 	# build ostfriesentee and regular jar
 	agent_oft = env.OstfriesenteeApplication(name, source, OFT_LIBS=['base', 'util', 'awap-common'])
 	jar_target = os.path.join(env['AWAP_AGENT_BUILDPATH'], name, name + '.jar')
-	agent_jar = env.JavaToJar(jar_target, source)
+	env_java = env.Clone()
+	env_java.AppendUnique(JAVACLASSPATH=env['AWAP_LIB_COMMON_JAR'])
+	agent_jar = env_java.JavaToJar(jar_target, source)
 	env.Alias(name + '.oft', agent_oft)
 	env.Alias(name + '.size', env.ShowSize(agent_oft))
 	env.Alias(name + '.jar', agent_jar)
+	return(agent_oft, agent_jar)
 
 def load_agent_method(env, name):
 	# search for {{ agent_name }}/agent.xml in agent path

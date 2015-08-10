@@ -57,8 +57,10 @@ def awap_method(env, configuration):
 	env.Alias('awap-common', env.SConscript(env['AWAP_LIB_COMMON'], exports = 'env'))
 	env.Alias('awap-jade', env.SConscript(env['AWAP_LIB_JADE'], exports = 'env'))
 	# build agents
+	env['AWAP_AGENTS_JAR'] = []
 	for agent in agents:
-		env.Agent(**agent)
+		(agent_oft, agent_jar) = env.Agent(**agent)
+		env['AWAP_AGENTS_JAR'].append(agent_jar[0].abspath)
 
 def generate(env):
 	# define some paths
