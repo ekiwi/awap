@@ -35,9 +35,13 @@ public class Main {
 		final ContainerController cc = rt.createMainContainer(p);
 
 		// create temperature node and agent
-		Node temperatureNode= new Node("TemperatureSensor0");
+		Node temperatureNode= new Node("TemperatureNode0");
+		Node subscriberNode= new Node("SubscriberNode0");
+
 		try {
 			AgentController agent = temperatureNode.createNewAgent(cc, "TemperatureAgent0", "de.rwth_aachen.awap.example.agents.TemperatureSensor");
+			agent.start();
+			agent = subscriberNode.createNewAgent(cc, "SimpleTemperatureSubscriber0", "de.rwth_aachen.awap.example.agents.SimpleTemperatureSubscriber");
 			agent.start();
 		} catch (StaleProxyException e) {
 			// TODO Auto-generated catch block
