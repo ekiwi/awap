@@ -1,5 +1,6 @@
 package de.rwth_aachen.awap.service;
 
+import de.rwth_aachen.awap.Property;
 import de.rwth_aachen.awap.ServiceClient;
 import de.rwth_aachen.awap.LocalAgent;
 import de.rwth_aachen.awap.RemoteAgent;
@@ -10,6 +11,16 @@ public abstract class {{service.name}}Client extends ServiceClient{
 	public {{service.name}}Client(LocalAgent parent) {
 		super(parent, (byte){{ service.id }});
 	}
+
+	// properties that can be used to register a listener
+%% for prop in service.properties
+	public static class {{ prop.name }}Property extends Property {
+		public {{ prop.java.type }} value;
+		public {{ prop.name }}Property({{ prop.java.type }} value) {
+			this.value = value;
+		}
+	}
+%% endfor
 
 	// message handlers
 %% for msg in service.messages
