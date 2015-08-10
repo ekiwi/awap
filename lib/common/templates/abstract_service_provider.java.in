@@ -8,7 +8,7 @@ import de.rwth_aachen.awap.RxMessage;
 
 public abstract class {{service.name}}Provider extends ServiceProvider {
 %% for prop in service.properties
-	protected {{ prop.java.type }} {{ prop.name | camelCase }};
+	public {{ prop.java.type }} {{ prop.name | camelCase }};
 %% endfor
 	public {{service.name}}Provider(LocalAgent parent{{ service.java.initializer_list }}) {
 		super(parent);
