@@ -4,10 +4,6 @@
 #include "code.hpp"
 
 
-class Huffman {
-
-};
-
 
 int main(int argc, char* argv[]) {
 	if(argc < 3 || (argv[1][0] != 'e' && argv[1][0] != 'd')) {

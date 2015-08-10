@@ -1,14 +1,45 @@
+#ifndef CODE_HPP
+#define CODE_HPP
 
 namespace Code {
 
 template<typename T>
 struct Slice
 {
+	Slice(T* ptr, size_t len) : data(ptr), length(len) {}
 	T* data;
 	size_t length;
 };
 
-static inline Slice<uint8_t> decode(const uint32_t input, const uint8_t bits) {
+template<uint32_t Code, uint8_t Bits>
+struct Symbol
+{
+	static constexpr uint8_t ZeroBits = 32 - Bits;
+	static constexpr uint32_t Mask = ((1 << Bits) - 1) << ZeroBits;
+	static constexpr uint32_t Compare = Code << ZeroBits;
+	static inline constexpr bool match(const uint32_t input) {
+		return ((input & Mask) == Compare);
+	}
+};
+
+// TODO: maybe move to separate compilation unit
+%% for sym in map
+static uint8_t Symbol{{ loop.index0 }}Value[{{ sym.value.length }}] = { {{ sym.value.data|join(',') }} };
+%% endfor
+
+static inline Slice<uint8_t> decode(const uint32_t input) {
+%% for sym in map
+	%% if loop.first
+	if(Symbol<{{ sym.code.hex }}, {{ sym.code.length }}>::match(input)) {
+	%% else
+	} else if(Symbol<{{ sym.code.hex }}, {{ sym.code.length }}>::match(input)) {
+	%% endif
+		return Slice<uint8_t>(Symbol{{ loop.index0 }}Value, {{ sym.value.length }});
+%% endfor
+	}
+	// Error: should not get here!
 }
 
-}
+} // namespace Code
+
+#endif // CODE_HPP

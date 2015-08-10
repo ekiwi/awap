@@ -52,7 +52,7 @@ class HuffmanLeaf(object):
 	def to_dict(self):
 		dd = {}
 		dd['value'] = {
-			'lenght': len(self.value),
+			'length': len(self.value),
 			'data': ['0x{:02X}'.format(ord(cc)).lower() for cc in self.value]}
 		dd['code'] = {
 			'length': len(self.code),
@@ -151,7 +151,8 @@ class HuffmanCode(object):
 		""" Returns a dict that contains information about symbols and codes.
 		    It can be used to generate encoder/decoder.
 		"""
-		dd = {'map': [s.to_dict() for s in self.symbols] }
+		symbols = sorted(self.symbols, key=lambda s: -s.p)
+		dd = {'map': [s.to_dict() for s in symbols] }
 		dd['max_code_bits'] = max([len(s.code) for s in self.symbols])
 		return dd
 
