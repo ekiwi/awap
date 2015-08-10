@@ -19,6 +19,7 @@ public abstract class LocalAgent extends Agent {
 		this.df = node;
 		this.com = node;
 		this.hw = node;
+		this.services = new ArrayList<ServiceProvider>();
 	}
 
 	public byte getId() {
