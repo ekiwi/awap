@@ -176,6 +176,7 @@ class IntField(NamedCommunicationElement):
 		java_box = self.java_type
 		java_box = java_box[0].upper() + java_box[1:]
 		dd['java'] = { 'type': self.java_type, 'box': java_box}
+		dd['is_enum'] = False
 		return dd
 
 class EnumField(NamedCommunicationElement):
@@ -196,6 +197,8 @@ class EnumField(NamedCommunicationElement):
 		dd['size'] = self.enum_class.value.size
 		dd['cpp'] = { 'type': self.cpp_type }
 		dd['java'] = { 'type': self.java_type }
+		dd['enum_name'] = self.enum_class.value.name
+		dd['is_enum'] = True
 		return dd
 
 class IntProperty(IntField):
