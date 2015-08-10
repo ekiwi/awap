@@ -17,6 +17,14 @@ def bitstring_to_int(string):
 			value = value | 1
 	return value
 
+class HuffmanTouple(object):
+	""" Code/Value touple of a HuffmanCode
+	"""
+	def __init__(self, leaf):
+		assert(isinstance(leaf, HuffmanLeaf))
+		self.value = leaf.value
+		self.code  = leaf.code
+
 class HuffmanLeaf(object):
 	""" Represents a symbol of the source langugage
 	"""
@@ -150,13 +158,59 @@ class HuffmanCode(object):
 		symbols = sorted(self.symbols, key=lambda s: -s.p)
 		print('\n'.join([str(s) for s in symbols]))
 
-	def print_compression_statistics_for_file(self, filename):
-		# FIXME: very hacky right now! resets count in symbols...
-		for s in self.symbols: s.count = 0
-		self.count_symbols_in_file(filename)
-		old_size = sum([len(s.value) * s.count  for s in self.symbols])
-		new_size = sum([len(s.code) * s.count for s in self.symbols]) / 8.0
-		print("Size: {} => {} ({:.2%})".format(old_size, new_size, new_size / old_size))
+class HuffmanEncoder(object):
+	def __init__(self, code):
+		assert(isinstance(code, HuffmanCode))
+		touples = (HuffmanTouple(sym) for sym in code.symbols)
+		self.symbols = sorted(touples, key=lambda s: -len(s.value))
+
+	def compress_file(self, input_filename, output_filename):
+		# FIXME: this is very ineficient code ... we build tje
+		#        file as a string of 0s and 1s which is terribly
+		#        inefficient, but this is python anyways ... so who cares?
+		with open(input_filename, 'rb') as ff:
+			inp = ff.read()
+
+		# translate symbols
+		outp = ""
+		ii = 0
+		length = len(inp)
+		while ii < length:
+			old_ii = ii
+			for symbol in self.symbols:
+				if len(symbol.value) <= ii + length:
+					if inp[ii:ii+len(symbol.value)] == symbol.value:
+						outp += symbol.code
+						ii += len(symbol.value)
+						break
+			if ii == old_ii:
+				print("Error: could not match byte 0x{:02X}".format(inp[ii]))
+				exit(1)
+
+		# pad to get bytes
+		outp += '0' * (len(outp) % 8)
+
+		old_size = len(inp)
+		new_size = len(outp) / 8
+		print("{} ({}bytes) => {} ({}bytes) ({:.2%})".format(
+			input_filename, old_size, output_filename, new_size, float(new_size) / old_size))
+
+		self._write_bit_string(output_filename, outp)
+
+	def _write_bit_string(self, filename, bitstr):
+		assert(len(bitstr) % 8 == 0)
+		bit_count = 0
+		value = 0
+		with open(filename, 'wb') as ff:
+			for bit in bitstr:
+				value = value << 1
+				if bit == "1":
+					value = value | 1
+				bit_count += 1
+				if bit_count == 8:
+					bit_count = 0
+					ff.write(chr(value))
+					value = 0
 
 
 if __name__ == "__main__":
@@ -174,8 +228,10 @@ if __name__ == "__main__":
 
 	hc.print_symbols()
 
+	enc = HuffmanEncoder(hc)
+
 	for filename in files: 
-		print(os.path.basename(filename))
-		hc.print_compression_statistics_for_file(filename)
+		output = os.path.join('temp', os.path.basename(filename))
+		enc.compress_file(filename, output)
 
 	hc.to_dict()
