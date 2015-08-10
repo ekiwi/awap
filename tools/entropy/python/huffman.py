@@ -34,7 +34,12 @@ class HuffmanLeaf(object):
 			value = '0x{:02X}'.format(ord(self.value))
 		else:
 			value = self.value
-		return ('"{:<6}": {:4} ({:.2%}) => {}'.format(value, self.count, self.p, self.code))
+		percentage = '({:.2%})'.format(self.p)
+		rr = '"{:<12}": {:4} {:>8}'.format(value, self.count, percentage)
+		if self.code is None:
+			return rr
+		else:
+			return '{} => {:>16} ({:2}bit)'.format(rr, self.code, len(self.code))
 
 	def to_dict(self):
 		dd = {}
@@ -68,7 +73,7 @@ class HuffmanNode(object):
 class HuffmanCode(object):
 	def __init__(self):
 		# will be added to count when calculating distribution
-		self.base_count = 1
+		self.base_count = 0.01
 		self.symbols = [HuffmanLeaf(chr(ii)) for ii in range(256)]
 		self.add_symbol('base')
 		self.add_symbol('util')
