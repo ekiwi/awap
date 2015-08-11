@@ -8,7 +8,6 @@ import jade.util.ExtendedProperties;
 import jade.util.leap.Properties;
 import jade.wrapper.AgentController;
 import jade.wrapper.ContainerController;
-import jade.wrapper.StaleProxyException;
 import de.rwth_aachen.awap.RemoteAgent;
 import de.rwth_aachen.awap.jade.generated.Communication;
 import de.rwth_aachen.awap.jade.node.Node;
@@ -17,7 +16,7 @@ import de.rwth_aachen.awap.service.TemperatureServiceProvider;
 
 public class Main {
 
-	public static void main(String[] args) {
+	public static void main(String[] args) throws Exception {
 		// Get a hold on JADE runtime
 		final Runtime rt = Runtime.instance();
 
@@ -38,15 +37,18 @@ public class Main {
 		Node temperatureNode= new Node("TemperatureNode0");
 		Node subscriberNode= new Node("SubscriberNode0");
 
-		try {
-			AgentController agent = temperatureNode.createNewAgent(cc, "TemperatureAgent0", "de.rwth_aachen.awap.example.agents.TemperatureSensor");
-			agent.start();
-			agent = subscriberNode.createNewAgent(cc, "SimpleTemperatureSubscriber0", "de.rwth_aachen.awap.example.agents.SimpleTemperatureSubscriber");
-			agent.start();
-		} catch (StaleProxyException e) {
-			// TODO Auto-generated catch block
-			e.printStackTrace();
-		}
+		AgentController temperatureAgent0 = temperatureNode.createNewAgent(cc, "TemperatureAgent0", "de.rwth_aachen.awap.example.agents.TemperatureSensor");
+		temperatureAgent0.start();
+		AgentController temperatureSubscriber0 = subscriberNode.createNewAgent(cc, "SimpleTemperatureSubscriber0", "de.rwth_aachen.awap.example.agents.SimpleTemperatureSubscriber");
+		temperatureSubscriber0.start();
+
+
+		Thread.sleep(2000);
+		temperatureAgent0.kill();
+
+		Thread.sleep(2000);
+		temperatureSubscriber0.kill();
+
 	}
 
 	private static void testCommunicationConversion() throws Exception{
