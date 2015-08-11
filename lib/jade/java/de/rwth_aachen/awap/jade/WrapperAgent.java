@@ -66,10 +66,12 @@ public class WrapperAgent extends Agent {
 	}
 
 	protected void handleMessage(ACLMessage msg){
-		if(this.adapter.handleDfMessage(msg)) {
-			return;
+		if(msg.getSender().equals(this.getDefaultDF())) {
+			this.adapter.handleDfMessage(msg);
+		} else {
+			System.out.println(this.getName() + ":\n" + msg);
+			// TODO: find service that this message belongs to.
 		}
-		System.out.println(this.getName() + ":\n" + msg);
 	}
 
 	public class ReceiveBehaviour extends CyclicBehaviour

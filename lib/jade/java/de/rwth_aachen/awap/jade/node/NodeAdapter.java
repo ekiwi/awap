@@ -6,6 +6,7 @@ import jade.domain.FIPAAgentManagement.DFAgentDescription;
 import jade.lang.acl.ACLMessage;
 
 import java.util.ArrayList;
+import java.util.HashMap;
 
 import de.rwth_aachen.awap.Property;
 import de.rwth_aachen.awap.RemoteAgent;
@@ -31,6 +32,16 @@ public class NodeAdapter extends AbstractNode{
 	private WrapperAgent wrapper;
 	// private LocalAgent agent;
 	private ArrayList<ACLMessage> subscriptionMessages = new ArrayList<ACLMessage>();
+	private HashMap<String, SubscriptionListener> subscriptionListeners = new HashMap<String, SubscriptionListener>();
+
+	class SubscriptionListener {
+		public byte listenerId;
+		public ServiceClient listener;
+		public SubscriptionListener(byte listenerId, ServiceClient listener) {
+			this.listenerId = listenerId;
+			this.listener = listener;
+		}
+	}
 
 	public NodeAdapter(Node node, WrapperAgent wrapper){
 		this.node = node;
@@ -81,7 +92,7 @@ public class NodeAdapter extends AbstractNode{
 	}
 
 	@Override
-	public byte installServiceListener(final ServiceClient listener,
+	public byte installServiceListener(ServiceClient listener,
 			Property... properties) {
 		System.out.println("NodeAdapter: Agent " + this.wrapper.getName() + " called installServiceListener.");
 
@@ -98,39 +109,44 @@ public class NodeAdapter extends AbstractNode{
 		ACLMessage subscriptionMessage =
 				DFService.createSubscriptionMessage(this.wrapper, this.wrapper.getDefaultDF(), dfd, null);
 
-		this.wrapper.send(subscriptionMessage);
 
-		// save subscription message for later cancelation
-		this.subscriptionMessages.add(subscriptionMessage);
-		return (byte)(this.subscriptionMessages.size() - 1);
+		byte listenerId;
+		synchronized(this.subscriptionMessages) {
+			// save subscription message for later cancelation
+			listenerId = (byte)this.subscriptionMessages.size();
+			this.subscriptionMessages.add(subscriptionMessage);
+		}
+
+		this.subscriptionListeners.put(
+				subscriptionMessage.getConversationId(),
+				new SubscriptionListener(listenerId, listener));
+
+		this.wrapper.send(subscriptionMessage);
+		return listenerId;
 	}
 
 	/**
 	 * Handles messages from the df.
 	 * @return `true` if message was consumed
 	 */
-	public boolean handleDfMessage(ACLMessage msg) {
-		if(msg.getSender().equals(this.wrapper.getDefaultDF())) {
-			try {
-				for(DFAgentDescription result : DFService.decodeNotification(msg.getContent())) {
-					boolean registration = result.getAllServices().hasNext();
-					RemoteAgent remoteAgent = new RemoteAgent();
-					remoteAgent.id = AgentRegistry.getId(result.getName());
-					// TODO: determine if service found or removed...
-					if(registration) {
-						System.out.println("NodeAdapter: Found new agent: " + result.getName());
-						// listener.serviceFound((byte)0, remoteAgent);
-					} else {
-						System.out.println("NodeAdapter: Agent died: " + result.getName());
-						// listener.serviceRemoved((byte)0, remoteAgent);
-					}
+	public void handleDfMessage(ACLMessage msg) {
+		try {
+			SubscriptionListener sub = this.subscriptionListeners.get(msg.getConversationId());
+			for(DFAgentDescription result : DFService.decodeNotification(msg.getContent())) {
+				boolean registration = result.getAllServices().hasNext();
+				RemoteAgent remoteAgent = new RemoteAgent();
+				remoteAgent.id = AgentRegistry.getId(result.getName());
+				// TODO: determine if service found or removed...
+				if(registration) {
+					System.out.println("NodeAdapter: Found new agent: " + result.getName());
+					sub.listener.serviceFound(sub.listenerId, remoteAgent);
+				} else {
+					System.out.println("NodeAdapter: Agent died: " + result.getName());
+					sub.listener.serviceRemoved(sub.listenerId, remoteAgent);
 				}
-			} catch (FIPAException fe) {
-				fe.printStackTrace();
 			}
-			return true;
-		} else {
-			return false;
+		} catch (FIPAException fe) {
+			fe.printStackTrace();
 		}
 	}
 
