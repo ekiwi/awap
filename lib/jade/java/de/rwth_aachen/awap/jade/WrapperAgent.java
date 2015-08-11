@@ -1,6 +1,8 @@
 package de.rwth_aachen.awap.jade;
 
 import jade.core.Agent;
+import jade.core.behaviours.CyclicBehaviour;
+import jade.lang.acl.ACLMessage;
 
 import java.lang.reflect.Constructor;
 
@@ -47,6 +49,9 @@ public class WrapperAgent extends Agent {
 		super.setup();
 		this.agent.setup();
 
+		// add receive behavior
+		this.addBehaviour(new ReceiveBehaviour(this));
+
 		// debug
 		System.out.println("New WrapperAgent for agent " + agentId +
 				" on Node " + this.node.getName() + " of class `" + agent_class + "`!");
@@ -58,6 +63,32 @@ public class WrapperAgent extends Agent {
 		this.agent.tearDown();
 		this.node.deregisterAgent(this.agent.getId());
 		super.takeDown();
+	}
+
+	protected void handleMessage(ACLMessage msg){
+		if(this.adapter.handleDfMessage(msg)) {
+			return;
+		}
+		System.out.println(this.getName() + ":\n" + msg);
+	}
+
+	public class ReceiveBehaviour extends CyclicBehaviour
+	{
+		private static final long serialVersionUID = 1L;
+		private WrapperAgent parent;
+		public ReceiveBehaviour(WrapperAgent agent) {
+			super(agent);
+			this.parent = agent;
+		}
+
+		@Override
+		public void action() {
+			ACLMessage msg = this.parent.receive();
+			if(msg != null) {
+				this.parent.handleMessage(msg);
+			}
+		}
+
 	}
 
 }

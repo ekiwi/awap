@@ -4,7 +4,6 @@ import jade.domain.DFService;
 import jade.domain.FIPAException;
 import jade.domain.FIPAAgentManagement.DFAgentDescription;
 import jade.lang.acl.ACLMessage;
-import jade.proto.SubscriptionInitiator;
 
 import java.util.ArrayList;
 
@@ -99,29 +98,40 @@ public class NodeAdapter extends AbstractNode{
 		ACLMessage subscriptionMessage =
 				DFService.createSubscriptionMessage(this.wrapper, this.wrapper.getDefaultDF(), dfd, null);
 
-		this.wrapper.addBehaviour(new SubscriptionInitiator(this.wrapper, subscriptionMessage) {
-			private static final long serialVersionUID = 1L;
-
-			// this method handles incoming INFORM messages sent by the directory service
-			// whenever an agent of the given type with fitting properties is registered/deregistered
-			protected void handleInform(ACLMessage inform) {
-				try {
-					System.out.println(inform);
-					for(DFAgentDescription result : DFService.decodeNotification(inform.getContent())) {
-						RemoteAgent remoteAgent = new RemoteAgent();
-						remoteAgent.id = AgentRegistry.getId(result.getName());
-						// TODO: determine if service found or removed...
-						listener.serviceFound((byte)0, remoteAgent);
-					}
-				} catch (FIPAException fe) {
-					fe.printStackTrace();
-				}
-			}
-		});
+		this.wrapper.send(subscriptionMessage);
 
 		// save subscription message for later cancelation
 		this.subscriptionMessages.add(subscriptionMessage);
 		return (byte)(this.subscriptionMessages.size() - 1);
+	}
+
+	/**
+	 * Handles messages from the df.
+	 * @return `true` if message was consumed
+	 */
+	public boolean handleDfMessage(ACLMessage msg) {
+		if(msg.getSender().equals(this.wrapper.getDefaultDF())) {
+			try {
+				for(DFAgentDescription result : DFService.decodeNotification(msg.getContent())) {
+					boolean registration = result.getAllServices().hasNext();
+					RemoteAgent remoteAgent = new RemoteAgent();
+					remoteAgent.id = AgentRegistry.getId(result.getName());
+					// TODO: determine if service found or removed...
+					if(registration) {
+						System.out.println("NodeAdapter: Found new agent: " + result.getName());
+						// listener.serviceFound((byte)0, remoteAgent);
+					} else {
+						System.out.println("NodeAdapter: Agent died: " + result.getName());
+						// listener.serviceRemoved((byte)0, remoteAgent);
+					}
+				}
+			} catch (FIPAException fe) {
+				fe.printStackTrace();
+			}
+			return true;
+		} else {
+			return false;
+		}
 	}
 
 	@Override
