@@ -9,7 +9,7 @@ import de.rwth_aachen.awap.RxMessage;
 
 public abstract class {{service.name}}Client extends ServiceClient{
 	public {{service.name}}Client(LocalAgent parent) {
-		super(parent, (byte){{ service.id }});
+		super(parent);
 	}
 
 	// properties that can be used to register a listener

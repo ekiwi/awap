@@ -38,13 +38,12 @@ public interface IDomainFacilitator {
 	 * Fitting services, that are already known to the DF will trigger e.. vs []vents
 	 * just like the insertion or removal of a fitting service.
 	 * @param listener    reference to an object that implements the callback
-	 * @param serviceType service type constant
 	 * @param properties  array of properties that need to match
 	 * @return            node local id that identifies the service listener
 	 *                    and can be used to later remove it
 	 */
 	public byte installServiceListener(ServiceClient listener,
-			byte serviceType, Property... properties);
+			Property... properties);
 	/**
 	 * Unregisters a service listener that was installed with the
 	 * `installServiceListener` method
