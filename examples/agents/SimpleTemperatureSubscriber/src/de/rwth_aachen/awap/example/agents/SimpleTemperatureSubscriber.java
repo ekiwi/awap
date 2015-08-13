@@ -1,7 +1,7 @@
 package de.rwth_aachen.awap.example.agents;
 
 import de.rwth_aachen.awap.LocalAgent;
-import de.rwth_aachen.awap.RemoteAgent;
+import de.rwth_aachen.awap.RemoteService;
 import de.rwth_aachen.awap.enums.Building;
 import de.rwth_aachen.awap.node.AbstractNode;
 import de.rwth_aachen.awap.service.TemperatureServiceClient;
@@ -30,14 +30,14 @@ public class SimpleTemperatureSubscriber extends LocalAgent {
 			System.out.println("From: " + msg.sender.id);
 		}
 
-		public void serviceFound(byte listenerId, RemoteAgent remoteAgent) {
-			System.out.println("Found service: " + remoteAgent.id);
+		public void serviceFound(byte listenerId, RemoteService remoteService) {
+			System.out.println("Found service: " + remoteService.remoteAgent.id);
 			System.out.println("Trying to subscribe...");
-			this.send(new Subscribe(remoteAgent));
+			this.send(new Subscribe(remoteService));
 		}
 
-		public void serviceRemoved(byte listenerId, RemoteAgent remoteAgent) {
-			System.out.println("Lost service: " + remoteAgent.id);
+		public void serviceRemoved(byte listenerId,RemoteService remoteService) {
+			System.out.println("Lost service: " + remoteService.remoteAgent.id);
 		}
 
 	}
