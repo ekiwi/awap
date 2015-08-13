@@ -3,16 +3,11 @@ package de.rwth_aachen.awap.example.simple;
 import jade.core.Profile;
 import jade.core.ProfileImpl;
 import jade.core.Runtime;
-import jade.lang.acl.ACLMessage;
 import jade.util.ExtendedProperties;
 import jade.util.leap.Properties;
 import jade.wrapper.AgentController;
 import jade.wrapper.ContainerController;
-import de.rwth_aachen.awap.RemoteAgent;
-import de.rwth_aachen.awap.jade.generated.Communication;
 import de.rwth_aachen.awap.jade.node.Node;
-import de.rwth_aachen.awap.service.TemperatureServiceClient;
-import de.rwth_aachen.awap.service.TemperatureServiceProvider;
 
 public class Main {
 
@@ -50,23 +45,4 @@ public class Main {
 		temperatureSubscriber0.kill();
 
 	}
-
-	private static void testCommunicationConversion() throws Exception{
-		RemoteAgent smith = new RemoteAgent();
-		smith.id = 1337;
-		short value = (short)9001;
-		TemperatureServiceProvider.Temperature tx
-		= new TemperatureServiceProvider.Temperature(smith, value);
-		System.out.println("Temperature before converting back from JADE: "+ tx.value);
-
-
-		ACLMessage jade_msg = Communication.awapToJade(tx);
-
-		System.out.println(jade_msg);
-
-		TemperatureServiceClient.Temperature rx = (TemperatureServiceClient.Temperature)Communication.jadeToAwap(jade_msg);
-		System.out.println("Temperature after converting back from JADE: "+ rx.value);
-		System.out.println("Packet: "+ (Communication.jadeToAwap(jade_msg)).getClass().getName());
-	}
-
 }
