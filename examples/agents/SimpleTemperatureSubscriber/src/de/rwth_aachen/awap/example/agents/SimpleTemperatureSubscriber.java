@@ -1,12 +1,13 @@
 package de.rwth_aachen.awap.example.agents;
 
-import de.rwth_aachen.awap.LocalAgent;
-import de.rwth_aachen.awap.RemoteService;
+import de.rwth_aachen.awap.Agent;
 import de.rwth_aachen.awap.enums.Building;
 import de.rwth_aachen.awap.node.AbstractNode;
-import de.rwth_aachen.awap.service.TemperatureServiceClient;
+import de.rwth_aachen.awap.service.remote.ITemperatureServiceClient;
+import de.rwth_aachen.awap.service.remote.TemperatureService;
+import de.rwth_aachen.awap.service.remote.TemperatureService.Temperature;
 
-public class SimpleTemperatureSubscriber extends LocalAgent {
+public class SimpleTemperatureSubscriber extends Agent implements ITemperatureServiceClient {
 
 	public SimpleTemperatureSubscriber(byte id, AbstractNode node) {
 		super(id, node);
@@ -14,31 +15,23 @@ public class SimpleTemperatureSubscriber extends LocalAgent {
 
 
 	public void setup() {
-		new TemperatureClient(this);
+		TemperatureService.registerListener(this, new TemperatureService.BuildingProperty(Building.Build1));
 	}
 
-	private class TemperatureClient extends TemperatureServiceClient {
+	public void serviceFound(byte listenerId, TemperatureService service) {
+		System.out.println("Found service: " + service.remoteAgentId);
+		System.out.println("Trying to subscribe...");
+		service.send(new TemperatureService.Subscribe());
+	}
 
-		public TemperatureClient(LocalAgent parent) {
-			super(parent);
-			// listen for any temperature service
-			this.registerListener(new BuildingProperty(Building.Build1));
-		}
 
-		public void onReceive(Temperature msg) {
-			System.out.println("Received Temperature: " + msg.value);
-			System.out.println("From: " + msg.sender.id);
-		}
+	public void serviceRemoved(byte listenerId, TemperatureService service) {
+		System.out.println("Lost service: " + service.remoteAgentId);
+	}
 
-		public void serviceFound(byte listenerId, RemoteService remoteService) {
-			System.out.println("Found service: " + remoteService.remoteAgent.id);
-			System.out.println("Trying to subscribe...");
-			this.send(new Subscribe(remoteService));
-		}
 
-		public void serviceRemoved(byte listenerId,RemoteService remoteService) {
-			System.out.println("Lost service: " + remoteService.remoteAgent.id);
-		}
-
+	public void onReceive(Temperature msg) {
+		System.out.println("Received Temperature: " + msg.value);
+		System.out.println("From: " + msg.service.remoteAgentId);
 	}
 }
