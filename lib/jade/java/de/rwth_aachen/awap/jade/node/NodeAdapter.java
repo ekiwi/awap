@@ -17,6 +17,7 @@ import de.rwth_aachen.awap.jade.AgentRegistry;
 import de.rwth_aachen.awap.jade.WrapperAgent;
 import de.rwth_aachen.awap.jade.generated.Communication;
 import de.rwth_aachen.awap.jade.generated.Service;
+import de.rwth_aachen.awap.jade.generated.ServiceListener;
 import de.rwth_aachen.awap.node.AbstractNode;
 
 
@@ -37,9 +38,11 @@ public class NodeAdapter extends AbstractNode {
 	class SubscriptionListener {
 		public byte listenerId;
 		public IServiceClient listener;
-		public SubscriptionListener(byte listenerId, IServiceClient listener) {
+		public byte serviceTypeId;
+		public SubscriptionListener(byte listenerId, IServiceClient listener, byte serviceTypeId) {
 			this.listenerId = listenerId;
 			this.listener = listener;
+			this.serviceTypeId = serviceTypeId;
 		}
 	}
 
@@ -96,7 +99,7 @@ public class NodeAdapter extends AbstractNode {
 	}
 
 	@Override
-	public byte installServiceListener(IServiceClient listener,
+	public byte installServiceListener(IServiceClient listener, byte serviceTypeId,
 			ServiceProperty... properties) {
 		System.out.println("NodeAdapter: Agent " + this.wrapper.getName() + " called installServiceListener.");
 
@@ -123,7 +126,7 @@ public class NodeAdapter extends AbstractNode {
 
 		this.subscriptionListeners.put(
 				subscriptionMessage.getConversationId(),
-				new SubscriptionListener(listenerId, listener));
+				new SubscriptionListener(listenerId, listener, serviceTypeId));
 
 		this.wrapper.send(subscriptionMessage);
 		return listenerId;
@@ -140,14 +143,19 @@ public class NodeAdapter extends AbstractNode {
 				boolean registration = result.getAllServices().hasNext();
 				RemoteAgent remoteAgent = new RemoteAgent();
 				remoteAgent.id = AgentRegistry.getId(result.getName());
+				byte serviceId = 0; // TODO: find service id
 				if(registration) {
 					System.out.println("NodeAdapter: Found new agent: " + result.getName());
-					// TODO: call serviceFound with correct remote service
-					// sub.listener.serviceFound(sub.listenerId, remoteAgent);
+					ServiceListener.callServiceFound(
+							this.wrapper.getAwapAgent(),
+							sub.serviceTypeId, sub.listenerId, sub.listener,
+							remoteAgent, serviceId);
 				} else {
 					System.out.println("NodeAdapter: Agent died: " + result.getName());
-					// TODO: call serviceRemoved with correct remote service
-					// sub.listener.serviceRemoved(sub.listenerId, remoteAgent);
+					ServiceListener.callServiceRemoved(
+							this.wrapper.getAwapAgent(),
+							sub.serviceTypeId, sub.listenerId, sub.listener,
+							remoteAgent, serviceId);
 				}
 			}
 		} catch (FIPAException fe) {

@@ -1,0 +1,59 @@
+package de.rwth_aachen.awap.jade.generated;
+
+import de.rwth_aachen.awap.Agent;
+import de.rwth_aachen.awap.IServiceClient;
+import de.rwth_aachen.awap.RemoteAgent;
+
+public class ServiceListener {
+	public static void callServiceFound(
+			Agent agent,
+			byte serviceTypeId,
+			byte listenerId,
+			IServiceClient listener,
+			RemoteAgent remoteAgent,
+			byte remoteServiceId) {
+%% for service in services
+	%% set client_type  = "de.rwth_aachen.awap.service.remote.I" ~ service.name ~ "Client"
+	%% set service_type = "de.rwth_aachen.awap.service.remote." ~ service.name
+	%% if loop.first
+		if(serviceTypeId == {{ service.id }}) {
+	%% else
+		} else if(serviceTypeId == {{ service.id }}) {
+	%% endif
+			{{ client_type }} client =
+					({{ client_type }})listener;
+			{{ service_type }} service =
+					new {{ service_type }}(agent, remoteAgent, remoteServiceId);
+			client.serviceFound(listenerId, service);
+	%% endfor
+		} else {
+			System.out.println("IServiceClient of unknown type!");
+		}
+	}
+
+	public static void callServiceRemoved(
+			Agent agent,
+			byte serviceTypeId,
+			byte listenerId,
+			IServiceClient listener,
+			RemoteAgent remoteAgent,
+			byte remoteServiceId) {
+%% for service in services
+	%% set client_type  = "de.rwth_aachen.awap.service.remote.I" ~ service.name ~ "Client"
+	%% set service_type = "de.rwth_aachen.awap.service.remote." ~ service.name
+	%% if loop.first
+		if(serviceTypeId == {{ service.id }}) {
+	%% else
+		} else if(serviceTypeId == {{ service.id }}) {
+	%% endif
+			{{ client_type }} client =
+					({{ client_type }})listener;
+			{{ service_type }} service =
+					new {{ service_type }}(agent, remoteAgent, remoteServiceId);
+			client.serviceRemoved(listenerId, service);
+	%% endfor
+		} else {
+			System.out.println("IServiceClient of unknown type!");
+		}
+	}
+}

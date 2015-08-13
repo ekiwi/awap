@@ -19,6 +19,9 @@ public class WrapperAgent extends jade.core.Agent {
 	public WrapperAgent(){
 	}
 
+	public Agent getAwapAgent() {
+		return this.agent;
+	}
 	@Override
 	protected void setup()
 	{
