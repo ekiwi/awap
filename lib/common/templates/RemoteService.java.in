@@ -13,7 +13,7 @@ public final class {{service.name}} extends RemoteService {
 	}
 
 	public static void registerListener(IDomainFacilitator df, I{{service.name}}Client client, ServiceProperty... properties) {
-		df.installServiceListener(client, properties);
+		df.installServiceListener(client, (byte){{ service.id }}, properties);
 	}
 
 	// properties that can be used to register a listener

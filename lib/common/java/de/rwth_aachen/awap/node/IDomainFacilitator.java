@@ -43,7 +43,7 @@ public interface IDomainFacilitator {
 	 *                    and can be used to later remove it
 	 */
 	// TODO: how do we propagate the service type?
-	public byte installServiceListener(IServiceClient listener,
+	public byte installServiceListener(IServiceClient listener, byte serviceTypeId,
 			ServiceProperty... properties);
 	/**
 	 * Unregisters a service listener that was installed with the
