@@ -2,24 +2,25 @@ package de.rwth_aachen.awap.jade.generated;
 import jade.lang.acl.ACLMessage;
 import net.minidev.json.JSONObject;
 import net.minidev.json.JSONValue;
-import de.rwth_aachen.awap.RxMessage;
-import de.rwth_aachen.awap.TxMessage;
-// service classes that contain the messages
-%% for service in services
-import de.rwth_aachen.awap.service.{{ service.name }}Client;
-import de.rwth_aachen.awap.service.{{ service.name }}Provider;
-%% endfor
+import de.rwth_aachen.awap.Message;
 
 public class Communication {
-	public static ACLMessage awapToJade(TxMessage generic_tx) {
+	public static ACLMessage awapToJade(Message generic_tx) throws Exception {
 		int performative = ACLMessage.UNKNOWN;
 		JSONObject content=new JSONObject();
 
+		if(generic_tx.remoteService) {
+			content.put("receiver-service-id", "yes");
+		} else {
+			content.put("receiver-service-id", "no");
+		}
+		content.put("service-id" , generic_tx.serviceId);
+
 %% for msg in messages
 	%% if msg.tx
-		%% set type = msg.service ~ "Provider." ~ msg.name
+		%% set type = "de.rwth_aachen.awap.service.local." ~ msg.service ~ "." ~ msg.name
 	%% else
-		%% set type = msg.service ~ "Client." ~ msg.name
+		%% set type = "de.rwth_aachen.awap.service.remote." ~ msg.service ~ "." ~ msg.name
 	%% endif
 	%% if loop.first
 		if(generic_tx instanceof {{ type }}) {
@@ -37,7 +38,7 @@ public class Communication {
 	%% endfor
 %% endfor
 		} else {
-			System.out.println("Error: unknown TxMessage in Communication.awapToJade");
+			throw new Exception("Error: unknown Message");
 		}
 		ACLMessage msg = new ACLMessage(performative);
 		msg.setContent(content.toJSONString());
@@ -46,11 +47,12 @@ public class Communication {
 
 
 
-	public static RxMessage jadeToAwap(ACLMessage msg) throws Exception {
+	public static Message jadeToAwap(ACLMessage msg) throws Exception {
 		JSONObject content = (JSONObject) JSONValue.parse(msg.getContent());
 		String service = (String)content.get("service");
 		String message = (String)content.get("message");
 		int performative = msg.getPerformative();
+		Message rx = null;
 
 %% for service in services
 	%% if loop.first
@@ -62,28 +64,37 @@ public class Communication {
 	%% for msg in service.messages
 		%# tx/rx is reversed since we are receiving here!
 		%% if msg.tx
-		%% set type = service.name ~ "Client." ~ msg.name
+			%% set type = "de.rwth_aachen.awap.service.remote." ~ msg.service ~ "." ~ msg.name
 		%% else
-		%% set type = service.name ~ "Provider." ~ msg.name
+			%% set type = "de.rwth_aachen.awap.service.local." ~ msg.service ~ "." ~ msg.name
 		%% endif
 		%% if loop.first
 			if(message.equals("{{ msg.name }}") && performative == ACLMessage.{{ msg.performative }}) {
 		%% else
 			} else if(message.equals("{{ msg.name }}") && performative == ACLMessage.{{ msg.performative }}) {
 		%% endif
-				{{ type }} rx = new {{ type }}();
+				{{ type }} specific_rx = new {{ type }}();
 			%% for field in msg.fields
 				// unboxing...
 				// FIXME: this only works as long as all of our values are either int, short or byte...
 				int {{ field.name }} = (Integer)content.get("{{ field.name }}");
-				rx.{{ field.name }} = ({{ field.java.type }}){{ field.name }};
-
+				specific_rx.{{ field.name }} = ({{ field.java.type }}){{ field.name }};
 			%% endfor
-				return rx;
+				rx = specific_rx;
 	%% endfor
+			} else {
+				throw new Exception("Unknown message type: " + message + ", for service type: " + service);
 			}
 %% endfor
+		} else {
+			throw new Exception("Unknown service type: " + service);
 		}
-		throw new Exception("Invalid Message!");
+
+		String receiverIsServiceProvider = (String)content.get("receiver-is-service-provider");
+		rx.remoteService = !receiverIsServiceProvider.equals("yes");
+		int serviceId = (Integer)content.get("service-id");
+		rx.serviceId = (byte)serviceId;
+
+		return rx;
 	}
 }
