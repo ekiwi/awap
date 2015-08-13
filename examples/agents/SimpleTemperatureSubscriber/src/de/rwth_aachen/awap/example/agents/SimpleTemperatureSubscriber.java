@@ -15,7 +15,7 @@ public class SimpleTemperatureSubscriber extends Agent implements ITemperatureSe
 
 
 	public void setup() {
-		TemperatureService.registerListener(this, new TemperatureService.BuildingProperty(Building.Build1));
+		TemperatureService.registerListener(this.df, this, new TemperatureService.BuildingProperty(Building.Build1));
 	}
 
 	public void serviceFound(byte listenerId, TemperatureService service) {

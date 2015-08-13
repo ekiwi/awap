@@ -10,7 +10,7 @@ import de.rwth_aachen.awap.node.IHardware;
 public abstract class Agent {
 	private byte id;
 	private ArrayList<LocalService> services;
-	IDomainFacilitator df;
+	protected IDomainFacilitator df;
 	public ICommunication com;
 	IHardware hw;
 

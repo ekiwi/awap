@@ -1,17 +1,19 @@
 package de.rwth_aachen.awap.service.remote;
 
+import de.rwth_aachen.awap.Agent;
 import de.rwth_aachen.awap.Message;
+import de.rwth_aachen.awap.RemoteAgent;
 import de.rwth_aachen.awap.RemoteService;
 import de.rwth_aachen.awap.ServiceProperty;
+import de.rwth_aachen.awap.node.IDomainFacilitator;
 
 public final class {{service.name}} extends RemoteService {
-	public {{service.name}}() {
-		// TODO: set parent, serviceId etc...
+	public {{service.name}}(Agent parent, RemoteAgent remoteAgent, byte remoteServiceId) {
+		super(parent, remoteAgent, remoteServiceId);
 	}
 
-	public static void registerListener(I{{service.name}}Client client, ServiceProperty... properties) {
-		// TODO: somehow propagate correct service type
-		//this.df.installServiceListener(this, properties);
+	public static void registerListener(IDomainFacilitator df, I{{service.name}}Client client, ServiceProperty... properties) {
+		df.installServiceListener(client, properties);
 	}
 
 	// properties that can be used to register a listener
