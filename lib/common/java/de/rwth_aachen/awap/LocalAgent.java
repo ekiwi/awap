@@ -26,12 +26,13 @@ public abstract class LocalAgent extends Agent {
 		return id;
 	}
 
-	protected boolean registerService(ServiceProvider service) {
+	protected byte registerService(ServiceProvider service) {
 		if(this.df.registerService(service)) {
+			// FIXME: this is not thread save
 			this.services.add(service);
-			return true;
+			return (byte)(this.services.size() - 1);
 		} else {
-			return false;
+			return -1;
 		}
 	}
 

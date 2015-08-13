@@ -3,7 +3,7 @@ package de.rwth_aachen.awap.service;
 import de.rwth_aachen.awap.Property;
 import de.rwth_aachen.awap.ServiceClient;
 import de.rwth_aachen.awap.LocalAgent;
-import de.rwth_aachen.awap.RemoteAgent;
+import de.rwth_aachen.awap.RemoteService;
 import de.rwth_aachen.awap.TxMessage;
 import de.rwth_aachen.awap.RxMessage;
 
@@ -39,8 +39,9 @@ public abstract class {{service.name}}Client extends ServiceClient{
 	%% for field in msg.fields
 			public {{ field.java.type }} {{ field.name }};
 	%% endfor
-			public {{ msg.name }}(RemoteAgent receiver{{ msg.java.initializer_list }}){
-				this.receiver = receiver;
+			public {{ msg.name }}(RemoteService receiver{{ msg.java.initializer_list }}){
+				this.receiver = receiver.remoteAgent;
+				this.remoteServiceId = receiver.serviceId;
 		%% for field in msg.fields
 				this.{{ field.name }} = {{ field.name}};
 		%% endfor

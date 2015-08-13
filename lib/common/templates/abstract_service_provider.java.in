@@ -40,7 +40,8 @@ public abstract class {{service.name}}Provider extends ServiceProvider {
 	}
 	// public abstract void onFailedToSend({{ msg.name }} msg);
 	public void send({{ msg.name }} msg) {
-		// TODO:  dispatch
+		msg.localServiceId = this.localServiceId;
+		this.parent.send(msg);
 	}
 	%% endif
 %% endfor
