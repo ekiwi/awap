@@ -2,15 +2,20 @@
 <awap-communication version="0.1" module="common">
 
 <enum name="Building" size="4"  max-id="15">
-	<element name="Build1" id="0" />
+	<element name="Build1"     id="0" />
+	<element name="HK1Toaster" id="1" />
+	<element name="SemiTemp"   id="2" />
 </enum>
 
 <enum name="Room" size="8" max-id="255">
 	<element name="R1" id="0" />
+	<element name="R2" id="1" />
 </enum>
 
 <enum name="SupplyCircuit" size="8" max-id="255">
 	<element name="SC1" id="0" />
+	<element name="SC2" id="1" />
+	<element name="SC3" id="2" />
 </enum>
 
 <enum name="SensorType" size="4" max-id="15">
