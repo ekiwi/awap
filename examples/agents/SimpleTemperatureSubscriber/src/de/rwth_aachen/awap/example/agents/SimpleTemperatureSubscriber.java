@@ -19,7 +19,7 @@ public class SimpleTemperatureSubscriber extends Agent implements ITemperatureSe
 	}
 
 	public void serviceFound(byte listenerId, TemperatureService service) {
-		System.out.println("Found service: " + service.remoteAgent);
+		System.out.println("Found service: " + service.remoteAgent.id);
 		System.out.println("Trying to subscribe...");
 		service.send(new TemperatureService.Subscribe());
 	}
