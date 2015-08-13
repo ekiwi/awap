@@ -7,9 +7,4 @@ public class LocalService {
 		this.parent = parent;
 		this. localServiceId = this.parent.registerService(this);
 	}
-
-	public static class Message {
-		public RemoteAgent remoteAgent;
-		public byte localServiceId;
-	}
 }
