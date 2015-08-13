@@ -2,27 +2,24 @@ package de.rwth_aachen.awap.jade.generated;
 
 import jade.domain.FIPAAgentManagement.Property;
 import jade.domain.FIPAAgentManagement.ServiceDescription;
-import de.rwth_aachen.awap.ServiceClient;
-import de.rwth_aachen.awap.ServiceProvider;
-%% for service in services
-import de.rwth_aachen.awap.service.{{ service.name }}Client;
-import de.rwth_aachen.awap.service.{{ service.name }}Provider;
-%% endfor
+import de.rwth_aachen.awap.IServiceClient;
+import de.rwth_aachen.awap.LocalService;
 
 public class Service {
-	public static ServiceDescription providerToDescription(ServiceProvider provider) throws Exception {
+	public static ServiceDescription serviceToDescription(LocalService service) throws Exception {
 		ServiceDescription sd = new ServiceDescription();
 
 %% for service in services
+	%% set type = "de.rwth_aachen.awap.service.local." ~ service.name
 	%% if loop.first
-		if(provider instanceof {{ service.name }}Provider) {
+		if(service instanceof {{ type }}) {
 	%% else
-		} else if(provider instanceof {{ service.name }}Provider) {
+		} else if(service instanceof {{ type }}) {
 	%% endif
 			sd.setType("{{ service.name }}");
 			sd.setName("{{ service.name }}");
 	%% if service.properties|length > 0
-			{{ service.name }}Provider pp = ({{ service.name }}Provider)provider;
+			{{ type }} pp = ({{ type }})service;
 	%% endif
 	%% for prop in service.properties
 			{
@@ -40,18 +37,19 @@ public class Service {
 		return sd;
 	}
 
-	public static ServiceDescription clientToDescription(ServiceClient client, de.rwth_aachen.awap.Property... properties) throws Exception {
+	public static ServiceDescription clientToDescription(IServiceClient client, de.rwth_aachen.awap.ServiceProperty... properties) throws Exception {
 		ServiceDescription sd = new ServiceDescription();
 
 %% for service in services
+	%% set type = "de.rwth_aachen.awap.service.remote.I" ~ service.name ~ "Client"
 	%% if loop.first
-		if(client instanceof {{ service.name }}Client) {
+		if(client instanceof {{ type }}) {
 	%% else
-		} else if(client instanceof {{ service.name }}Client) {
+		} else if(client instanceof {{ type }}) {
 	%% endif
 			sd.setType("{{ service.name }}");
 			// sd.setName("{{ service.name }}");
-			for(de.rwth_aachen.awap.Property prop : properties) {
+			for(de.rwth_aachen.awap.ServiceProperty prop : properties) {
 				sd.addProperties({{ service.name | camelCase }}PropertyToJadeProperty(prop));
 			}
 		}
@@ -61,9 +59,9 @@ public class Service {
 	}
 
 %% for service in services
-	public static Property {{ service.name | camelCase }}PropertyToJadeProperty(de.rwth_aachen.awap.Property prop) throws Exception {
+	public static Property {{ service.name | camelCase }}PropertyToJadeProperty(de.rwth_aachen.awap.ServiceProperty prop) throws Exception {
 	%% for prop in service.properties
-		%% set type = service.name ~ "Client." ~ prop.name ~ "Property"
+		%% set type = "de.rwth_aachen.awap.service.remote." ~ service.name ~ "." ~ prop.name ~ "Property"
 		%% if loop.first
 		if(prop instanceof {{ type }}) {
 		%% else
