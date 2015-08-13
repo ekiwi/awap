@@ -136,13 +136,14 @@ public class NodeAdapter extends AbstractNode{
 				boolean registration = result.getAllServices().hasNext();
 				RemoteAgent remoteAgent = new RemoteAgent();
 				remoteAgent.id = AgentRegistry.getId(result.getName());
-				// TODO: determine if service found or removed...
 				if(registration) {
 					System.out.println("NodeAdapter: Found new agent: " + result.getName());
-					sub.listener.serviceFound(sub.listenerId, remoteAgent);
+					// TODO: call serviceFound with correct remote service
+					// sub.listener.serviceFound(sub.listenerId, remoteAgent);
 				} else {
 					System.out.println("NodeAdapter: Agent died: " + result.getName());
-					sub.listener.serviceRemoved(sub.listenerId, remoteAgent);
+					// TODO: call serviceRemoved with correct remote service
+					// sub.listener.serviceRemoved(sub.listenerId, remoteAgent);
 				}
 			}
 		} catch (FIPAException fe) {

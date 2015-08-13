@@ -10,6 +10,6 @@ public abstract class ServiceClient {
 		this.parent.df.installServiceListener(this, properties);
 	}
 
-	public abstract void serviceFound(byte listenerId, RemoteAgent remoteAgent);
-	public abstract void serviceRemoved(byte listenerId, RemoteAgent remoteAgent);
+	public abstract void serviceFound(byte listenerId, RemoteService remoteAgent);
+	public abstract void serviceRemoved(byte listenerId, RemoteService remoteAgent);
 }
