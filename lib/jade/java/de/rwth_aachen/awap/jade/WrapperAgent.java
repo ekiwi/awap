@@ -1,19 +1,18 @@
 package de.rwth_aachen.awap.jade;
 
-import jade.core.Agent;
 import jade.core.behaviours.CyclicBehaviour;
 import jade.lang.acl.ACLMessage;
 
 import java.lang.reflect.Constructor;
 
-import de.rwth_aachen.awap.LocalAgent;
+import de.rwth_aachen.awap.Agent;
 import de.rwth_aachen.awap.jade.node.Node;
 import de.rwth_aachen.awap.jade.node.NodeAdapter;
 import de.rwth_aachen.awap.node.AbstractNode;
 
-public class WrapperAgent extends Agent {
+public class WrapperAgent extends jade.core.Agent {
 	private static final long serialVersionUID = 1L;
-	private LocalAgent agent;
+	private Agent agent;
 	private Node node;
 	private NodeAdapter adapter;
 
@@ -40,7 +39,7 @@ public class WrapperAgent extends Agent {
 		try {
 			Class<?> c = Class.forName(agent_class);
 			Constructor<?> ctor = c.getConstructor(byte.class, AbstractNode.class);
-			this.agent = (LocalAgent)ctor.newInstance(agentId, this.adapter);
+			this.agent = (Agent)ctor.newInstance(agentId, this.adapter);
 		} catch (Exception e) {
 			e.printStackTrace();
 		}

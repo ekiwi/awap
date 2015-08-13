@@ -8,11 +8,11 @@ import jade.lang.acl.ACLMessage;
 import java.util.ArrayList;
 import java.util.HashMap;
 
-import de.rwth_aachen.awap.Property;
+import de.rwth_aachen.awap.IServiceClient;
+import de.rwth_aachen.awap.LocalService;
+import de.rwth_aachen.awap.Message;
 import de.rwth_aachen.awap.RemoteAgent;
-import de.rwth_aachen.awap.ServiceClient;
-import de.rwth_aachen.awap.ServiceProvider;
-import de.rwth_aachen.awap.TxMessage;
+import de.rwth_aachen.awap.ServiceProperty;
 import de.rwth_aachen.awap.jade.AgentRegistry;
 import de.rwth_aachen.awap.jade.WrapperAgent;
 import de.rwth_aachen.awap.jade.generated.Communication;
@@ -26,7 +26,7 @@ import de.rwth_aachen.awap.node.AbstractNode;
  * @author Artur Loewen <aloewen@eonerc.rwth-aachen.de>
  *
  */
-public class NodeAdapter extends AbstractNode{
+public class NodeAdapter extends AbstractNode {
 
 	private Node node;
 	private WrapperAgent wrapper;
@@ -36,8 +36,8 @@ public class NodeAdapter extends AbstractNode{
 
 	class SubscriptionListener {
 		public byte listenerId;
-		public ServiceClient listener;
-		public SubscriptionListener(byte listenerId, ServiceClient listener) {
+		public IServiceClient listener;
+		public SubscriptionListener(byte listenerId, IServiceClient listener) {
 			this.listenerId = listenerId;
 			this.listener = listener;
 		}
@@ -49,22 +49,26 @@ public class NodeAdapter extends AbstractNode{
 	}
 
 	@Override
-	public void send(TxMessage tx_msg) {
+	public void send(Message tx_msg) {
 		System.out.println("NodeAdapter: Agent " + this.wrapper.getName() + " called send.");
-		ACLMessage msg = Communication.awapToJade(tx_msg);
-		msg.setSender(this.wrapper.getAID());
-		msg.addReceiver(AgentRegistry.getId(tx_msg.receiver.id));
-		this.wrapper.send(msg);
+		try {
+			ACLMessage msg = Communication.awapToJade(tx_msg);
+			msg.setSender(this.wrapper.getAID());
+			msg.addReceiver(AgentRegistry.getId(tx_msg.remoteAgent.id));
+			this.wrapper.send(msg);
+		} catch (Exception e) {
+			e.printStackTrace();
+		}
 	}
 
 	@Override
-	public boolean registerService(ServiceProvider service) {
+	public boolean registerService(LocalService service) {
 		System.out.println("NodeAdapter: Agent " + this.wrapper.getName() + " called registerService.");
 
 		DFAgentDescription dfd = new DFAgentDescription();
 		dfd.setName(this.wrapper.getAID());
 		try {
-			dfd.addServices(Service.providerToDescription(service));
+			dfd.addServices(Service.serviceToDescription(service));
 		} catch(Exception e) {
 			e.printStackTrace();
 			return false;
@@ -80,7 +84,7 @@ public class NodeAdapter extends AbstractNode{
 	}
 
 	@Override
-	public boolean deregisterService(ServiceProvider service) {
+	public boolean deregisterService(LocalService service) {
 		System.out.println("NodeAdapter: Agent " + this.wrapper.getName() + " called deregisterService.");
 		try {
 			DFService.deregister(this.wrapper);
@@ -92,8 +96,8 @@ public class NodeAdapter extends AbstractNode{
 	}
 
 	@Override
-	public byte installServiceListener(ServiceClient listener,
-			Property... properties) {
+	public byte installServiceListener(IServiceClient listener,
+			ServiceProperty... properties) {
 		System.out.println("NodeAdapter: Agent " + this.wrapper.getName() + " called installServiceListener.");
 
 		// define search parameters
@@ -160,5 +164,4 @@ public class NodeAdapter extends AbstractNode{
 		this.wrapper.send(cancelMessage);
 		return true;
 	}
-
 }
