@@ -16,18 +16,24 @@ generated_files = []
 communication = env.GetCommunicationDict()
 
 service_path = os.path.join(generated_path, *("de.rwth_aachen.awap.service".split('.')))
-service_provider_template = os.path.join('templates', 'abstract_service_provider.java.in')
-service_client_template = os.path.join('templates', 'abstract_service_client.java.in')
+local_service_template = os.path.join('templates', 'AbstractLocalService.java.in')
+remote_service_template = os.path.join('templates', 'AbstractRemoteService.java.in')
+client_interface_template = os.path.join('templates', 'IServiceClient.java.in')
 for service in communication['services']:
-	provider = os.path.join(service_path, "{name}Provider.java".format(**service))
+	local_service = os.path.join(service_path, 'local', "{name}.java".format(**service))
 	generated_files += env.Template(
-		target=provider,
-		source=service_provider_template,
+		target=local_service,
+		source=local_service_template,
 		substitutions={'service': service})
-	client = os.path.join(service_path, "{name}Client.java".format(**service))
+	remote_service = os.path.join(service_path, 'remote', "{name}.java".format(**service))
 	generated_files += env.Template(
-		target=client,
-		source=service_client_template,
+		target=remote_service,
+		source=remote_service_template,
+		substitutions={'service': service})
+	client_interface = os.path.join(service_path, 'remote', "I{name}Client.java".format(**service))
+	generated_files += env.Template(
+		target=client_interface,
+		source=client_interface_template,
 		substitutions={'service': service})
 
 enum_path = os.path.join(generated_path, *("de.rwth_aachen.awap.enums".split('.')))

@@ -1,16 +1,14 @@
-package de.rwth_aachen.awap.service;
+package de.rwth_aachen.awap.service.local;
 
-import de.rwth_aachen.awap.LocalAgent;
+import de.rwth_aachen.awap.Agent;
+import de.rwth_aachen.awap.LocalService;
 import de.rwth_aachen.awap.RemoteAgent;
-import de.rwth_aachen.awap.ServiceProvider;
-import de.rwth_aachen.awap.TxMessage;
-import de.rwth_aachen.awap.RxMessage;
 
-public abstract class {{service.name}}Provider extends ServiceProvider {
+public abstract class {{service.name}} extends LocalService {
 %% for prop in service.properties
 	public {{ prop.java.type }} {{ prop.name | camelCase }};
 %% endfor
-	public {{service.name}}Provider(LocalAgent parent{{ service.java.initializer_list }}) {
+	public {{service.name}}(Agent parent{{ service.java.initializer_list }}) {
 		super(parent);
 %% for prop in service.properties
 		this.{{ prop.name | camelCase }} = {{ prop.name | camelCase }};
@@ -19,7 +17,7 @@ public abstract class {{service.name}}Provider extends ServiceProvider {
 	// message handlers
 %% for msg in service.messages
 	%% if msg.rx
-	public static class {{ msg.name }} extends RxMessage {
+	public static class {{ msg.name }} extends Message {
 	%% for field in msg.fields
 			public {{ field.java.type }} {{ field.name }};
 	%% endfor
@@ -27,12 +25,12 @@ public abstract class {{service.name}}Provider extends ServiceProvider {
 	public abstract void onReceive({{ msg.name }} msg);
 	%% endif
 	%% if msg.tx
-	public static class {{ msg.name }} extends TxMessage {
+	public static class {{ msg.name }} extends Message {
 	%% for field in msg.fields
 			public {{ field.java.type }} {{ field.name }};
 	%% endfor
 			public {{ msg.name }}(RemoteAgent receiver{{ msg.java.initializer_list }}){
-				this.receiver = receiver;
+				this.remoteAgent = receiver;
 		%% for field in msg.fields
 				this.{{ field.name }} = {{ field.name}};
 		%% endfor
@@ -41,7 +39,7 @@ public abstract class {{service.name}}Provider extends ServiceProvider {
 	// public abstract void onFailedToSend({{ msg.name }} msg);
 	public void send({{ msg.name }} msg) {
 		msg.localServiceId = this.localServiceId;
-		this.parent.send(msg);
+		this.parent.com.send(msg);
 	}
 	%% endif
 %% endfor

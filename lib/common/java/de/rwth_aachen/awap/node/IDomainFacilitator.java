@@ -1,8 +1,8 @@
 package de.rwth_aachen.awap.node;
 
-import de.rwth_aachen.awap.Property;
-import de.rwth_aachen.awap.ServiceClient;
-import de.rwth_aachen.awap.ServiceProvider;
+import de.rwth_aachen.awap.Agent;
+import de.rwth_aachen.awap.LocalService;
+import de.rwth_aachen.awap.ServiceProperty;
 
 /**
  * Interface for a very minimal Domain Facilitator implementation.
@@ -21,14 +21,14 @@ public interface IDomainFacilitator {
 	 * @param service service instance
 	 * @return        `true` if registration was successful
 	 */
-	public boolean registerService(ServiceProvider service);
+	public boolean registerService(LocalService service);
 
 	/**
 	 * Deregister a service, that was registered with the `registerService` method.
 	 * @param service service instance
 	 * @return        `true` if remove was successful
 	 */
-	public boolean deregisterService(ServiceProvider service);
+	public boolean deregisterService(LocalService service);
 
 	/**
 	 * Register a service listener with the Domain Facilitator
@@ -42,8 +42,9 @@ public interface IDomainFacilitator {
 	 * @return            node local id that identifies the service listener
 	 *                    and can be used to later remove it
 	 */
-	public byte installServiceListener(ServiceClient listener,
-			Property... properties);
+	// TODO: how do we propagate the service type?
+	public byte installServiceListener(Agent listener,
+			ServiceProperty... properties);
 	/**
 	 * Unregisters a service listener that was installed with the
 	 * `installServiceListener` method
