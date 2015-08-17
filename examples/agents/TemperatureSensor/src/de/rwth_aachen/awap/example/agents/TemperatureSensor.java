@@ -24,7 +24,7 @@ public class TemperatureSensor extends Agent {
 			super(TemperatureSensor.this, Building.Build1, SupplyCircuit.SC1, Room.R1);
 		}
 
-		private ArrayList<RemoteAgent> subscribers;
+		private ArrayList<RemoteAgent> subscribers = new ArrayList<RemoteAgent>();
 
 		public void onReceive(Subscribe msg) {
 			if(!this.subscribers.contains(msg.remoteAgent)) {
