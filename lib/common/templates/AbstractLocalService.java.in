@@ -45,5 +45,22 @@ public abstract class {{service.name}} extends LocalService {
 	}
 	%% endif
 %% endfor
+
+	public boolean handleMessage(Message msg) {
+%% for msg in service.messages
+	%% if msg.rx
+		%% if loop.first
+		if(msg instanceof {{ msg.name }}) {
+		%% else
+		} else if(msg instanceof {{ msg.name }}) {
+		%% endif
+			this.onReceive(({{ msg.name }})msg);
+			return true;
+	%% endif
+%% endfor
+		}
+		return false;	// invalid message
+	}
+
 }
 

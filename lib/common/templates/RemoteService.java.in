@@ -5,15 +5,19 @@ import de.rwth_aachen.awap.Message;
 import de.rwth_aachen.awap.RemoteAgent;
 import de.rwth_aachen.awap.RemoteService;
 import de.rwth_aachen.awap.ServiceProperty;
-import de.rwth_aachen.awap.node.IDomainFacilitator;
 
 public final class {{service.name}} extends RemoteService {
 	public {{service.name}}(Agent parent, RemoteAgent remoteAgent, byte remoteServiceId) {
 		super(parent, remoteAgent, remoteServiceId);
 	}
 
-	public static void registerListener(IDomainFacilitator df, I{{service.name}}Client client, ServiceProperty... properties) {
-		df.installServiceListener(client, (byte){{ service.id }}, properties);
+	public static boolean registerListener(Agent agent, ServiceProperty... properties) {
+		if(agent instanceof I{{service.name}}Client) {
+			agent.df.installServiceListener(agent, (byte){{ service.id }}, properties);
+			return true;
+		} else {
+			return false;
+		}
 	}
 
 	// properties that can be used to register a listener

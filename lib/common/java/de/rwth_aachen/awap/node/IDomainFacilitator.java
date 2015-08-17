@@ -1,6 +1,6 @@
 package de.rwth_aachen.awap.node;
 
-import de.rwth_aachen.awap.IServiceClient;
+import de.rwth_aachen.awap.Agent;
 import de.rwth_aachen.awap.LocalService;
 import de.rwth_aachen.awap.ServiceProperty;
 
@@ -43,7 +43,7 @@ public interface IDomainFacilitator {
 	 *                    and can be used to later remove it
 	 */
 	// TODO: how do we propagate the service type?
-	public byte installServiceListener(IServiceClient listener, byte serviceTypeId,
+	public byte installServiceListener(Agent listener, int serviceTypeId,
 			ServiceProperty... properties);
 	/**
 	 * Unregisters a service listener that was installed with the

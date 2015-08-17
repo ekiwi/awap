@@ -10,7 +10,7 @@ import de.rwth_aachen.awap.node.IHardware;
 public abstract class Agent {
 	private byte id;
 	private ArrayList<LocalService> services;
-	protected IDomainFacilitator df;
+	public IDomainFacilitator df;
 	public ICommunication com;
 	IHardware hw;
 
@@ -47,6 +47,24 @@ public abstract class Agent {
 	public void tearDown() {
 		for(LocalService service : this.services) {
 			this.df.deregisterService(service);
+		}
+	}
+
+	public boolean handleLocalServiceMessage(Message msg) {
+		if(msg.remoteService) {
+			// cannot handle message from remote service
+			// these have to be delivered to the agent from
+			// the outside, by traying to cast it to the
+			// associated interface
+			return false;
+		} else {
+			// service is local service on this agent
+			try {
+				return this.services.get(msg.serviceId).handleMessage(msg);
+			} catch (IndexOutOfBoundsException e) {
+				return false;
+			}
+
 		}
 	}
 }
