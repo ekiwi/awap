@@ -74,8 +74,8 @@ class HuffmanNode(object):
 			self.parent_less_likely = p0
 
 	def propagate_code(self, code):
-		self.parent_more_likely.propagate_code("0" + code)
-		self.parent_less_likely.propagate_code("1" + code)
+		self.parent_more_likely.propagate_code(code + "0")
+		self.parent_less_likely.propagate_code(code + "1")
 
 
 class HuffmanCode(object):
