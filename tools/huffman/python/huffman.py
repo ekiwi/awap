@@ -190,7 +190,7 @@ class HuffmanEncoder(object):
 				exit(1)
 
 		# pad to get bytes
-		outp += '0' * (len(outp) % 8)
+		outp += '0' * (8 - (len(outp) % 8))
 
 		old_size = len(inp)
 		new_size = len(outp) / 8
