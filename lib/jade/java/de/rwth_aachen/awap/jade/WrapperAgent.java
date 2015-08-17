@@ -57,8 +57,8 @@ public class WrapperAgent extends jade.core.Agent {
 		this.addBehaviour(new ReceiveBehaviour(this));
 
 		// debug
-		System.out.println("New WrapperAgent for agent " + agentId +
-				" on Node " + this.node.getName() + " of class `" + agent_class + "`!");
+		//System.out.println("New WrapperAgent for agent " + agentId +
+		//		" on Node " + this.node.getName() + " of class `" + agent_class + "`!");
 	}
 
 	@Override
@@ -73,7 +73,7 @@ public class WrapperAgent extends jade.core.Agent {
 		if(msg.getSender().equals(this.getDefaultDF())) {
 			this.adapter.handleDfMessage(msg);
 		} else {
-			System.out.println(this.getName() + ":\n" + msg);
+			//System.out.println(this.getName() + ":\n" + msg);
 			Message rx;
 			try {
 				rx = Communication.jadeToAwap(msg);

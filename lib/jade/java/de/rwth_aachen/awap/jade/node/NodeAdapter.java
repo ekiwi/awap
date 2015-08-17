@@ -52,7 +52,7 @@ public class NodeAdapter extends AbstractNode {
 
 	@Override
 	public void send(Message tx_msg) {
-		System.out.println("NodeAdapter: Agent " + this.wrapper.getName() + " called send.");
+		//System.out.println("NodeAdapter: Agent " + this.wrapper.getName() + " called send.");
 		try {
 			ACLMessage msg = Communication.awapToJade(tx_msg);
 			msg.setSender(this.wrapper.getAID());
@@ -65,7 +65,7 @@ public class NodeAdapter extends AbstractNode {
 
 	@Override
 	public boolean registerService(LocalService service) {
-		System.out.println("NodeAdapter: Agent " + this.wrapper.getName() + " called registerService.");
+		//System.out.println("NodeAdapter: Agent " + this.wrapper.getName() + " called registerService.");
 
 		DFAgentDescription dfd = new DFAgentDescription();
 		dfd.setName(this.wrapper.getAID());
@@ -87,7 +87,7 @@ public class NodeAdapter extends AbstractNode {
 
 	@Override
 	public boolean deregisterService(LocalService service) {
-		System.out.println("NodeAdapter: Agent " + this.wrapper.getName() + " called deregisterService.");
+		//System.out.println("NodeAdapter: Agent " + this.wrapper.getName() + " called deregisterService.");
 		try {
 			DFService.deregister(this.wrapper);
 			return true;
@@ -101,7 +101,7 @@ public class NodeAdapter extends AbstractNode {
 	public byte installServiceListener(Agent listener, int serviceTypeId,
 			ServiceProperty... properties) {
 		assert(this.wrapper.getAwapAgent() == listener);
-		System.out.println("NodeAdapter: Agent " + this.wrapper.getName() + " called installServiceListener.");
+		//System.out.println("NodeAdapter: Agent " + this.wrapper.getName() + " called installServiceListener.");
 
 		// define search parameters
 		DFAgentDescription dfd = new DFAgentDescription();
@@ -151,13 +151,13 @@ public class NodeAdapter extends AbstractNode {
 				remoteAgent.id = AgentRegistry.getId(result.getName());
 				byte serviceId = 0; // TODO: find service id
 				if(registration) {
-					System.out.println("NodeAdapter: Found new agent: " + result.getName());
+					//System.out.println("NodeAdapter: Found new agent: " + result.getName());
 					ServiceListener.callServiceFound(
 							this.wrapper.getAwapAgent(),
 							sub.serviceTypeId, sub.listenerId,
 							remoteAgent, serviceId);
 				} else {
-					System.out.println("NodeAdapter: Agent died: " + result.getName());
+					//System.out.println("NodeAdapter: Agent died: " + result.getName());
 					ServiceListener.callServiceRemoved(
 							this.wrapper.getAwapAgent(),
 							sub.serviceTypeId, sub.listenerId,
@@ -171,7 +171,7 @@ public class NodeAdapter extends AbstractNode {
 
 	@Override
 	public boolean uninstallServiceListener(byte listenerId) {
-		System.out.println("NodeAdapter: Agent " + this.wrapper.getName() + " called uninstallServiceListener.");
+		//System.out.println("NodeAdapter: Agent " + this.wrapper.getName() + " called uninstallServiceListener.");
 		ACLMessage cancelMessage = DFService.createCancelMessage(
 				this.wrapper, this.wrapper.getDefaultDF(), this.subscriptionMessages.get(listenerId));
 		// send the message
