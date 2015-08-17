@@ -1,0 +1,41 @@
+env = Environment(toolpath=['../../ext/ekiwi-scons-tools/tools'], tools=['default', 'template'])
+
+# import terminal type to enable gcc/clang to print colored output
+# http://stackoverflow.com/questions/9922521/why-doesnt-clang-show-color-output-under-scons
+import os, sys
+env['ENV']['TERM'] = os.environ['TERM']
+
+env.VariantDir(variant_dir='build', src_dir='src')
+
+# flags for C and C++
+env['CCFLAGS'] = [
+	"-Os",
+	"-gdwarf-3",
+	"-Wall",
+	"-Werror=maybe-uninitialized",
+	"-Wformat",
+	"-Wextra",
+	"-Wundef",
+	"-Winit-self",
+	"-Wcast-qual",
+	"-Wshadow",
+	"-Wpointer-arith",
+	"-Wunused",
+	"-fdiagnostics-color=auto",
+]
+
+# C++ flags
+env['CXXFLAGS'] = [
+	"-std=c++14",
+	"-Woverloaded-virtual",
+	"-Wnon-virtual-dtor",
+	"-Weffc++",
+]
+
+# entropy calculator in c++
+entropy = env.Program('build/entropy', env.Glob('build/entropy.cpp'))
+env.Alias('entropy', entropy)
+arguments = '../../examples/simple/build/ostfriesentee/app/TemperatureSensor/TemperatureSensor.di'
+env.Alias('entropy.run', env.Command('run_program', entropy, '{} {}'.format(entropy[0].abspath, arguments)))
+
+env.Default('entropy.run')

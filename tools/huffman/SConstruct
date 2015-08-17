@@ -32,14 +32,6 @@ env['CXXFLAGS'] = [
 	"-Weffc++",
 ]
 
-# entropy calculator in c++
-entropy = env.Program('build/entropy', env.Glob('build/entropy.cpp'))
-env.Alias('entropy', entropy)
-arguments = '../../examples/simple/build/ostfriesentee/app/TemperatureSensor/TemperatureSensor.di'
-env.Alias('entropy.run', env.Command('run_program', entropy, '{} {}'.format(entropy[0].abspath, arguments)))
-
-
-
 # huffman code progam
 sys.path.append(os.path.abspath('python'))
 from huffman import HuffmanCode, HuffmanEncoder
