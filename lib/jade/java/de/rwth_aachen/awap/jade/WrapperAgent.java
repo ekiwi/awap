@@ -6,6 +6,8 @@ import jade.lang.acl.ACLMessage;
 import java.lang.reflect.Constructor;
 
 import de.rwth_aachen.awap.Agent;
+import de.rwth_aachen.awap.Message;
+import de.rwth_aachen.awap.jade.generated.Communication;
 import de.rwth_aachen.awap.jade.node.Node;
 import de.rwth_aachen.awap.jade.node.NodeAdapter;
 import de.rwth_aachen.awap.node.AbstractNode;
@@ -28,9 +30,9 @@ public class WrapperAgent extends jade.core.Agent {
 		// retrieve arguments
 		Object[] args = this.getArguments();
 		assert args.length == 3;
-		assert args[0] instanceof Node;
-		assert args[1] instanceof String;
-		assert args[2] instanceof Byte;
+		assert args[0] instanceof Node;		// the node this is running on
+		assert args[1] instanceof String;	// full name of the awap agent class
+		assert args[2] instanceof Byte;		// the local id of the agent
 
 		this.node = (Node)args[0];
 		String agent_class = (String)args[1];
@@ -72,7 +74,18 @@ public class WrapperAgent extends jade.core.Agent {
 			this.adapter.handleDfMessage(msg);
 		} else {
 			System.out.println(this.getName() + ":\n" + msg);
-			// TODO: find service that this message belongs to.
+			Message rx;
+			try {
+				rx = Communication.jadeToAwap(msg);
+
+				if(rx.remoteService) {
+					// TODO: cast agent to correct interface and dispatch...
+				} else {
+					this.agent.handleLocalServiceMessage(rx);
+				}
+			} catch (Exception e) {
+				e.printStackTrace();
+			}
 		}
 	}
 

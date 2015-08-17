@@ -3,12 +3,13 @@ package de.rwth_aachen.awap.jade.node;
 import jade.domain.DFService;
 import jade.domain.FIPAException;
 import jade.domain.FIPAAgentManagement.DFAgentDescription;
+import jade.domain.FIPAAgentManagement.ServiceDescription;
 import jade.lang.acl.ACLMessage;
 
 import java.util.ArrayList;
 import java.util.HashMap;
 
-import de.rwth_aachen.awap.IServiceClient;
+import de.rwth_aachen.awap.Agent;
 import de.rwth_aachen.awap.LocalService;
 import de.rwth_aachen.awap.Message;
 import de.rwth_aachen.awap.RemoteAgent;
@@ -37,11 +38,9 @@ public class NodeAdapter extends AbstractNode {
 
 	class SubscriptionListener {
 		public byte listenerId;
-		public IServiceClient listener;
-		public byte serviceTypeId;
-		public SubscriptionListener(byte listenerId, IServiceClient listener, byte serviceTypeId) {
+		public int serviceTypeId;
+		public SubscriptionListener(byte listenerId, int serviceTypeId) {
 			this.listenerId = listenerId;
-			this.listener = listener;
 			this.serviceTypeId = serviceTypeId;
 		}
 	}
@@ -99,14 +98,21 @@ public class NodeAdapter extends AbstractNode {
 	}
 
 	@Override
-	public byte installServiceListener(IServiceClient listener, byte serviceTypeId,
+	public byte installServiceListener(Agent listener, int serviceTypeId,
 			ServiceProperty... properties) {
+		assert(this.wrapper.getAwapAgent() == listener);
 		System.out.println("NodeAdapter: Agent " + this.wrapper.getName() + " called installServiceListener.");
 
 		// define search parameters
 		DFAgentDescription dfd = new DFAgentDescription();
 		try {
-			dfd.addServices(Service.clientToDescription(listener, properties));
+			ServiceDescription sd = new ServiceDescription();
+			sd.setType(Service.typeIdToString(serviceTypeId)); // TODO
+			// sd.setName("");
+			for(de.rwth_aachen.awap.ServiceProperty prop : properties) {
+				sd.addProperties(Service.toJadeProperty(prop));
+			}
+			dfd.addServices(sd);
 		} catch (Exception e) {
 			// TODO Auto-generated catch block
 			e.printStackTrace();
@@ -126,7 +132,7 @@ public class NodeAdapter extends AbstractNode {
 
 		this.subscriptionListeners.put(
 				subscriptionMessage.getConversationId(),
-				new SubscriptionListener(listenerId, listener, serviceTypeId));
+				new SubscriptionListener(listenerId, serviceTypeId));
 
 		this.wrapper.send(subscriptionMessage);
 		return listenerId;
@@ -148,13 +154,13 @@ public class NodeAdapter extends AbstractNode {
 					System.out.println("NodeAdapter: Found new agent: " + result.getName());
 					ServiceListener.callServiceFound(
 							this.wrapper.getAwapAgent(),
-							sub.serviceTypeId, sub.listenerId, sub.listener,
+							sub.serviceTypeId, sub.listenerId,
 							remoteAgent, serviceId);
 				} else {
 					System.out.println("NodeAdapter: Agent died: " + result.getName());
 					ServiceListener.callServiceRemoved(
 							this.wrapper.getAwapAgent(),
-							sub.serviceTypeId, sub.listenerId, sub.listener,
+							sub.serviceTypeId, sub.listenerId,
 							remoteAgent, serviceId);
 				}
 			}

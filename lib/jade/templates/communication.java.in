@@ -3,6 +3,9 @@ import jade.lang.acl.ACLMessage;
 import net.minidev.json.JSONObject;
 import net.minidev.json.JSONValue;
 import de.rwth_aachen.awap.Message;
+import de.rwth_aachen.awap.RemoteAgent;
+import de.rwth_aachen.awap.jade.AgentRegistry;
+
 
 public class Communication {
 	public static ACLMessage awapToJade(Message generic_tx) throws Exception {
@@ -10,9 +13,9 @@ public class Communication {
 		JSONObject content=new JSONObject();
 
 		if(generic_tx.remoteService) {
-			content.put("receiver-service-id", "yes");
+			content.put("receiver-is-service-provider", "yes");
 		} else {
-			content.put("receiver-service-id", "no");
+			content.put("receiver-is-service-provider", "no");
 		}
 		content.put("service-id" , generic_tx.serviceId);
 
@@ -94,6 +97,8 @@ public class Communication {
 		rx.remoteService = !receiverIsServiceProvider.equals("yes");
 		int serviceId = (Integer)content.get("service-id");
 		rx.serviceId = (byte)serviceId;
+		rx.remoteAgent = new RemoteAgent();
+		rx.remoteAgent.id = AgentRegistry.getId(msg.getSender());
 
 		return rx;
 	}

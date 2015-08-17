@@ -37,32 +37,24 @@ public class Service {
 		return sd;
 	}
 
-	public static ServiceDescription clientToDescription(IServiceClient client, de.rwth_aachen.awap.ServiceProperty... properties) throws Exception {
-		ServiceDescription sd = new ServiceDescription();
-
+	public static String typeIdToString(int serviceTypeId) throws Exception {
+		switch(serviceTypeId) {
 %% for service in services
-	%% set type = "de.rwth_aachen.awap.service.remote.I" ~ service.name ~ "Client"
-	%% if loop.first
-		if(client instanceof {{ type }}) {
-	%% else
-		} else if(client instanceof {{ type }}) {
-	%% endif
-			sd.setType("{{ service.name }}");
-			// sd.setName("{{ service.name }}");
-			for(de.rwth_aachen.awap.ServiceProperty prop : properties) {
-				sd.addProperties({{ service.name | camelCase }}PropertyToJadeProperty(prop));
-			}
-		}
+		case {{ service.id }}:
+			return "{{ service.name }}";
 %% endfor
-
-		return sd;
+		default:
+			throw new Exception("Unknown service type id: " + serviceTypeId);
+		}
 	}
 
+	public static Property toJadeProperty(de.rwth_aachen.awap.ServiceProperty prop) throws Exception {
+%% set first = True
 %% for service in services
-	public static Property {{ service.name | camelCase }}PropertyToJadeProperty(de.rwth_aachen.awap.ServiceProperty prop) throws Exception {
 	%% for prop in service.properties
 		%% set type = "de.rwth_aachen.awap.service.remote." ~ service.name ~ "." ~ prop.name ~ "Property"
-		%% if loop.first
+		%% if first
+			%% set first = False
 		if(prop instanceof {{ type }}) {
 		%% else
 		} else if(prop instanceof {{ type }}) {
@@ -75,8 +67,8 @@ public class Service {
 		%% endif
 			return new Property("{{ prop.name }}", value);
 	%% endfor
-		}
-		throw new Exception("Invalid value for property of {{ service.name }}");
-	}
 %% endfor
+		}
+		throw new Exception("Unknown Service Property");
+	}
 }

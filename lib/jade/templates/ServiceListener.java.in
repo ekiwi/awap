@@ -7,9 +7,8 @@ import de.rwth_aachen.awap.RemoteAgent;
 public class ServiceListener {
 	public static void callServiceFound(
 			Agent agent,
-			byte serviceTypeId,
+			int serviceTypeId,
 			byte listenerId,
-			IServiceClient listener,
 			RemoteAgent remoteAgent,
 			byte remoteServiceId) {
 %% for service in services
@@ -21,7 +20,7 @@ public class ServiceListener {
 		} else if(serviceTypeId == {{ service.id }}) {
 	%% endif
 			{{ client_type }} client =
-					({{ client_type }})listener;
+					({{ client_type }})agent;
 			{{ service_type }} service =
 					new {{ service_type }}(agent, remoteAgent, remoteServiceId);
 			client.serviceFound(listenerId, service);
@@ -33,9 +32,8 @@ public class ServiceListener {
 
 	public static void callServiceRemoved(
 			Agent agent,
-			byte serviceTypeId,
+			int serviceTypeId,
 			byte listenerId,
-			IServiceClient listener,
 			RemoteAgent remoteAgent,
 			byte remoteServiceId) {
 %% for service in services
@@ -47,7 +45,7 @@ public class ServiceListener {
 		} else if(serviceTypeId == {{ service.id }}) {
 	%% endif
 			{{ client_type }} client =
-					({{ client_type }})listener;
+					({{ client_type }})agent;
 			{{ service_type }} service =
 					new {{ service_type }}(agent, remoteAgent, remoteServiceId);
 			client.serviceRemoved(listenerId, service);
