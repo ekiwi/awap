@@ -171,11 +171,15 @@ int main(int argc, char* argv[]) {
 	std::cout << "Trying to decompress input: " << compressed << std::endl;
 
 	uint8_t* inp = reinterpret_cast<uint8_t*>(content);
-	uint8_t buffer[size*4];
-	Slice<uint8_t> output(buffer, size*4);
+	size_t buffer_size = size*4;
+	uint8_t buffer[buffer_size];
+	Slice<uint8_t> output(buffer, buffer_size);
 
 	if(!decode(slice(inp, size), output)) {
 		std::cout << "Failed to decompress input: " << compressed << std::endl;
+		if(output.length == buffer_size) {
+			std::cout << "Probably, the output buffer was too small..." << std::endl;
+		}
 	}
 
 	std::cout << "Decompressed to " << output.length << " bytes." << std::endl;
