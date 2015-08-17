@@ -26,12 +26,12 @@ public class SimpleTemperatureSubscriber extends Agent implements ITemperatureSe
 
 
 	public void serviceRemoved(byte listenerId, TemperatureService service) {
-		System.out.println("Lost service: " + service.remoteAgent);
+		System.out.println("Lost service: " + service.remoteAgent.id);
 	}
 
 
 	public void onReceive(Temperature msg) {
 		System.out.println("Received Temperature: " + msg.value);
-		System.out.println("From: " + msg.remoteAgent);
+		System.out.println("From: " + msg.remoteAgent.id);
 	}
 }
