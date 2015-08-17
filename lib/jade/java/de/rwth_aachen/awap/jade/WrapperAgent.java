@@ -79,7 +79,7 @@ public class WrapperAgent extends jade.core.Agent {
 				rx = Communication.jadeToAwap(msg);
 
 				if(rx.remoteService) {
-					// TODO: cast agent to correct interface and dispatch...
+					Communication.dispatchRemoteServiceMessage(this.agent, rx);
 				} else {
 					this.agent.handleLocalServiceMessage(rx);
 				}

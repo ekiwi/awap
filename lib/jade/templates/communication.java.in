@@ -2,6 +2,7 @@ package de.rwth_aachen.awap.jade.generated;
 import jade.lang.acl.ACLMessage;
 import net.minidev.json.JSONObject;
 import net.minidev.json.JSONValue;
+import de.rwth_aachen.awap.Agent;
 import de.rwth_aachen.awap.Message;
 import de.rwth_aachen.awap.RemoteAgent;
 import de.rwth_aachen.awap.jade.AgentRegistry;
@@ -101,5 +102,31 @@ public class Communication {
 		rx.remoteAgent.id = AgentRegistry.getId(msg.getSender());
 
 		return rx;
+	}
+
+	public static boolean dispatchRemoteServiceMessage(Agent agent, Message msg) {
+		if(msg.remoteService) {
+%% set first = True
+%% for service in services
+	%% set interface_type = "de.rwth_aachen.awap.service.remote.I" ~ service.name ~ "Client"
+	%% for msg in service.messages
+		%# tx/rx is reversed since we are receiving here!
+		%% if msg.tx
+			%% set type = "de.rwth_aachen.awap.service.remote." ~ service.name ~ "." ~ msg.name
+			%% if first
+				%% set first = False
+			if(msg instanceof {{ type }}) {
+			%% else
+			} else if(msg instanceof {{ type }}) {
+			%% endif
+				(({{ interface_type }})agent).onReceive(
+					({{ type }})msg);
+				return true;
+		%% endif
+	%% endfor
+%% endfor
+			}
+		}
+		return false;
 	}
 }
