@@ -3,41 +3,26 @@
 
 namespace Code {
 
-template<typename T>
-struct Slice
-{
-	Slice(T* ptr, size_t len) : data(ptr), length(len) {}
-	T* data;
-	size_t length;
-};
-
-template<uint32_t Code, uint8_t Bits>
-struct Symbol
-{
-	static constexpr uint8_t ZeroBits = 32 - Bits;
-	static constexpr uint32_t Mask = ((1 << Bits) - 1) << ZeroBits;
-	static constexpr uint32_t Compare = Code << ZeroBits;
-	static inline constexpr bool match(const uint32_t input) {
-		return ((input & Mask) == Compare);
-	}
-};
-
 // TODO: maybe move to separate compilation unit
 %% for sym in map
 static uint8_t Symbol{{ loop.index0 }}Value[{{ sym.value.length }}] = { {{ sym.value.data|join(',') }} };
 %% endfor
 
-static inline Slice<uint8_t> decode(const uint32_t input) {
+/// returns number of bits matched
+/// 0 indicates an error
+static inline uint32_t decode_symbol(const CodeBits& input) {
+	uint32_t matched = 0;
 %% for sym in map
 	%% if loop.first
-	if(Symbol<{{ sym.code.hex }}, {{ sym.code.length }}>::match(input)) {
+	if((matched = Symbol<{{ sym.code.hex }}, {{ sym.code.length }}>::match(input))) {
 	%% else
-	} else if(Symbol<{{ sym.code.hex }}, {{ sym.code.length }}>::match(input)) {
+	} else if((matched = Symbol<{{ sym.code.hex }}, {{ sym.code.length }}>::match(input))) {
 	%% endif
-		return Slice<uint8_t>(Symbol{{ loop.index0 }}Value, {{ sym.value.length }});
+		return matched;
 %% endfor
 	}
 	// Error: should not get here!
+	return 0;
 }
 
 } // namespace Code
