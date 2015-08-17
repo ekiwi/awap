@@ -10,7 +10,7 @@ static uint8_t Symbol{{ loop.index0 }}Value[{{ sym.value.length }}] = { {{ sym.v
 
 /// returns number of bits matched
 /// 0 indicates an error
-static inline uint32_t decode_symbol(const CodeBits& input) {
+static inline uint32_t decode_symbol(const CodeBits& input, Slice<uint8_t>& output) {
 	uint32_t matched = 0;
 %% for sym in map
 	%% if loop.first
@@ -18,7 +18,11 @@ static inline uint32_t decode_symbol(const CodeBits& input) {
 	%% else
 	} else if((matched = Symbol<{{ sym.code.hex }}, {{ sym.code.length }}>::match(input))) {
 	%% endif
-		return matched;
+		if(output.write(Symbol{{ loop.index0 }}Value)) {
+			return matched;
+		} else {
+			return 0;
+		}
 %% endfor
 	}
 	// Error: should not get here!
