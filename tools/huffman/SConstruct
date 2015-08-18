@@ -54,7 +54,7 @@ for filename in files:
 env.Template(target='build/code.hpp', source='templates/code.hpp.in', substitutions=code)
 
 
-huffman = env.Program('build/huffman', env.Glob('build/huffman.cpp'))
+huffman = env.Program('build/huffman', env.Glob('build/*.cpp'))
 env.Alias('huffman', huffman)
 
 arguments = 'python/temp/TemperatureSensor.di ../../examples/simple/build/ostfriesentee/app/TemperatureSensor/TemperatureSensor.di'
