@@ -13,6 +13,7 @@ env.AppendUnique(AWAP_AGENT_PATH = os.path.join(awap_root, 'example', 'agents'))
 env.AppendUnique(AWAP_COMMUNICATION_PATH = os.path.join(awap_root, 'example', 'communication'))
 env.LoadAwapConfiguration(os.path.join(awap_root, 'example', 'configuration.xml'))
 env.Alias('libcommon', env.SConscript(env['AWAP_LIB_COMMON'], exports = 'env'))
+env['AWAP_JADE_JAR'] = os.path.abspath(os.path.join('..', '..', '..', 'jade-mirror', 'lib', 'jade.jar'))
 
 lib = SConscript(['SConscript'], exports = 'env')
 
