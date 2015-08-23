@@ -24,7 +24,7 @@ env.AppendUnique(AWAP_COMMUNICATION_PATH = '../communication')
 env['AWAP_JADE_JAR'] = os.path.abspath(os.path.join(path_awap_root, '..', 'jade-mirror', 'lib', 'jade.jar'))
 
 # build awap configuration
-env.Awap(configuration = 'configuration.xml')
+env.Awap(configuration = '../configuration.xml')
 
 # build local source
 env_java = env.Clone()
