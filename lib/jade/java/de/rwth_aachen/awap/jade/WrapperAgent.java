@@ -43,8 +43,9 @@ public class WrapperAgent extends jade.core.Agent {
 		// create agent
 		try {
 			Class<?> c = Class.forName(agent_class);
-			Constructor<?> ctor = c.getConstructor(byte.class, AbstractNode.class);
-			this.agent = (Agent)ctor.newInstance(agentId, this.adapter);
+			Constructor<?> ctor = c.getConstructor();
+			this.agent = (Agent)ctor.newInstance();
+			this.agent.init(agentId, this.adapter);
 		} catch (Exception e) {
 			e.printStackTrace();
 		}

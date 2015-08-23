@@ -9,11 +9,6 @@ import de.rwth_aachen.awap.service.remote.TemperatureService.Temperature;
 
 public class SimpleTemperatureSubscriber extends Agent implements ITemperatureServiceClient {
 
-	public SimpleTemperatureSubscriber(byte id, AbstractNode node) {
-		super(id, node);
-	}
-
-
 	public void setup() {
 		TemperatureService.registerListener(this, new TemperatureService.BuildingProperty(Building.Build1));
 	}

@@ -9,17 +9,19 @@ import de.rwth_aachen.awap.node.IHardware;
 
 public abstract class Agent {
 	private byte id;
-	private ArrayList<LocalService> services;
+	private ArrayList<LocalService> services = new ArrayList<LocalService>();
 	public IDomainFacilitator df;
 	public ICommunication com;
 	IHardware hw;
 
-	public Agent(byte id, AbstractNode node) {
+	/**
+	 * will be called immediately after the constructor
+	 */
+	public void init(byte id, AbstractNode node) {
 		this.id = id;
 		this.df = node;
 		this.com = node;
 		this.hw = node;
-		this.services = new ArrayList<LocalService>();
 	}
 
 	public byte getId() {

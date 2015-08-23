@@ -10,9 +10,6 @@ import de.rwth_aachen.awap.enums.SupplyCircuit;
 import de.rwth_aachen.awap.node.AbstractNode;
 
 public class TemperatureSensor extends Agent {
-	public TemperatureSensor(byte id, AbstractNode node) {
-		super(id, node);
-	}
 
 	public void setup(){
 		// initialize services
