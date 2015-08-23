@@ -68,7 +68,7 @@ def generate(env):
 	env['AWAP_ROOT'] = os.path.join(env['AWAP_SCONS_TOOLS'], '..')
 	env['AWAP_LIB_COMMON'] = os.path.join(env['AWAP_ROOT'], 'lib', 'common', 'SConscript')
 	env['AWAP_LIB_JADE'] = os.path.join(env['AWAP_ROOT'], 'lib', 'jade', 'SConscript')
-	env['AWAP_LIB_NODE'] = os.path.join(env['AWAP_ROOT'], 'lib', 'node', 'SConscript')
+	env['AWAP_LIB_MOTE'] = os.path.join(env['AWAP_ROOT'], 'lib', 'mote', 'SConscript')
 
 	# lists that need to be filled by the user
 	env['AWAP_AGENT_PATH'] = []

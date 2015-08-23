@@ -1,0 +1,30 @@
+# SConscript
+#
+# Copyright (c) 2015 Kevin Laeufer <kevin.laeufer@rwth-aachen.de>
+
+
+Import('env')
+import os
+
+libname = 'awap-node'
+lib_path = os.path.join(env['AWAP_BUILDPATH'], 'lib', libname)
+
+# tell scons how to generate some files
+generated_path = os.path.join(lib_path, 'generated')
+generated_files = []
+
+# TODO: generate files
+
+env.Alias(libname + ".generate", generated_files)
+
+# build lib
+env['AWAP_LIB_MOTE_A'] = os.path.join(lib_path, "lib" + libname + ".a")
+
+runtime = env.OstfriesenteeRuntime(['base', 'util', 'ostfriesentee'])
+env.VariantDir(variant_dir=lib_path, src_dir='src')
+source = env.Glob(os.path.join(lib_path, '*.cpp')) + runtime
+
+libmote_a = env.StaticLibrary(os.path.join(lib_path, libname), source)
+env.Alias(libname + '.a', libmote_a)
+
+Return('libmote_a')

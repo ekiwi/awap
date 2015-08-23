@@ -1,0 +1,19 @@
+# SConstruct
+#
+# Copyright (c) 2015 Kevin Laeufer <kevin.laeufer@rwth-aachen.de>
+
+
+import os
+
+awap_root = os.path.join('..', '..')
+
+env = Environment(toolpath = [os.path.join(awap_root, 'scons')], tools = ['awap'])
+
+env.AppendUnique(AWAP_AGENT_PATH = os.path.join(awap_root, 'example', 'agents'))
+env.AppendUnique(AWAP_COMMUNICATION_PATH = os.path.join(awap_root, 'example', 'communication'))
+env.LoadAwapConfiguration(os.path.join(awap_root, 'example', 'configuration.xml'))
+env.Alias('libmote', env.SConscript(env['AWAP_LIB_MOTE'], exports = 'env'))
+
+lib = SConscript(['SConscript'], exports = 'env')
+
+env.Default(lib)
