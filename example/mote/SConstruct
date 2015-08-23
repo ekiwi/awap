@@ -54,7 +54,7 @@ env['CXXFLAGS'] = [
 	"-Weffc++",
 ]
 
-node = env.Program('build/node', env.Glob('build/*.cpp'))
-env.Alias('node.run', env.Command('run_node', node, '{} {}'.format(node[0].abspath, "")))
+mote = env.Program('build/mote', env.Glob('build/*.cpp'))
+env.Alias('mote.run', env.Command('run_mote', mote, '{} {}'.format(mote[0].abspath, "")))
 
-env.Default('node.run')
+env.Default('mote.run')
