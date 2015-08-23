@@ -1,0 +1,60 @@
+# SConstruct
+# -*- coding: utf-8 -*-
+#
+# Copyright (c) 2015 Kevin Laeufer <kevin.laeufer@rwth-aachen.de>
+#
+# This file is part of awap.
+#
+#
+
+import os
+
+# root path of the awap repo
+path_awap_root = os.path.abspath('../..')
+# path to awap scons tools
+path_awap_scons = os.path.join(path_awap_root, 'scons')
+
+
+# create the scons environment which contains the custom awap build tools
+env = Environment(toolpath = [path_awap_scons], tools = ['awap'])
+# tell awap where to look for agents
+env.AppendUnique(AWAP_AGENT_PATH = '../agents')
+# tell awap where to look for communication modules
+env.AppendUnique(AWAP_COMMUNICATION_PATH = '../communication')
+env['AWAP_JADE_JAR'] = os.path.abspath(os.path.join(path_awap_root, '..', 'jade-mirror', 'lib', 'jade.jar'))
+
+# build awap configuration
+env.Awap(configuration = '../configuration.xml')
+
+# build local source
+env.VariantDir(variant_dir='build', src_dir='src')
+
+# flags for C and C++
+env['CCFLAGS'] = [
+	"-Os",
+	"-gdwarf-3",
+	"-Wall",
+	"-Werror=maybe-uninitialized",
+	"-Wformat",
+	"-Wextra",
+	"-Wundef",
+	"-Winit-self",
+	"-Wcast-qual",
+	"-Wshadow",
+	"-Wpointer-arith",
+	"-Wunused",
+	"-fdiagnostics-color=auto",
+]
+
+# C++ flags
+env['CXXFLAGS'] = [
+	"-std=c++14",
+	"-Woverloaded-virtual",
+	"-Wnon-virtual-dtor",
+	"-Weffc++",
+]
+
+node = env.Program('build/node', env.Glob('build/*.cpp'))
+env.Alias('node.run', env.Command('run_node', node, '{} {}'.format(node[0].abspath, "")))
+
+env.Default('node.run')
