@@ -40,4 +40,4 @@ env.Alias('run', env.RunJar(simple))
 
 # print the size of the resulting temperature sensor
 #env.Default(['awap-common.size', 'TemperatureSensor.size', 'SimpleTemperatureSubscriber.size', 'awap-jade'])
-env.Default('run')
+env.Default('simple')
