@@ -21,7 +21,11 @@ env.Alias(libname + ".generate", generated_files)
 env['AWAP_LIB_MOTE_A'] = os.path.join(lib_path, "lib" + libname + ".a")
 env['AWAP_LIB_MOTE_INCLUDE'] = os.path.abspath('include')
 
-runtime = env.OstfriesenteeRuntime(['base'])
+# load ostfriesentee
+
+runtime = env.OstfriesenteeRuntime(['base', 'util', 'ostfriesentee'])
+
+
 env.VariantDir(variant_dir=lib_path, src_dir='src')
 env.Append(CPPPATH = env['AWAP_LIB_MOTE_INCLUDE'])
 source = env.Glob(os.path.join(lib_path, '*.cpp')) + runtime
