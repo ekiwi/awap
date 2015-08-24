@@ -22,6 +22,7 @@ env['AWAP_LIB_MOTE_A'] = os.path.join(lib_path, "lib" + libname + ".a")
 
 runtime = env.OstfriesenteeRuntime(['base'])
 env.VariantDir(variant_dir=lib_path, src_dir='src')
+env.Append(CPPPATH = ['include'])
 source = env.Glob(os.path.join(lib_path, '*.cpp')) + runtime
 
 libmote_a = env.StaticLibrary(os.path.join(lib_path, libname), source)
