@@ -18,7 +18,7 @@ namespace awap {
 
 using NodeAddress = uint16_t;
 
-enum class Error {
+enum class Panic {
 	JavaOutOfMemory,
 	JavaIllegalInternalState,
 	JavaUnimplementedFeature,
@@ -26,7 +26,7 @@ enum class Error {
 	JavaUnsatisfiedLink,
 	JavaMalformedInfusion,
 	JavaAssertionFailure,
-	JavaSagePointerOverflow,
+	JavaSafePointerOverflow,
 };
 
 //----------------------------------------------------------------------------
@@ -59,7 +59,10 @@ public:
 	static uint32_t getMilliseconds();
 
 	/// called by awap if a fatal, unrecoverable failure happens
-	static void panic(Error error);
+	static void panic(Panic panic);
+
+	/// called by awap for debug output
+	static int debugPrintF(const char* format, ...);
 };
 
 } // namespace awap
