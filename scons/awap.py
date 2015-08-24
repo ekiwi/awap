@@ -56,6 +56,7 @@ def awap_method(env, configuration):
 	# load libcommon SConscript
 	env.Alias('awap-common', env.SConscript(env['AWAP_LIB_COMMON'], exports = 'env'))
 	env.Alias('awap-jade', env.SConscript(env['AWAP_LIB_JADE'], exports = 'env'))
+	env.Alias('awap-mote', env.SConscript(env['AWAP_LIB_MOTE'], exports = 'env'))
 	# build agents
 	env['AWAP_AGENTS_JAR'] = []
 	for agent in agents:

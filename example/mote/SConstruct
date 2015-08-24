@@ -24,6 +24,7 @@ env.AppendUnique(AWAP_COMMUNICATION_PATH = '../communication')
 env['AWAP_JADE_JAR'] = os.path.abspath(os.path.join(path_awap_root, '..', 'jade-mirror', 'lib', 'jade.jar'))
 
 # build awap configuration
+env.Architecture('amd64')
 env.Awap(configuration = '../configuration.xml')
 
 # build local source
@@ -54,7 +55,9 @@ env['CXXFLAGS'] = [
 	"-Weffc++",
 ]
 
-mote = env.Program('build/mote', env.Glob('build/*.cpp'))
+libmote_a = env['AWAP_LIB_MOTE_A']
+env.Append(CPPPATH = env['AWAP_LIB_MOTE_INCLUDE'])
+mote = env.Program('build/mote', env.Glob('build/*.cpp') + [libmote_a])
 env.Alias('mote.run', env.Command('run_mote', mote, '{} {}'.format(mote[0].abspath, "")))
 
 env.Default('mote.run')
