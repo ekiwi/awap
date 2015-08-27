@@ -11,6 +11,7 @@
 
 #include <stdint.h>
 #include <stddef.h>
+#include <stdarg.h>	// va_list
 
 // This headerfile defines the C++ interface to the awap mote runtime.
 
@@ -27,6 +28,7 @@ enum class Panic {
 	JavaMalformedInfusion,
 	JavaAssertionFailure,
 	JavaSafePointerOverflow,
+	JavaUnknown,
 };
 
 //----------------------------------------------------------------------------
@@ -62,7 +64,10 @@ public:
 	static void panic(Panic panic);
 
 	/// called by awap for debug output
-	static int debugPrintF(const char* format, ...);
+	static int debugPrintF(const char *fmt, va_list args);
+
+	/// write characters to standard output
+	static void write(const char *buf, size_t nbyte);
 };
 
 } // namespace awap
