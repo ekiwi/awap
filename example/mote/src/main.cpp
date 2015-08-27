@@ -1,8 +1,12 @@
 #include <awap.hpp>
 #include <iostream>
 
+using namespace awap;
 
 int main() {
-	std::cout << "Hello World" << std::endl;
+	std::cout << "Awap Mote Runtime" << std::endl;
+
+	Awap::init(0);
+
 	return 0;
 }

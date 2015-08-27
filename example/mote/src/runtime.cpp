@@ -23,13 +23,15 @@ void Runtime::panic(Panic panic)
 	exit(-1);
 }
 
-int Runtime::debugPrintF(const char* format, ...)
+int Runtime::debugPrintF(const char *fmt, va_list args)
 {
-	va_list ap;
-	va_start(ap, format);
-	vprintf(format, ap);
-	va_end(ap);
+	vprintf(fmt, args);
 	return 0;
+}
+
+void Runtime::write(const char *buf, size_t nbyte)
+{
+	std::cout << "TODO: implement Runtime::write" << std::endl;
 }
 
 }
