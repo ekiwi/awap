@@ -18,19 +18,22 @@ generated_files = []
 env.Alias(libname + ".generate", generated_files)
 
 # build lib
-env['AWAP_LIB_MOTE_A'] = os.path.join(lib_path, "lib" + libname + ".a")
 env['AWAP_LIB_MOTE_INCLUDE'] = os.path.abspath('include')
 
 # load ostfriesentee
 
 runtime = env.OstfriesenteeRuntime(['base', 'util', 'ostfriesentee'])
+runtime_c = [ff for ff in runtime if str(ff).endswith(".c")]
+runtime_a = [ff for ff in runtime if str(ff).endswith(".a")]
 
 
 env.VariantDir(variant_dir=lib_path, src_dir='src')
 env.Append(CPPPATH = env['AWAP_LIB_MOTE_INCLUDE'])
-source = env.Glob(os.path.join(lib_path, '*.cpp')) + runtime
+source = env.Glob(os.path.join(lib_path, '*.cpp')) + runtime_c
 
-libmote_a = env.StaticLibrary(os.path.join(lib_path, libname), source)
-env.Alias(libname + '.a', libmote_a)
-
-Return('libmote_a')
+libmote = env.StaticLibrary(os.path.join(lib_path, libname), source)
+# add libmote twice because of cicular dependencies
+libs = libmote + runtime_a + libmote
+env['AWAP_LIB_MOTE_A'] = libs
+env.Alias(libname , libmote)
+Return('libmote')
