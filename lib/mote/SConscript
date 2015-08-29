@@ -22,7 +22,7 @@ env['AWAP_LIB_MOTE_INCLUDE'] = os.path.abspath('include')
 
 # load ostfriesentee
 
-runtime = env.OstfriesenteeRuntime(['base', 'util', 'ostfriesentee'])
+runtime = env.OstfriesenteeRuntime(['base', 'util', 'ostfriesentee', 'awap-common'])
 runtime_c = [ff for ff in runtime if str(ff).endswith(".c")]
 runtime_a = [ff for ff in runtime if str(ff).endswith(".a")]
 

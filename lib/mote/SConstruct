@@ -12,6 +12,7 @@ env = Environment(toolpath = [os.path.join(awap_root, 'scons')], tools = ['awap'
 env.AppendUnique(AWAP_AGENT_PATH = os.path.join(awap_root, 'example', 'agents'))
 env.AppendUnique(AWAP_COMMUNICATION_PATH = os.path.join(awap_root, 'example', 'communication'))
 env.LoadAwapConfiguration(os.path.join(awap_root, 'example', 'configuration.xml'))
+env.Alias('awap-common', env.SConscript(env['AWAP_LIB_COMMON'], exports = 'env'))
 
 env.Architecture('amd64')
 env.Alias('libmote', env.SConscript(env['AWAP_LIB_MOTE'], exports = 'env'))
