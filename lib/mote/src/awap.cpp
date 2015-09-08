@@ -1,5 +1,5 @@
 #include <awap.hpp>
-#include "util.hpp"
+#include "common.hpp"
 #include "mote.hpp"
 
 extern "C"
@@ -9,7 +9,8 @@ extern "C"
 }
 
 #include <hpp/ostfriesentee.hpp>
-#include <jlib_awap-common.hpp>
+
+#include <cstring> // std::strcmp
 
 using namespace ostfriesentee;
 
@@ -21,6 +22,8 @@ extern size_t di_lib_archive_size;
 static uint8_t mem[MEMSIZE];
 static Vm vm;
 static awap::Mote* mote = nullptr;
+
+static const char* AwapCommonInfusionName = "awap-common";
 
 namespace awap {
 
@@ -49,8 +52,18 @@ void Awap::init(const NodeAddress nodeAddress)
 	// start the main execution loop
 	vm.run();
 
+	// find awap-common infusion
+	auto inf = vm.firstInfusion();
+	while(inf.isValid()) {
+		if(std::strcmp(inf.getName(), AwapCommonInfusionName) == 0) {
+			break;
+		}
+		inf = inf.next();
+	}
+	if(!inf.isValid()) Runtime::panic(Panic::AwapCommonInfusionNotFound);
+
 	// create mote instance
-	mote = new Mote(vm, nodeAddress);
+	mote = new Mote(vm, inf, nodeAddress);
 }
 
 void  Awap::receive(const NodeAddress sender, const uint8_t* content, const size_t length)

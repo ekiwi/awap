@@ -18,6 +18,8 @@ namespace awap {
 static inline const char* getPanicDescription(Panic panic)
 {
 	switch(panic) {
+	case Panic::AwapCommonInfusionNotFound:
+		return "Awap::init: awap-common infusion was not found!";
 	case Panic::NotInitialized:
 		return "Awap::init wasn't called first!";
 	case Panic::JavaOutOfMemory:

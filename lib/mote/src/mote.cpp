@@ -3,9 +3,10 @@
 
 namespace awap {
 
-Mote::Mote(ostfriesentee::Vm& vm, const NodeAddress nodeAddress)
-	: vm(vm), address(nodeAddress)
-{}
+Mote::Mote(ostfriesentee::Vm& vm, ostfriesentee::Infusion& awapCommon, const NodeAddress nodeAddress)
+	: vm(vm), awapCommon(awapCommon), address(nodeAddress)
+{
+}
 
 Mote::~Mote()
 {
@@ -21,7 +22,7 @@ Mote::loadAgent(const uint8_t* content, const size_t length)
 {
 	for(size_t ii = 0; ii < arrayCount(agents); ++ii) {
 		if(agents[ii] == nullptr) {
-			Agent* agent = Agent::fromPacket(vm, ii, content, length);
+			Agent* agent = Agent::fromPacket(*this, ii, content, length);
 			if(agent != nullptr) {
 				agents[ii] = agent;
 			}

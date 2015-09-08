@@ -2,14 +2,17 @@
 #define AGENT_HPP
 
 #include <hpp/ostfriesentee.hpp>
-#include <util.hpp>
+#include <common.hpp>
+
+namespace awap { class Agent; }
+#include <mote.hpp>
 
 namespace awap {
 
 class Agent
 {
 public:
-	static Agent* fromPacket(ostfriesentee::Vm& vm, uint8_t localId, const uint8_t* content, const size_t length);
+	static Agent* fromPacket(Mote& mote, uint8_t localId, const uint8_t* content, const size_t length);
 
 	~Agent();
 
