@@ -42,6 +42,9 @@ public:
 	/// needs to be called, when a new packet was received
 	static void receive(const NodeAddress sender,
 			const uint8_t* content, const size_t length);
+
+	/// for testing: load an agent
+	static void loadAgent(const uint8_t* content, const size_t length);
 };
 
 

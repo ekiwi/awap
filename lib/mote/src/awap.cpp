@@ -1,4 +1,5 @@
 #include <awap.hpp>
+#include "agent.hpp"
 
 extern "C"
 {
@@ -7,6 +8,7 @@ extern "C"
 }
 
 #include <hpp/ostfriesentee.hpp>
+#include <jlib_awap-common.hpp>
 
 using namespace ostfriesentee;
 
@@ -15,18 +17,22 @@ char * ref_t_base_address;
 extern unsigned char di_lib_archive_data[];
 extern size_t di_lib_archive_size;
 
-uint8_t mem[MEMSIZE];
+static uint8_t mem[MEMSIZE];
+static Vm vm;
+
+static constexpr size_t MaxAgents = 8;
+static awap::Agent* agents[MaxAgents];
 
 namespace awap {
 
+template<typename T, size_t N>
+static constexpr inline size_t
+count(T (&)[N]) { return N; }
+
 void Awap::init(const NodeAddress nodeAddress)
 {
-	// initialise memory manager
-	dj_mem_init(mem, MEMSIZE);
-	ref_t_base_address = (char*)mem - 42;
-
-	// Create a new VM
-	Vm vm;
+	// initialize a new VM
+	vm.initialize(mem);
 	vm.makeActiveVm();
 
 	// load libraries
@@ -52,6 +58,19 @@ void Awap::init(const NodeAddress nodeAddress)
 
 void  Awap::receive(const NodeAddress sender, const uint8_t* content, const size_t length)
 {
+}
+
+void Awap::loadAgent(const uint8_t* content, const size_t /* length */)
+{
+	// right now we assume, that content points to a .di file in memory
+	Infusion inf = vm.loadInfusion(content);
+
+	for(size_t ii = 0; ii < count(agents); ++ii) {
+		if(agents[ii] == nullptr) {
+			agents[ii] = new Agent(ii, inf);
+			break;
+		}
+	}
 }
 
 //----------------------------------------------------------------------------
