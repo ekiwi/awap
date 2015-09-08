@@ -62,6 +62,11 @@ def load_agent_method(env, name):
 	# agent was successfuly validated!
 	return { 'name': name, 'path': agent_path }
 
+def agent_c_array_method(env, target, agent_name):
+	di = env['AWAP_AGENTS_DI'][agent_name]
+	ar = os.path.join(env['AWAP_AGENT_BUILDPATH'], agent_name, agent_name + '.ar')
+	archive = env.Command(ar, [env.File(di)], "ar rcf $TARGET $SOURCES")
+	return env.CArray(target, archive)
 
 def generate(env):
 	# load configuration validator
@@ -72,6 +77,7 @@ def generate(env):
 	# public methods
 	env.AddMethod(load_agent_method, 'LoadAgent')
 	env.AddMethod(agent_method, 'Agent')
+	env.AddMethod(agent_c_array_method, 'AgentCArray')
 
 def exists(env):
 	return 1

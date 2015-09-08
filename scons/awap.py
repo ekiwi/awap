@@ -59,9 +59,11 @@ def awap_method(env, configuration):
 	env.Alias('awap-mote', env.SConscript(env['AWAP_LIB_MOTE'], exports = 'env'))
 	# build agents
 	env['AWAP_AGENTS_JAR'] = []
+	env['AWAP_AGENTS_DI']  = {}
 	for agent in agents:
 		(agent_oft, agent_jar) = env.Agent(**agent)
 		env['AWAP_AGENTS_JAR'].append(agent_jar[0].abspath)
+		env['AWAP_AGENTS_DI'][agent['name']] = [str(tt) for tt in agent_oft if str(tt).endswith('.di')][0]
 
 def generate(env):
 	# define some paths
