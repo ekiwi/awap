@@ -1,6 +1,6 @@
 #include <awap.hpp>
 #include "util.hpp"
-#include "agent.hpp"
+#include "mote.hpp"
 
 extern "C"
 {
@@ -20,9 +20,7 @@ extern size_t di_lib_archive_size;
 
 static uint8_t mem[MEMSIZE];
 static Vm vm;
-
-static constexpr size_t MaxAgents = 8;
-static awap::Agent* agents[MaxAgents];
+static awap::Mote* mote = nullptr;
 
 namespace awap {
 
@@ -39,11 +37,10 @@ void Awap::init(const NodeAddress nodeAddress)
 			{ "ostfriesentee", &ostfriesentee_native_handler }
 		};
 
-	int length = sizeof(handlers)/ sizeof(handlers[0]);
 	dj_archive archive;
 	archive.start = (dj_di_pointer)di_lib_archive_data;
 	archive.end = (dj_di_pointer)(di_lib_archive_data + di_lib_archive_size);
-	vm.loadInfusionArchive(archive, handlers, length);
+	vm.loadInfusionArchive(archive, handlers, arrayCount(handlers));
 
 	// pre-allocate an OutOfMemoryError object
 	dj_object* obj = vm.createSysLibObject(BASE_CDEF_java_lang_OutOfMemoryError);
@@ -51,23 +48,21 @@ void Awap::init(const NodeAddress nodeAddress)
 
 	// start the main execution loop
 	vm.run();
+
+	// create mote instance
+	mote = new Mote(vm, nodeAddress);
 }
 
 void  Awap::receive(const NodeAddress sender, const uint8_t* content, const size_t length)
 {
+	if(mote == nullptr) Runtime::panic(Panic::NotInitialized);
+	mote->receive(sender, content, length);
 }
 
 void Awap::loadAgent(const uint8_t* content, const size_t length )
 {
-	for(size_t ii = 0; ii < arrayCount(agents); ++ii) {
-		if(agents[ii] == nullptr) {
-			Agent* agent = Agent::fromPacket(vm, ii, content, length);
-			if(agent != nullptr) {
-				agents[ii] = agent;
-			}
-			break;
-		}
-	}
+	if(mote == nullptr) Runtime::panic(Panic::NotInitialized);
+	mote->loadAgent(content, length);
 }
 
 //----------------------------------------------------------------------------

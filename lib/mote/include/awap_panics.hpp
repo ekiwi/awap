@@ -18,6 +18,8 @@ namespace awap {
 static inline const char* getPanicDescription(Panic panic)
 {
 	switch(panic) {
+	case Panic::NotInitialized:
+		return "Awap::init wasn't called first!";
 	case Panic::JavaOutOfMemory:
 		return "JVM (Ostfriesentee): Out of Memory";
 	case Panic::JavaIllegalInternalState:

@@ -20,6 +20,8 @@ namespace awap {
 using NodeAddress = uint16_t;
 
 enum class Panic {
+	NotInitialized,	// Awap::init wasn't called first
+	// Ostfriesentee Errors
 	JavaOutOfMemory,
 	JavaIllegalInternalState,
 	JavaUnimplementedFeature,

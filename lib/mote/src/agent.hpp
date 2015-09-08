@@ -2,6 +2,7 @@
 #define AGENT_HPP
 
 #include <hpp/ostfriesentee.hpp>
+#include <util.hpp>
 
 namespace awap {
 
@@ -19,6 +20,7 @@ private:
 	uint8_t localId;
 	ostfriesentee::Infusion infusion;
 	uint8_t* infusionData;
+	const String name;
 };
 
 }

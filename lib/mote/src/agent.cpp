@@ -18,6 +18,11 @@ std::ostream &operator<<(std::ostream &os, String const &str) {
 	return os;
 }
 
+std::ostream &operator<<(std::ostream &os, awap::String const &str) {
+	os.write(str.data, str.length);
+	return os;
+}
+
 namespace awap {
 
 
@@ -37,10 +42,12 @@ Agent::fromPacket(Vm& vm, uint8_t localId, const uint8_t* content, const size_t 
 }
 
 Agent::Agent(uint8_t localId, ostfriesentee::Infusion& inf, uint8_t* infusionData)
-	: localId(localId), infusion(inf), infusionData(infusionData)
+	: localId(localId), infusion(inf), infusionData(infusionData), name(infusion.getName())
 {
+	std::cout << "New Agent of Type: " << name << std::endl;
+
+
 	// try to inspect infusion
-	std::cout << std::endl << "Infusion: " << infusion.getName() << std::endl;
 	ClassList classes = infusion.getClassList();
 	std::cout << "Number of classes: " << static_cast<int>(classes.getSize()) << std::endl;
 	for(uint8_t ii = 0; ii < classes.getSize(); ++ii) {
