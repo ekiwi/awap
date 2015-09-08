@@ -64,9 +64,7 @@ def load_agent_method(env, name):
 
 def agent_c_array_method(env, target, agent_name):
 	di = env['AWAP_AGENTS_DI'][agent_name]
-	ar = os.path.join(env['AWAP_AGENT_BUILDPATH'], agent_name, agent_name + '.ar')
-	archive = env.Command(ar, [env.File(di)], "ar rcf $TARGET $SOURCES")
-	return env.CArray(target, archive)
+	return env.CArray(target, di)
 
 def generate(env):
 	# load configuration validator
