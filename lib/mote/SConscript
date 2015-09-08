@@ -31,7 +31,9 @@ env.VariantDir(variant_dir=lib_path, src_dir='src')
 env.Append(CPPPATH = env['AWAP_LIB_MOTE_INCLUDE'])
 source = env.Glob(os.path.join(lib_path, '*.cpp')) + runtime_c
 
-libmote = env.StaticLibrary(os.path.join(lib_path, libname), source)
+lib_env = env.Clone()
+lib_env.Append(CPPPATH = 'src')
+libmote = lib_env.StaticLibrary(os.path.join(lib_path, libname), source)
 # add libmote twice because of cicular dependencies
 libs = libmote + runtime_a + libmote
 env['AWAP_LIB_MOTE_A'] = libs

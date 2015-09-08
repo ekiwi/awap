@@ -61,6 +61,6 @@ inline Slice<T> slice(T* ptr, size_t len)
 	return sl;
 }
 
-} // namespace huffman
+} // namespace awap
 
 #endif // SLICE_HPP

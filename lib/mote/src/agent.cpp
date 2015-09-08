@@ -1,5 +1,7 @@
 #include "agent.hpp"
 
+#include <cstring>		// for std::memcpy
+
 // TODO: remove when debuging is done
 #include<iostream>
 
@@ -20,15 +22,22 @@ namespace awap {
 
 
 Agent*
-Agent::fromPacket(Vm& vm, uint8_t localId, const uint8_t* content, const size_t)
+Agent::fromPacket(Vm& vm, uint8_t localId, const uint8_t* content, const size_t length)
 {
 	// right now we assume, that content points to a .di file in memory
-	Infusion inf = vm.loadInfusion(content);
-	return new Agent(localId, inf);
+
+	// allocate memory to store infusion
+	uint8_t* infusion = new uint8_t[length];
+	std::memcpy(infusion, content, length);
+
+	// TODO: decompress compressed infusion
+
+	Infusion inf = vm.loadInfusion(infusion);
+	return new Agent(localId, inf, infusion);
 }
 
-Agent::Agent(uint8_t localId, ostfriesentee::Infusion& inf)
-	: localId(localId), infusion(inf)
+Agent::Agent(uint8_t localId, ostfriesentee::Infusion& inf, uint8_t* infusionData)
+	: localId(localId), infusion(inf), infusionData(infusionData)
 {
 	// try to inspect infusion
 	std::cout << std::endl << "Infusion: " << infusion.getName() << std::endl;
@@ -51,6 +60,11 @@ Agent::Agent(uint8_t localId, ostfriesentee::Infusion& inf)
 	for(uint16_t ii = 0; ii < strings.getSize(); ++ii) {
 		std::cout << strings.getString(ii) << std::endl;
 	}
+}
+
+Agent::~Agent()
+{
+	delete this->infusionData;
 }
 
 }

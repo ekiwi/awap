@@ -1,4 +1,5 @@
 #include <awap.hpp>
+#include "util.hpp"
 #include "agent.hpp"
 
 extern "C"
@@ -24,10 +25,6 @@ static constexpr size_t MaxAgents = 8;
 static awap::Agent* agents[MaxAgents];
 
 namespace awap {
-
-template<typename T, size_t N>
-static constexpr inline size_t
-count(T (&)[N]) { return N; }
 
 void Awap::init(const NodeAddress nodeAddress)
 {
@@ -62,7 +59,7 @@ void  Awap::receive(const NodeAddress sender, const uint8_t* content, const size
 
 void Awap::loadAgent(const uint8_t* content, const size_t length )
 {
-	for(size_t ii = 0; ii < count(agents); ++ii) {
+	for(size_t ii = 0; ii < arrayCount(agents); ++ii) {
 		if(agents[ii] == nullptr) {
 			Agent* agent = Agent::fromPacket(vm, ii, content, length);
 			if(agent != nullptr) {

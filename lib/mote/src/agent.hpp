@@ -10,12 +10,15 @@ class Agent
 public:
 	static Agent* fromPacket(ostfriesentee::Vm& vm, uint8_t localId, const uint8_t* content, const size_t length);
 
+	~Agent();
+
 private:
-	Agent(uint8_t localId, ostfriesentee::Infusion& inf);
+	Agent(uint8_t localId, ostfriesentee::Infusion& inf, uint8_t* infusionData);
 
 private:
 	uint8_t localId;
 	ostfriesentee::Infusion infusion;
+	uint8_t* infusionData;
 };
 
 }
