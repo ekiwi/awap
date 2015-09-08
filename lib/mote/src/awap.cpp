@@ -60,14 +60,14 @@ void  Awap::receive(const NodeAddress sender, const uint8_t* content, const size
 {
 }
 
-void Awap::loadAgent(const uint8_t* content, const size_t /* length */)
+void Awap::loadAgent(const uint8_t* content, const size_t length )
 {
-	// right now we assume, that content points to a .di file in memory
-	Infusion inf = vm.loadInfusion(content);
-
 	for(size_t ii = 0; ii < count(agents); ++ii) {
 		if(agents[ii] == nullptr) {
-			agents[ii] = new Agent(ii, inf);
+			Agent* agent = Agent::fromPacket(vm, ii, content, length);
+			if(agent != nullptr) {
+				agents[ii] = agent;
+			}
 			break;
 		}
 	}

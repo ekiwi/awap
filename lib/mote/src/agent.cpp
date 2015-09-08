@@ -19,6 +19,14 @@ std::ostream &operator<<(std::ostream &os, String const &str) {
 namespace awap {
 
 
+Agent*
+Agent::fromPacket(Vm& vm, uint8_t localId, const uint8_t* content, const size_t)
+{
+	// right now we assume, that content points to a .di file in memory
+	Infusion inf = vm.loadInfusion(content);
+	return new Agent(localId, inf);
+}
+
 Agent::Agent(uint8_t localId, ostfriesentee::Infusion& inf)
 	: localId(localId), infusion(inf)
 {
