@@ -45,7 +45,9 @@ Agent::fromPacket(Mote& mote, uint8_t localId, const uint8_t* content, const siz
 	if(awapCommonInfusionId == 0) return nullptr;
 
 	// try to find class that inherits from awap agent
+	// we will assume that there is only one such class in one infusion
 	ClassList classes = inf.getClassList();
+	int agentClassIndex = -1;
 	for(uint8_t ii = 0; ii < classes.getSize(); ++ii) {
 		ClassDefinition def = classes.getElement(ii);
 		auto superclass = def.getSuperClass();
@@ -53,26 +55,20 @@ Agent::fromPacket(Mote& mote, uint8_t localId, const uint8_t* content, const siz
 			// TODO: follow
 		} else if(superclass.infusion_id == awapCommonInfusionId) {
 			if(superclass.entity_id == de::rwth_aachen::awap::Agent::ClassId) {
-				std::cout << "!!!!! found !!!!" << std::endl;
+				agentClassIndex = ii;
+				break;
 			}
 		}
-
-
-		int numberOfInterfaces = def.getNumberOfInterfaces();
-		std::cout << "Superclass: " << def.getSuperClass() << std::endl;
-		std::cout << "Name: " << def.getNameId() << std::endl;
-		std::cout << "Interfaces: " << numberOfInterfaces << std::endl;
 	}
+	if(agentClassIndex == -1) return nullptr;
 
-	List methods = inf.getMethodImplementationList();
-	std::cout << "Number of methods: " << static_cast<int>(methods.getSize()) << std::endl;
+	ClassDefinition agentClassDef = classes.getElement(agentClassIndex);
+	std::cout << "Superclass: " << agentClassDef.getSuperClass() << std::endl;
+	std::cout << "Name: " << agentClassDef.getNameId() << std::endl;
 
+	de::rwth_aachen::awap::Agent agent(inf, agentClassIndex);
+	// try to construct agent instance
 
-	StringTable strings = inf.getStringTable();
-	std::cout << "Number of strings: " << static_cast<int>(strings.getSize()) << std::endl;
-	for(uint16_t ii = 0; ii < strings.getSize(); ++ii) {
-		std::cout << strings.getString(ii) << std::endl;
-	}
 
 	return new Agent(localId, inf, infusion);
 }
