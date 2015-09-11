@@ -62,19 +62,18 @@ Agent::fromPacket(Mote& mote, uint8_t localId, const uint8_t* content, const siz
 	}
 	if(agentClassIndex == -1) return nullptr;
 
-	ClassDefinition agentClassDef = classes.getElement(agentClassIndex);
-	std::cout << "Superclass: " << agentClassDef.getSuperClass() << std::endl;
-	std::cout << "Name: " << agentClassDef.getNameId() << std::endl;
 
-	de::rwth_aachen::awap::Agent agent(mote.getAwapCommon(), inf, agentClassIndex);
-	// try to construct agent instance
+	//de::rwth_aachen::awap::Agent agent(mote.getAwapCommon(), inf, agentClassIndex);
 
-
-	return new Agent(localId, inf, infusion);
+	return new Agent(mote, inf, agentClassIndex, infusion);
 }
 
-Agent::Agent(uint8_t localId, ostfriesentee::Infusion& inf, uint8_t* infusionData)
-	: localId(localId), infusion(inf), infusionData(infusionData), name(infusion.getName())
+Agent::Agent(Mote& mote, ostfriesentee::Infusion& inf, uint8_t agentClassId, uint8_t* infusionData)
+	: mote(mote),
+	agent(mote.getAwapCommon(), inf, agentClassId),
+	infusion(inf),
+	infusionData(infusionData),
+	name(infusion.getName())
 {
 	std::cout << "New Agent of Type: " << name << std::endl;
 }

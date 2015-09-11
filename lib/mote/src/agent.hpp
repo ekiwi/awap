@@ -2,6 +2,7 @@
 #define AGENT_HPP
 
 #include <hpp/ostfriesentee.hpp>
+#include <jlib_awap-common.hpp>
 #include <common.hpp>
 
 namespace awap { class Agent; }
@@ -17,10 +18,11 @@ public:
 	~Agent();
 
 private:
-	Agent(uint8_t localId, ostfriesentee::Infusion& inf, uint8_t* infusionData);
+	Agent(Mote& mote, ostfriesentee::Infusion& inf, uint8_t agentClassId, uint8_t* infusionData);
 
 private:
-	uint8_t localId;
+	Mote& mote;
+	::de::rwth_aachen::awap::Agent agent;
 	ostfriesentee::Infusion infusion;
 	uint8_t* infusionData;
 	const String name;
