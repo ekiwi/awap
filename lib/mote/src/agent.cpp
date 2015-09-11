@@ -66,7 +66,7 @@ Agent::fromPacket(Mote& mote, uint8_t localId, const uint8_t* content, const siz
 	std::cout << "Superclass: " << agentClassDef.getSuperClass() << std::endl;
 	std::cout << "Name: " << agentClassDef.getNameId() << std::endl;
 
-	de::rwth_aachen::awap::Agent agent(inf, agentClassIndex);
+	de::rwth_aachen::awap::Agent agent(mote.getAwapCommon(), inf, agentClassIndex);
 	// try to construct agent instance
 
 
