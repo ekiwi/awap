@@ -31,7 +31,7 @@ int Runtime::debugPrintF(const char *fmt, va_list args)
 
 void Runtime::write(const char *buf, size_t nbyte)
 {
-	std::cout << "TODO: implement Runtime::write" << std::endl;
+	std::cout.write(buf, nbyte);
 }
 
 }
