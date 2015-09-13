@@ -27,12 +27,12 @@ runtime_c = [ff for ff in runtime if str(ff).endswith(".c")]
 runtime_a = [ff for ff in runtime if str(ff).endswith(".a")]
 
 
-env.VariantDir(variant_dir=lib_path, src_dir='src')
+env.VariantDir(variant_dir=lib_path, src_dir='cpp')
 env.Append(CPPPATH = env['AWAP_LIB_MOTE_INCLUDE'])
 source = env.Glob(os.path.join(lib_path, '*.cpp')) + runtime_c
 
 lib_env = env.Clone()
-lib_env.Append(CPPPATH = 'src')
+lib_env.Append(CPPPATH = 'cpp')
 libmote = lib_env.StaticLibrary(os.path.join(lib_path, libname), source)
 # add libmote twice because of cicular dependencies
 libs = libmote + runtime_a + libmote
