@@ -18,10 +18,11 @@ public:
 	~Agent();
 
 private:
-	Agent(Mote& mote, ostfriesentee::Infusion& inf, uint8_t agentClassId, uint8_t* infusionData);
+	Agent(Mote& mote, uint8_t localAgentId, ostfriesentee::Infusion& inf, uint8_t agentClassId, uint8_t* infusionData);
 
 private:
 	Mote& mote;
+	uint8_t localAgentId;
 	::de::rwth_aachen::awap::Agent agent;
 	ostfriesentee::Infusion infusion;
 	uint8_t* infusionData;

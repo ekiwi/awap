@@ -6,6 +6,7 @@ extern "C"
 {
 #include <jlib_base.h>
 #include <jlib_ostfriesentee.h>
+#include <jlib_awap-mote.h>
 }
 
 #include <hpp/ostfriesentee.hpp>
@@ -24,6 +25,7 @@ static Vm vm;
 static awap::Mote* mote = nullptr;
 
 static const char* AwapCommonInfusionName = "awap-common";
+static const char* AwapMoteInfusionName = "awap-mote";
 
 namespace awap {
 
@@ -37,7 +39,9 @@ void Awap::init(const NodeAddress nodeAddress)
 	dj_named_native_handler handlers[] = {
 			{ "base", &base_native_handler },
 			// util does not have any native code
-			{ "ostfriesentee", &ostfriesentee_native_handler }
+			{ "ostfriesentee", &ostfriesentee_native_handler },
+			// awap-common does not have any native code
+			{ "awap-mote", &awap_mote_native_handler }
 		};
 
 	dj_archive archive;
@@ -54,16 +58,20 @@ void Awap::init(const NodeAddress nodeAddress)
 
 	// find awap-common infusion
 	auto inf = vm.firstInfusion();
+	ostfriesentee::Infusion awapCommonInf(nullptr), awapMoteInf(nullptr);
 	while(inf.isValid()) {
 		if(std::strcmp(inf.getName(), AwapCommonInfusionName) == 0) {
-			break;
+			awapCommonInf = inf;
+		} else if(std::strcmp(inf.getName(), AwapMoteInfusionName) == 0) {
+			awapMoteInf = inf;
 		}
 		inf = inf.next();
 	}
-	if(!inf.isValid()) Runtime::panic(Panic::AwapCommonInfusionNotFound);
+	if(!awapCommonInf.isValid()) Runtime::panic(Panic::AwapCommonInfusionNotFound);
+	if(!awapMoteInf.isValid()) Runtime::panic(Panic::AwapMoteInfusionNotFound);
 
 	// create mote instance
-	mote = new Mote(vm, inf, nodeAddress);
+	mote = new Mote(vm, awapCommonInf, awapMoteInf, nodeAddress);
 }
 
 void  Awap::receive(const NodeAddress sender, const uint8_t* content, const size_t length)
@@ -76,6 +84,46 @@ void Awap::loadAgent(const uint8_t* content, const size_t length )
 {
 	if(mote == nullptr) Runtime::panic(Panic::NotInitialized);
 	mote->loadAgent(content, length);
+}
+
+//----------------------------------------------------------------------------
+// awap-mote infusion native functions
+extern "C"
+int debug_printf(const char * format, ...);
+
+// void de.rwth_aachen.awap.mote.Mote.send(int, de.rwth_aachen.awap.Message)
+extern "C"
+void de_rwth_aachen_awap_mote_Mote_void_send_int_de_rwth_aachen_awap_Message()
+{
+	debug_printf("TODO: implement Mote.send method.");
+}
+
+// boolean de.rwth_aachen.awap.mote.Mote.deregisterService(int, de.rwth_aachen.awap.LocalService)
+extern "C"
+void de_rwth_aachen_awap_mote_Mote_boolean_deregisterService_int_de_rwth_aachen_awap_LocalService()
+{
+	debug_printf("TODO: implement Mote.deregisterService method.");
+}
+
+// byte de.rwth_aachen.awap.mote.Mote.installServiceListener(int, de.rwth_aachen.awap.Agent, int, de.rwth_aachen.awap.ServiceProperty[])
+extern "C"
+void de_rwth_aachen_awap_mote_Mote_byte_installServiceListener_int_de_rwth_aachen_awap_Agent_int_de_rwth_aachen_awap_ServiceProperty__()
+{
+	debug_printf("TODO: implement Mote.installServiceListener method.");
+}
+
+// boolean de.rwth_aachen.awap.mote.Mote.registerService(int, de.rwth_aachen.awap.LocalService)
+extern "C"
+void de_rwth_aachen_awap_mote_Mote_boolean_registerService_int_de_rwth_aachen_awap_LocalService()
+{
+	debug_printf("TODO: implement Mote.registerService method.");
+}
+
+// boolean de.rwth_aachen.awap.mote.Mote.uninstallServiceListener(int, byte)
+extern "C"
+void de_rwth_aachen_awap_mote_Mote_boolean_uninstallServiceListener_int_byte()
+{
+	debug_printf("TODO: implement Mote.uninstallServiceListener method.");
 }
 
 //----------------------------------------------------------------------------

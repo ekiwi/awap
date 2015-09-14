@@ -3,8 +3,8 @@
 
 namespace awap {
 
-Mote::Mote(ostfriesentee::Vm& vm, ostfriesentee::Infusion& awapCommon, const NodeAddress nodeAddress)
-	: vm(vm), awapCommon(awapCommon), address(nodeAddress)
+Mote::Mote(ostfriesentee::Vm& vm, ostfriesentee::Infusion& awapCommon, ostfriesentee::Infusion& awapMote, const NodeAddress nodeAddress)
+	: vm(vm), awapCommon(awapCommon), awapMote(awapMote), address(nodeAddress)
 {
 }
 

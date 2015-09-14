@@ -15,7 +15,7 @@ public:
 	static constexpr size_t MaxAgents = 8;
 
 public:
-	Mote(ostfriesentee::Vm& vm, ostfriesentee::Infusion& awapCommon, const NodeAddress nodeAddress);
+	Mote(ostfriesentee::Vm& vm, ostfriesentee::Infusion& awapCommon, ostfriesentee::Infusion& awapMote, const NodeAddress nodeAddress);
 	~Mote();
 
 	void loadAgent(const uint8_t* content, const size_t length);
@@ -23,11 +23,13 @@ public:
 
 	inline ostfriesentee::Vm& getVm() { return this->vm; }
 	inline ostfriesentee::Infusion& getAwapCommon() { return this->awapCommon; }
+	inline ostfriesentee::Infusion& getAwapMote()   { return this->awapMote; }
 
 private:
 	Agent* agents[MaxAgents] = { nullptr };
 	ostfriesentee::Vm& vm;
 	ostfriesentee::Infusion awapCommon;
+	ostfriesentee::Infusion awapMote;
 	const NodeAddress address;
 	uint8_t awapCommonInfusionId;
 };

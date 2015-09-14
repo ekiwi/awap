@@ -1,6 +1,7 @@
 #include "agent.hpp"
 
 #include <jlib_awap-common.hpp>
+#include <jlib_awap-mote.hpp>
 #include <cstring>		// for std::memcpy
 
 // TODO: remove when debuging is done
@@ -65,17 +66,23 @@ Agent::fromPacket(Mote& mote, uint8_t localId, const uint8_t* content, const siz
 
 	//de::rwth_aachen::awap::Agent agent(mote.getAwapCommon(), inf, agentClassIndex);
 
-	return new Agent(mote, inf, agentClassIndex, infusion);
+	return new Agent(mote, localId, inf, agentClassIndex, infusion);
 }
 
-Agent::Agent(Mote& mote, ostfriesentee::Infusion& inf, uint8_t agentClassId, uint8_t* infusionData)
+Agent::Agent(Mote& mote, uint8_t localAgentId, ostfriesentee::Infusion& inf, uint8_t agentClassId, uint8_t* infusionData)
 	: mote(mote),
+	localAgentId(localAgentId),
 	agent(mote.getAwapCommon(), inf, agentClassId),
 	infusion(inf),
 	infusionData(infusionData),
 	name(infusion.getName())
 {
 	std::cout << "New Agent of Type: " << name << std::endl;
+
+	// construct node adapter
+	de::rwth_aachen::awap::mote::NodeAdapter adapter(mote.getAwapMote(), localAgentId);
+	// call agent init
+	agent.init(localAgentId, adapter.getRef());
 }
 
 Agent::~Agent()
