@@ -20,13 +20,16 @@ env.Alias(libname + ".generate", generated_files)
 # build lib
 env['AWAP_LIB_MOTE_INCLUDE'] = os.path.abspath('include')
 
-# load ostfriesentee
+# build ostfriesentee library
+libmote_oft = env.OstfriesenteeLibrary('awap-mote', ['java'], OFT_LIBS=['base', 'util', 'awap-common'])
+env.Alias('awap-mote.oft', libmote_oft)
 
-runtime = env.OstfriesenteeRuntime(['base', 'util', 'ostfriesentee', 'awap-common'])
+# load ostfriesentee
+runtime = env.OstfriesenteeRuntime(['base', 'util', 'ostfriesentee', 'awap-common', 'awap-mote'])
 runtime_c = [ff for ff in runtime if str(ff).endswith(".c")]
 runtime_a = [ff for ff in runtime if str(ff).endswith(".a")]
 
-
+# build c++ library
 env.VariantDir(variant_dir=lib_path, src_dir='cpp')
 env.Append(CPPPATH = env['AWAP_LIB_MOTE_INCLUDE'])
 source = env.Glob(os.path.join(lib_path, '*.cpp')) + runtime_c
