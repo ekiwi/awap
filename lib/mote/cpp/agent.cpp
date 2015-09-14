@@ -85,6 +85,12 @@ Agent::Agent(Mote& mote, uint8_t localAgentId, ostfriesentee::Infusion& inf, uin
 	agent.init(localAgentId, adapter.getRef());
 }
 
+void
+Agent::setup()
+{
+	agent.setup();
+}
+
 Agent::~Agent()
 {
 	delete this->infusionData;

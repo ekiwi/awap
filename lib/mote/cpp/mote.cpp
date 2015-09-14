@@ -25,6 +25,8 @@ Mote::loadAgent(const uint8_t* content, const size_t length)
 			Agent* agent = Agent::fromPacket(*this, ii, content, length);
 			if(agent != nullptr) {
 				agents[ii] = agent;
+				// TODO: should setup be called from somewhere else?
+				agent->setup();
 			}
 			break;
 		}

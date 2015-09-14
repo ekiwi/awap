@@ -95,35 +95,35 @@ int debug_printf(const char * format, ...);
 extern "C"
 void de_rwth_aachen_awap_mote_Mote_void_send_int_de_rwth_aachen_awap_Message()
 {
-	debug_printf("TODO: implement Mote.send method.");
+	debug_printf("TODO: implement Mote.send method.\n");
 }
 
 // boolean de.rwth_aachen.awap.mote.Mote.deregisterService(int, de.rwth_aachen.awap.LocalService)
 extern "C"
 void de_rwth_aachen_awap_mote_Mote_boolean_deregisterService_int_de_rwth_aachen_awap_LocalService()
 {
-	debug_printf("TODO: implement Mote.deregisterService method.");
+	debug_printf("TODO: implement Mote.deregisterService method.\n");
 }
 
 // byte de.rwth_aachen.awap.mote.Mote.installServiceListener(int, de.rwth_aachen.awap.Agent, int, de.rwth_aachen.awap.ServiceProperty[])
 extern "C"
 void de_rwth_aachen_awap_mote_Mote_byte_installServiceListener_int_de_rwth_aachen_awap_Agent_int_de_rwth_aachen_awap_ServiceProperty__()
 {
-	debug_printf("TODO: implement Mote.installServiceListener method.");
+	debug_printf("TODO: implement Mote.installServiceListener method.\n");
 }
 
 // boolean de.rwth_aachen.awap.mote.Mote.registerService(int, de.rwth_aachen.awap.LocalService)
 extern "C"
 void de_rwth_aachen_awap_mote_Mote_boolean_registerService_int_de_rwth_aachen_awap_LocalService()
 {
-	debug_printf("TODO: implement Mote.registerService method.");
+	debug_printf("TODO: implement Mote.registerService method.\n");
 }
 
 // boolean de.rwth_aachen.awap.mote.Mote.uninstallServiceListener(int, byte)
 extern "C"
 void de_rwth_aachen_awap_mote_Mote_boolean_uninstallServiceListener_int_byte()
 {
-	debug_printf("TODO: implement Mote.uninstallServiceListener method.");
+	debug_printf("TODO: implement Mote.uninstallServiceListener method.\n");
 }
 
 //----------------------------------------------------------------------------

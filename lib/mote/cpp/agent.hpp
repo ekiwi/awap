@@ -17,6 +17,8 @@ public:
 
 	~Agent();
 
+	void setup();
+
 private:
 	Agent(Mote& mote, uint8_t localAgentId, ostfriesentee::Infusion& inf, uint8_t agentClassId, uint8_t* infusionData);
 
