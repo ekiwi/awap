@@ -22,6 +22,7 @@ using NodeAddress = uint16_t;
 enum class Panic {
 	NotInitialized,
 	AwapCommonInfusionNotFound,
+	AwapMoteInfusionNotFound,
 	// Ostfriesentee Errors
 	JavaOutOfMemory,
 	JavaIllegalInternalState,
