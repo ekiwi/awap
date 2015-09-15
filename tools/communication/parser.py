@@ -121,7 +121,7 @@ class Message(NamedCommunicationElement):
 	def __init__(self, parent, node):
 		super(Message, self).__init__(parent, node)
 		self.id = int(node.get("id"))
-		self.performative = node.get("performative")
+		self.performative = node.get("performative").replace('-', '_')
 		direction = node.get("direction")
 		self.tx = "tx" in direction
 		self.rx = "rx" in direction
