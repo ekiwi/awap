@@ -88,6 +88,11 @@
 				<xs:attribute name="class" use="required" type="xs:NCName"/>
 			</xs:complexType>
 		</xs:element>
+		<xs:element name="bool">
+			<xs:complexType>
+				<xs:attribute name="name" use="required" type="xs:NCName"/>
+			</xs:complexType>
+		</xs:element>
 	</xs:choice>
 	<xs:attribute name="direction" use="required">
 		<xs:simpleType>
@@ -161,6 +166,12 @@
 				<!-- class will be used as a reference to an enum -->
 				<xs:attribute name="name" use="required" type="xs:NCName"/>
 				<xs:attribute name="class" use="required" type="xs:NCName"/>
+			</xs:complexType>
+		</xs:element>
+		<xs:element name="bool">
+			<xs:complexType>
+				<xs:attribute name="id" use="required" type="xs:integer"/>
+				<xs:attribute name="name" use="required" type="xs:NCName"/>
 			</xs:complexType>
 		</xs:element>
 	</xs:choice>

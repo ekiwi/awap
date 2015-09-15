@@ -90,6 +90,8 @@ class Service(NamedCommunicationElement):
 				self.properties.append(IntProperty(self, prop_ee))
 			elif prop_ee.tag in ['enum']:
 				self.properties.append(EnumProperty(self, prop_ee))
+			elif prop_ee.tag in ['bool']:
+				self.properties.append(BooleanProperty(self, prop_ee))
 		if len(self.properties) > 0:
 			max_id_found = max([prop.id for prop in self.properties])
 		else:
@@ -111,8 +113,8 @@ class Service(NamedCommunicationElement):
 		if len(self.properties) > 0:
 			java = ["{} {}".format(prop.java_type, prop.name) for prop in self.properties]
 			cpp  = ["{} {}".format(prop.cpp_type,  prop.name) for prop in self.properties]
-			dd['java'] = {'initializer_list': ", " + ", ".join(java)}
-			dd['cpp'] =  {'initializer_list': ", " + ", ".join(cpp)}
+			dd['java'] = {'initializer_list': ", " + ", ".join(java), 'args': java}
+			dd['cpp'] =  {'initializer_list': ", " + ", ".join(cpp), 'args': cpp}
 		return dd
 
 class Message(NamedCommunicationElement):
@@ -129,6 +131,8 @@ class Message(NamedCommunicationElement):
 				self.fields.append(IntField(self, field_ee))
 			elif field_ee.tag in ['enum']:
 				self.fields.append(EnumField(self, field_ee))
+			elif field_ee.tag in ['bool']:
+				self.fields.append(BooleanField(self, field_ee))
 
 	def to_dict(self):
 		dd = super(Message, self).to_dict()
@@ -141,8 +145,28 @@ class Message(NamedCommunicationElement):
 		if len(self.fields) > 0:
 			java = ["{} {}".format(field.java_type, field.name) for field in self.fields]
 			cpp  = ["{} {}".format(field.cpp_type,  field.name) for field in self.fields]
-			dd['java'] = {'initializer_list': ", " + ", ".join(java)}
-			dd['cpp'] =  {'initializer_list': ", " + ", ".join(cpp)}
+			dd['java'] = {'initializer_list': ", " + ", ".join(java), 'args': java}
+			dd['cpp'] =  {'initializer_list': ", " + ", ".join(cpp), 'args': cpp}
+		return dd
+
+class BooleanField(NamedCommunicationElement):
+	def __init__(self, parent, node):
+		super(BooleanField, self).__init__(parent, node)
+
+	@property
+	def cpp_type(self):
+		return "bool"
+
+	@property
+	def java_type(self):
+		return "boolean"
+
+	def to_dict(self):
+		dd = super(BooleanField, self).to_dict()
+		dd['size'] = 1
+		dd['cpp']  = { 'type': self.cpp_type }
+		dd['java'] = { 'type': self.java_type, 'box': "Boolean"}
+		dd['is_enum'] = False
 		return dd
 
 class IntField(NamedCommunicationElement):
@@ -199,6 +223,16 @@ class EnumField(NamedCommunicationElement):
 		dd['java'] = { 'type': self.java_type }
 		dd['enum_name'] = self.enum_class.value.name
 		dd['is_enum'] = True
+		return dd
+
+class BooleanProperty(BooleanField):
+	def __init__(self, parent, node):
+		super(BooleanProperty, self).__init__(parent, node)
+		self.id = int(node.get("id"))
+
+	def to_dict(self):
+		dd = super(BooleanProperty, self).to_dict()
+		dd['id'] = self.id
 		return dd
 
 class IntProperty(IntField):
