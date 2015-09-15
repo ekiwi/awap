@@ -7,6 +7,7 @@ extern "C"
 #include <jlib_base.h>
 #include <jlib_ostfriesentee.h>
 #include <jlib_awap-mote.h>
+#include "array.h"
 }
 
 #include <hpp/ostfriesentee.hpp>
@@ -95,6 +96,8 @@ int debug_printf(const char * format, ...);
 extern "C"
 void de_rwth_aachen_awap_mote_Mote_void_send_int_de_rwth_aachen_awap_Message()
 {
+	uint8_t agentId = static_cast<uint8_t>(dj_exec_stackPopInt());
+	ref_t message = dj_exec_stackPopRef();
 	debug_printf("TODO: implement Mote.send method.\n");
 }
 
@@ -102,28 +105,42 @@ void de_rwth_aachen_awap_mote_Mote_void_send_int_de_rwth_aachen_awap_Message()
 extern "C"
 void de_rwth_aachen_awap_mote_Mote_boolean_deregisterService_int_de_rwth_aachen_awap_LocalService()
 {
+	uint8_t agentId = static_cast<uint8_t>(dj_exec_stackPopInt());
+	ref_t service = dj_exec_stackPopRef();
 	debug_printf("TODO: implement Mote.deregisterService method.\n");
+	dj_exec_stackPushShort(static_cast<uint16_t>(true));
 }
 
 // byte de.rwth_aachen.awap.mote.Mote.installServiceListener(int, de.rwth_aachen.awap.Agent, int, de.rwth_aachen.awap.ServiceProperty[])
 extern "C"
 void de_rwth_aachen_awap_mote_Mote_byte_installServiceListener_int_de_rwth_aachen_awap_Agent_int_de_rwth_aachen_awap_ServiceProperty__()
 {
+	uint8_t agentId = static_cast<uint8_t>(dj_exec_stackPopInt());
+	uint8_t serviceTypeId = static_cast<uint8_t>(dj_exec_stackPopInt());
+	ref_t listener = dj_exec_stackPopRef();
+	dj_array* properties = reinterpret_cast<dj_array*>(REF_TO_VOIDP(dj_exec_stackPopRef()));
 	debug_printf("TODO: implement Mote.installServiceListener method.\n");
+	dj_exec_stackPushShort(0);
 }
 
 // boolean de.rwth_aachen.awap.mote.Mote.registerService(int, de.rwth_aachen.awap.LocalService)
 extern "C"
 void de_rwth_aachen_awap_mote_Mote_boolean_registerService_int_de_rwth_aachen_awap_LocalService()
 {
+	uint8_t agentId = static_cast<uint8_t>(dj_exec_stackPopInt());
+	ref_t service = dj_exec_stackPopRef();
 	debug_printf("TODO: implement Mote.registerService method.\n");
+	dj_exec_stackPushShort(static_cast<uint16_t>(true));
 }
 
 // boolean de.rwth_aachen.awap.mote.Mote.uninstallServiceListener(int, byte)
 extern "C"
 void de_rwth_aachen_awap_mote_Mote_boolean_uninstallServiceListener_int_byte()
 {
+	uint8_t agentId = static_cast<uint8_t>(dj_exec_stackPopInt());
+	uint8_t localServiceId = static_cast<uint8_t>(dj_exec_stackPopInt());
 	debug_printf("TODO: implement Mote.uninstallServiceListener method.\n");
+	dj_exec_stackPushShort(static_cast<uint16_t>(true));
 }
 
 //----------------------------------------------------------------------------
