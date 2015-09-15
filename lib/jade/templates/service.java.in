@@ -31,8 +31,8 @@ public class Service {
 				sd.addProperties(new Property("{{ prop.name }}", value));
 			}
 	%% endfor
-		}
 %% endfor
+		}
 
 		return sd;
 	}
@@ -67,8 +67,8 @@ public class Service {
 		%% endif
 			return new Property("{{ prop.name }}", value);
 	%% endfor
-%% endfor
 		}
+%% endfor
 		throw new Exception("Unknown Service Property");
 	}
 }

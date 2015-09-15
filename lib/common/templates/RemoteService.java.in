@@ -46,7 +46,7 @@ public final class {{service.name}} extends RemoteService {
 	%% for field in msg.fields
 			public {{ field.java.type }} {{ field.name }};
 	%% endfor
-			public {{ msg.name }}({{ msg.java.initializer_list }}){
+			public {{ msg.name }}({{ msg.java.args|join(', ') }}){
 		%% for field in msg.fields
 				this.{{ field.name }} = {{ field.name}};
 		%% endfor

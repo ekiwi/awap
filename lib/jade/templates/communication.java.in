@@ -124,8 +124,8 @@ public class Communication {
 				return true;
 		%% endif
 	%% endfor
-%% endfor
 			}
+%% endfor
 		}
 		return false;
 	}
