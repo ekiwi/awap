@@ -18,7 +18,7 @@
 	<element name="SC3" id="2" />
 </enum>
 
-<enum name="SensorType" size="4" max-id="15">
+<enum name="TemperatureSensorType" size="4" max-id="15">
 	<element name="NotSet"   id="0" />
 	<element name="Tflow"    id="1" />
 	<element name="Treturn"  id="2" />

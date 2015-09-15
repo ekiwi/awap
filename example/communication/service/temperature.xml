@@ -18,6 +18,7 @@
 		<enum name="Building"      class="Building"      id="0" />
 		<enum name="SupplyCircuit" class="SupplyCircuit" id="1" />
 		<enum name="Room"          class="Room"          id="2" />
+		<enum name="SensorType"    class="TemperatureSensorType" id="3" />
 	</properties>
 </service>
 </awap-communication>

@@ -7,6 +7,7 @@ import de.rwth_aachen.awap.RemoteAgent;
 import de.rwth_aachen.awap.enums.Building;
 import de.rwth_aachen.awap.enums.Room;
 import de.rwth_aachen.awap.enums.SupplyCircuit;
+import de.rwth_aachen.awap.enums.TemperatureSensorType;
 import de.rwth_aachen.awap.node.AbstractNode;
 
 public class TemperatureSensor extends Agent {
@@ -18,7 +19,7 @@ public class TemperatureSensor extends Agent {
 
 	private class TemperatureService extends de.rwth_aachen.awap.service.local.TemperatureService {
 		public TemperatureService() {
-			super(TemperatureSensor.this, Building.Build1, SupplyCircuit.SC1, Room.R1);
+			super(TemperatureSensor.this, Building.Build1, SupplyCircuit.SC1, Room.R1, TemperatureSensorType.Troom);
 		}
 
 		private ArrayList<RemoteAgent> subscribers = new ArrayList<RemoteAgent>();
