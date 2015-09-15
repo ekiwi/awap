@@ -6,6 +6,7 @@
 
 namespace awap { class Mote; }
 #include <agent.hpp>
+#include <agent_directory.hpp>
 
 namespace awap {
 
