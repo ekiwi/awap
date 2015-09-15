@@ -1,0 +1,43 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<awap-communication version="0.1" module="service.energy-supply">
+
+<!-- imports values from common.xml in this modules namespace -->
+<import module="common" as="" />
+
+<enum name="Action" max-id="4">
+	<element name="Decrease"  id="0" />
+	<element name="DoNothing" id="1" />
+	<element name="Increase"  id="2" />
+</enum>
+
+<service name="EnergySupplyService">
+	<!-- This defines the service interface that can be used by other agents -->
+	<messages max-id="7" size="3">
+		<message name="RequestProposal" direction="rx" performative="CFP" id="0">
+			<enum name="action" class="Action" />
+			<enum name="room"   class="Room" />
+			<bool name="beMediator" />
+		</message>
+		<message name="ProposeAction" direction="tx" performative="PROPOSE" id="1">
+			<bool name="isOn" />
+			<bool name="canIncrease" />
+			<bool name="canDecrease" />
+			<bool name="isHeating" />
+			<bool name="isCooling" />
+			<int name="posGradCost" size="32"/>
+			<int name="negGradCost" size="32"/>
+		</message>
+		<!-- in the jade code this contains the same values as ProposeAction,
+		     but they are only used for logging. -->
+		<message name="RefuseAction"  direction="tx" performative="REFUSE"  id="2" />
+		<message name="AcceptProposal" direction="rx" performative="ACCEPT-PROPOSAL" id="3" />
+		<message name="RejectProposal" direction="rx" performative="REJECT-PROPOSAL" id="4" />
+	</messages>
+	<!-- This will be used by the DF in order to diferentiate different services of the same kind -->
+	<properties max-id="3">
+		<enum name="Building"      class="Building"      id="0" />
+		<enum name="SupplyCircuit" class="SupplyCircuit" id="1" />
+		<enum name="Room"          class="Room"          id="2" />
+	</properties>
+</service>
+</awap-communication>

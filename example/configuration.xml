@@ -6,6 +6,7 @@
 	</agents>
 	<!-- max-id is needed for domain facilitator table field size -->
 	<services max-id="7">
-		<service module="service.temperature" name="TemperatureService" id="0" />
+		<service module="service.temperature"   name="TemperatureService"  id="0" />
+		<service module="service.energy-supply" name="EnergySupplyService" id="1" />
 	</services>
 </awap-configuration>
