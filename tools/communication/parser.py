@@ -167,6 +167,7 @@ class BooleanField(NamedCommunicationElement):
 		dd['cpp']  = { 'type': self.cpp_type }
 		dd['java'] = { 'type': self.java_type, 'box': "Boolean"}
 		dd['is_enum'] = False
+		dd['is_bool'] = True
 		return dd
 
 class IntField(NamedCommunicationElement):
@@ -201,6 +202,7 @@ class IntField(NamedCommunicationElement):
 		java_box = java_box[0].upper() + java_box[1:]
 		dd['java'] = { 'type': self.java_type, 'box': java_box}
 		dd['is_enum'] = False
+		dd['is_bool'] = False
 		return dd
 
 class EnumField(NamedCommunicationElement):
@@ -223,6 +225,7 @@ class EnumField(NamedCommunicationElement):
 		dd['java'] = { 'type': self.java_type }
 		dd['enum_name'] = self.enum_class.value.name
 		dd['is_enum'] = True
+		dd['is_bool'] = False
 		return dd
 
 class BooleanProperty(BooleanField):

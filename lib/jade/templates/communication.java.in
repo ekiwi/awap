@@ -80,9 +80,13 @@ public class Communication {
 				{{ type }} specific_rx = new {{ type }}();
 			%% for field in msg.fields
 				// unboxing...
+				%% if field.is_bool
+				specific_rx.{{ field.name }} = (Boolean)content.get("{{ field.name }}");
+				%% else
 				// FIXME: this only works as long as all of our values are either int, short or byte...
 				int {{ field.name }} = (Integer)content.get("{{ field.name }}");
 				specific_rx.{{ field.name }} = ({{ field.java.type }}){{ field.name }};
+				%% endif
 			%% endfor
 				rx = specific_rx;
 	%% endfor
