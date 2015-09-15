@@ -423,7 +423,6 @@ class CommunicationParser(object):
 		self._file = ""
 
 	def parse(self, modules):
-		self.modules= {}
 		if not isinstance(modules, list):
 			modules = [modules]
 		# load all files and commit objects to memory
