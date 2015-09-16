@@ -20,7 +20,7 @@ public class TemperatureSensor extends Agent {
 
 		public void onReceive(RequestTemperature msg) {
 			// TODO: read temperature from hardware
-			this.send(new Temperature(msg.remoteAgent, (short)(1337)));
+			this.send(new Temperature(msg.remoteAgent, 1337));
 		}
 	}
 }

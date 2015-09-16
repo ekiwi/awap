@@ -30,19 +30,19 @@ public class Main {
 
 		// create temperature node and agent
 		Node temperatureNode= new Node("TemperatureNode0");
-		Node subscriberNode= new Node("SubscriberNode0");
+		Node subscriberNode= new Node("ConsumerNode0");
 
 		AgentController temperatureAgent0 = temperatureNode.createNewAgent(cc, "TemperatureAgent0", "de.rwth_aachen.awap.example.agents.TemperatureSensor");
 		temperatureAgent0.start();
-		AgentController temperatureSubscriber0 = subscriberNode.createNewAgent(cc, "SimpleTemperatureSubscriber0", "de.rwth_aachen.awap.example.agents.SimpleTemperatureSubscriber");
-		temperatureSubscriber0.start();
+		AgentController temperatureConsumer0 = subscriberNode.createNewAgent(cc, "SimpleTemperatureConsumer0", "de.rwth_aachen.awap.example.agents.SimpleTemperatureConsumer");
+		temperatureConsumer0.start();
 
 
 		Thread.sleep(2000);
 		temperatureAgent0.kill();
 
 		Thread.sleep(2000);
-		temperatureSubscriber0.kill();
+		temperatureConsumer0.kill();
 
 	}
 }
