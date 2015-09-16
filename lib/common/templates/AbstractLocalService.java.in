@@ -41,7 +41,7 @@ public abstract class {{service.name}} extends LocalService {
 	public void send({{ msg.name }} msg) {
 		msg.serviceId = this.localServiceId;
 		msg.remoteService = false;
-		this.parent.com.send(msg);
+		this.parent.node.send(msg);
 	}
 	%% endif
 %% endfor
