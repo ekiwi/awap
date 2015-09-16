@@ -2,26 +2,17 @@ package de.rwth_aachen.awap;
 
 import java.util.ArrayList;
 
-import de.rwth_aachen.awap.node.AbstractNode;
-import de.rwth_aachen.awap.node.ICommunication;
-import de.rwth_aachen.awap.node.IDomainFacilitator;
-import de.rwth_aachen.awap.node.IHardware;
-
 public abstract class Agent {
 	private byte id;
 	private ArrayList<LocalService> services = new ArrayList<LocalService>();
-	public IDomainFacilitator df;
-	public ICommunication com;
-	IHardware hw;
+	public AbstractNode node;
 
 	/**
 	 * will be called immediately after the constructor
 	 */
 	public void init(byte id, AbstractNode node) {
 		this.id = id;
-		this.df = node;
-		this.com = node;
-		this.hw = node;
+		this.node = node;
 	}
 
 	public byte getId() {
@@ -29,7 +20,7 @@ public abstract class Agent {
 	}
 
 	protected byte registerService(LocalService service) {
-		if(this.df.registerService(service)) {
+		if(this.node.registerService(service)) {
 			// FIXME: this is not thread save
 			this.services.add(service);
 			return (byte)(this.services.size() - 1);
@@ -43,12 +34,26 @@ public abstract class Agent {
 	 */
 	public abstract void setup();
 
+	protected void registerTimeout(int milliseconds) {
+		this.registerTimeout(milliseconds, null);
+	}
+
+
+	protected void registerTimeout(int milliseconds, Object obj) {
+
+	}
+
+	/**
+	 * This method is called when a timeout expires
+	 */
+	public abstract void onWakeUp();
+
 	/**
 	 * This method is called when the platform is about to shut down.
 	 */
 	public void tearDown() {
 		for(LocalService service : this.services) {
-			this.df.deregisterService(service);
+			this.node.deregisterService(service);
 		}
 	}
 
