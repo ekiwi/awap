@@ -16,4 +16,6 @@ public abstract class AbstractNode {
 	 * @return        `true` if remove was successful
 	 */
 	public abstract boolean deregisterService(LocalService service);
+
+	public abstract void requestWakeUp(int milliseconds, Object obj);
 }

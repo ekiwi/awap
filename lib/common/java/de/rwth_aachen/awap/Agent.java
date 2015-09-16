@@ -34,19 +34,21 @@ public abstract class Agent {
 	 */
 	public abstract void setup();
 
-	protected void registerTimeout(int milliseconds) {
-		this.registerTimeout(milliseconds, null);
+	protected void requestWakeUp(int milliseconds) {
+		this.requestWakeUp(milliseconds, null);
 	}
 
 
-	protected void registerTimeout(int milliseconds, Object obj) {
-
+	protected void requestWakeUp(int milliseconds, Object obj) {
+		this.node.requestWakeUp(milliseconds, obj);
 	}
 
 	/**
 	 * This method is called when a timeout expires
 	 */
-	public abstract void onWakeUp();
+	public void onWakeUp() {
+		// default: do nothing
+	}
 
 	/**
 	 * This method is called when the platform is about to shut down.
