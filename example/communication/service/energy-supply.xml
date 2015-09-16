@@ -4,17 +4,11 @@
 <!-- imports values from common.xml in this modules namespace -->
 <import module="common" as="" />
 
-<enum name="Action" max-id="4">
-	<element name="Decrease"  id="0" />
-	<element name="DoNothing" id="1" />
-	<element name="Increase"  id="2" />
-</enum>
-
 <service name="EnergySupplyService">
 	<!-- This defines the service interface that can be used by other agents -->
 	<messages max-id="7" size="3">
 		<message name="RequestProposal" direction="rx" performative="CFP" id="0">
-			<enum name="action" class="Action" />
+			<enum name="action" class="TemperatureAction" />
 			<enum name="room"   class="Room" />
 			<bool name="beMediator" />
 		</message>

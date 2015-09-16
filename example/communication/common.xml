@@ -34,4 +34,15 @@
 	<element name="EnergySupplyAgent" id="4" />
 </enum>
 
+<enum name="UserType" max-id="4">
+	<element name="Owner" id="0" />
+	<element name="Guest" id="1" />
+</enum>
+
+<enum name="TemperatureAction" max-id="4">
+	<element name="Decrease"  id="0" />
+	<element name="DoNothing" id="1" />
+	<element name="Increase"  id="2" />
+</enum>
+
 </awap-communication>
