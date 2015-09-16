@@ -7,10 +7,9 @@
 <service name="TemperatureService">
 	<!-- This defines the service interface that can be used by other agents -->
 	<messages max-id="7" size="3">
-		<message name="Subscribe"   direction="rx" performative="SUBSCRIBE" id="0" />
-		<message name="Unsubscribe" direction="rx" performative="SUBSCRIBE" id="1" />
-		<message name="Temperature" direction="tx" performative="INFORM"    id="2">
-			<int name="value" size="10" />
+		<message name="RequestTemperature" direction="rx" performative="REQUEST" id="0" />
+		<message name="Temperature" direction="tx" performative="INFORM" id="1">
+			<int name="value" size="32" />
 		</message>
 	</messages>
 	<!-- This will be used by the DF in order to diferentiate different services of the same kind -->
