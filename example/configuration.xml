@@ -8,5 +8,6 @@
 	<services max-id="7">
 		<service module="service.temperature"   name="TemperatureService"  id="0" />
 		<service module="service.energy-supply" name="EnergySupplyService" id="1" />
+		<service module="service.room"          name="RoomService" id="2" />
 	</services>
 </awap-configuration>
