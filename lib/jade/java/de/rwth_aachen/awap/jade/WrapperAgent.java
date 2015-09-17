@@ -1,8 +1,5 @@
 package de.rwth_aachen.awap.jade;
 
-import jade.core.behaviours.CyclicBehaviour;
-import jade.lang.acl.ACLMessage;
-
 import java.lang.reflect.Constructor;
 
 import de.rwth_aachen.awap.Agent;
@@ -10,7 +7,8 @@ import de.rwth_aachen.awap.Message;
 import de.rwth_aachen.awap.jade.generated.Communication;
 import de.rwth_aachen.awap.jade.node.Node;
 import de.rwth_aachen.awap.jade.node.NodeAdapter;
-import de.rwth_aachen.awap.node.AbstractNode;
+import jade.core.behaviours.CyclicBehaviour;
+import jade.lang.acl.ACLMessage;
 
 public class WrapperAgent extends jade.core.Agent {
 	private static final long serialVersionUID = 1L;
