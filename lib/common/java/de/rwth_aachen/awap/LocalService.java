@@ -2,10 +2,10 @@ package de.rwth_aachen.awap;
 
 public abstract class LocalService {
 	protected Agent parent;
-	public int serviceTypeId;
-	public LocalService(Agent parent, int serviceTypeId) {
+	public int serviceId;
+	public LocalService(Agent parent, int serviceId) {
 		this.parent = parent;
-		this.serviceTypeId = serviceTypeId;
+		this.serviceId = serviceId;
 		this.parent.registerService(this);
 	}
 

@@ -39,7 +39,7 @@ public abstract class {{service.name}} extends LocalService {
 	}
 	// public abstract void onFailedToSend({{ msg.name }} msg);
 	public void send({{ msg.name }} msg) {
-		msg.serviceTypeId = {{ service.id }};
+		msg.serviceId = {{ service.id }};
 		this.parent.node.send(msg);
 	}
 	%% endif

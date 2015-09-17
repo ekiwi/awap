@@ -3,8 +3,6 @@ package de.rwth_aachen.awap.service.remote;
 import de.rwth_aachen.awap.IServiceClient;
 
 public interface I{{ service.name }}Client extends IServiceClient {
-	public void serviceFound(byte listenerId, {{ service.name }} service);
-	public void serviceRemoved(byte listenerId, {{ service.name }} service);
 %% for msg in service.messages
 	%# Remember, that tx and rx are reversed, now that we are the client!
 	%% if msg.tx

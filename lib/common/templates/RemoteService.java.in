@@ -64,7 +64,7 @@ public final class {{service.name}} extends RemoteService {
 			}
 	}
 	public void send({{ msg.name }} msg) {
-		msg.serviceTypeId = {{ service.id }};
+		msg.serviceId = {{ service.id }};
 		msg.remoteAgent = this.remoteAgent;
 		this.parent.node.send(msg);
 	}

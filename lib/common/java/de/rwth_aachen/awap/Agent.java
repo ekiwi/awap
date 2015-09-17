@@ -21,7 +21,7 @@ public abstract class Agent {
 
 	protected byte registerService(LocalService service) {
 		for(LocalService serv : this.services) {
-			if(serv.serviceTypeId == service.serviceTypeId) {
+			if(serv.serviceId == service.serviceId) {
 				// ERROR: can only have one service of a kind per agent
 				return -1;
 			}
@@ -67,7 +67,7 @@ public abstract class Agent {
 
 	public boolean handleLocalServiceMessage(Message msg) {
 		for(LocalService service : this.services) {
-			if(service.serviceTypeId == msg.serviceTypeId) {
+			if(service.serviceId == msg.serviceId) {
 				return service.handleMessage(msg);
 			}
 		}
