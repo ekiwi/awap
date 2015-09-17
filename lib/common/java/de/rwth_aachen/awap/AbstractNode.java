@@ -2,6 +2,7 @@ package de.rwth_aachen.awap;
 
 public abstract class AbstractNode {
 	public abstract void send(Message msg);
+	public abstract void send(BroadcastMessage msg);
 
 	/**
 	 * Register a service with the "Domain Facilitator"
