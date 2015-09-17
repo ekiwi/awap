@@ -166,6 +166,7 @@ class BooleanField(NamedCommunicationElement):
 
 	def to_dict(self):
 		dd = super(BooleanField, self).to_dict()
+		dd['name'] = camelCase(dd['name'])
 		dd['size'] = 1
 		dd['cpp']  = { 'type': self.cpp_type }
 		dd['java'] = { 'type': self.java_type, 'box': "Boolean"}
@@ -198,6 +199,7 @@ class IntField(NamedCommunicationElement):
 
 	def to_dict(self):
 		dd = super(IntField, self).to_dict()
+		dd['name'] = camelCase(dd['name'])
 		dd['unsigned'] = self.unsigned
 		dd['size'] = self.size
 		dd['cpp']  = { 'type': self.cpp_type }
@@ -223,6 +225,7 @@ class EnumField(NamedCommunicationElement):
 
 	def to_dict(self):
 		dd = super(EnumField, self).to_dict()
+		dd['name'] = camelCase(dd['name'])
 		dd['size'] = self.enum_class.value.size
 		dd['cpp'] = { 'type': self.cpp_type }
 		dd['java'] = { 'type': self.java_type }
@@ -238,6 +241,7 @@ class BooleanProperty(BooleanField):
 
 	def to_dict(self):
 		dd = super(BooleanProperty, self).to_dict()
+		dd['name'] = camelCase(dd['name'])
 		dd['id'] = self.id
 		return dd
 
@@ -248,6 +252,7 @@ class IntProperty(IntField):
 
 	def to_dict(self):
 		dd = super(IntProperty, self).to_dict()
+		dd['name'] = camelCase(dd['name'])
 		dd['id'] = self.id
 		return dd
 
@@ -258,6 +263,7 @@ class EnumProperty(EnumField):
 
 	def to_dict(self):
 		dd = super(EnumProperty, self).to_dict()
+		dd['name'] = camelCase(dd['name'])
 		dd['id'] = self.id
 		return dd
 
