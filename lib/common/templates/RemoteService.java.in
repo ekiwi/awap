@@ -59,13 +59,12 @@ public final class {{service.name}} extends RemoteService {
 	%% endfor
 			public {{ msg.name }}({{ msg.java.args|join(', ') }}){
 		%% for field in msg.fields
-				this.{{ field.name }} = {{ field.name}};
+				this.{{ field.name }} = {{ field.name }};
 		%% endfor
 			}
 	}
 	public void send({{ msg.name }} msg) {
-		msg.serviceId = this.remoteServiceId;
-		msg.remoteService = true;
+		msg.serviceTypeId = {{ service.id }};
 		msg.remoteAgent = this.remoteAgent;
 		this.parent.node.send(msg);
 	}

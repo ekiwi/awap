@@ -10,7 +10,7 @@ public abstract class {{service.name}} extends LocalService {
 	public {{ prop.java.type }} {{ prop.name | camelCase }};
 %% endfor
 	public {{service.name}}(Agent parent{{ service.java.initializer_list }}) {
-		super(parent);
+		super(parent, {{ service.id }});
 %% for prop in service.properties
 		this.{{ prop.name | camelCase }} = {{ prop.name | camelCase }};
 %% endfor
@@ -39,8 +39,7 @@ public abstract class {{service.name}} extends LocalService {
 	}
 	// public abstract void onFailedToSend({{ msg.name }} msg);
 	public void send({{ msg.name }} msg) {
-		msg.serviceId = this.localServiceId;
-		msg.remoteService = false;
+		msg.serviceTypeId = {{ service.id }};
 		this.parent.node.send(msg);
 	}
 	%% endif
