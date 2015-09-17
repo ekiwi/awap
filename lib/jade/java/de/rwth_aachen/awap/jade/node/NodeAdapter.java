@@ -1,15 +1,11 @@
 package de.rwth_aachen.awap.jade.node;
 
-import jade.domain.DFService;
-import jade.domain.FIPAException;
-import jade.domain.FIPAAgentManagement.DFAgentDescription;
-import jade.domain.FIPAAgentManagement.ServiceDescription;
-import jade.lang.acl.ACLMessage;
-
 import java.util.ArrayList;
 import java.util.HashMap;
 
+import de.rwth_aachen.awap.AbstractNode;
 import de.rwth_aachen.awap.Agent;
+import de.rwth_aachen.awap.BroadcastMessage;
 import de.rwth_aachen.awap.LocalService;
 import de.rwth_aachen.awap.Message;
 import de.rwth_aachen.awap.RemoteAgent;
@@ -19,7 +15,11 @@ import de.rwth_aachen.awap.jade.WrapperAgent;
 import de.rwth_aachen.awap.jade.generated.Communication;
 import de.rwth_aachen.awap.jade.generated.Service;
 import de.rwth_aachen.awap.jade.generated.ServiceListener;
-import de.rwth_aachen.awap.node.AbstractNode;
+import jade.domain.DFService;
+import jade.domain.FIPAException;
+import jade.domain.FIPAAgentManagement.DFAgentDescription;
+import jade.domain.FIPAAgentManagement.ServiceDescription;
+import jade.lang.acl.ACLMessage;
 
 
 /**
@@ -32,18 +32,6 @@ public class NodeAdapter extends AbstractNode {
 
 	private Node node;
 	private WrapperAgent wrapper;
-	// private LocalAgent agent;
-	private ArrayList<ACLMessage> subscriptionMessages = new ArrayList<ACLMessage>();
-	private HashMap<String, SubscriptionListener> subscriptionListeners = new HashMap<String, SubscriptionListener>();
-
-	class SubscriptionListener {
-		public byte listenerId;
-		public int serviceTypeId;
-		public SubscriptionListener(byte listenerId, int serviceTypeId) {
-			this.listenerId = listenerId;
-			this.serviceTypeId = serviceTypeId;
-		}
-	}
 
 	public NodeAdapter(Node node, WrapperAgent wrapper){
 		this.node = node;
@@ -61,6 +49,12 @@ public class NodeAdapter extends AbstractNode {
 		} catch (Exception e) {
 			e.printStackTrace();
 		}
+	}
+
+	@Override
+	public void send(BroadcastMessage msg) {
+		// TODO Auto-generated method stub
+
 	}
 
 	@Override
@@ -97,7 +91,7 @@ public class NodeAdapter extends AbstractNode {
 		}
 	}
 
-	@Override
+	// TODO: remove
 	public byte installServiceListener(Agent listener, int serviceTypeId,
 			ServiceProperty... properties) {
 		assert(this.wrapper.getAwapAgent() == listener);
@@ -121,6 +115,7 @@ public class NodeAdapter extends AbstractNode {
 
 		ACLMessage subscriptionMessage =
 				DFService.createSubscriptionMessage(this.wrapper, this.wrapper.getDefaultDF(), dfd, null);
+		DFService.search(a, dfd)
 
 
 		byte listenerId;
@@ -170,12 +165,10 @@ public class NodeAdapter extends AbstractNode {
 	}
 
 	@Override
-	public boolean uninstallServiceListener(byte listenerId) {
-		//System.out.println("NodeAdapter: Agent " + this.wrapper.getName() + " called uninstallServiceListener.");
-		ACLMessage cancelMessage = DFService.createCancelMessage(
-				this.wrapper, this.wrapper.getDefaultDF(), this.subscriptionMessages.get(listenerId));
-		// send the message
-		this.wrapper.send(cancelMessage);
-		return true;
+	public void requestWakeUp(int milliseconds, Object obj) {
+		// TODO Auto-generated method stub
+
 	}
+
+
 }

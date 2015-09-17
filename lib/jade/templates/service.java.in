@@ -2,8 +2,8 @@ package de.rwth_aachen.awap.jade.generated;
 
 import jade.domain.FIPAAgentManagement.Property;
 import jade.domain.FIPAAgentManagement.ServiceDescription;
-import de.rwth_aachen.awap.IServiceClient;
 import de.rwth_aachen.awap.LocalService;
+import de.rwth_aachen.awap.ServiceProperty;
 
 public class Service {
 	public static ServiceDescription serviceToDescription(LocalService service) throws Exception {
@@ -37,38 +37,38 @@ public class Service {
 		return sd;
 	}
 
-	public static String typeIdToString(int serviceTypeId) throws Exception {
-		switch(serviceTypeId) {
+	public static String typeIdToString(int serviceId) throws Exception {
+		switch(serviceId) {
 %% for service in services
 		case {{ service.id }}:
 			return "{{ service.name }}";
 %% endfor
 		default:
-			throw new Exception("Unknown service type id: " + serviceTypeId);
+			throw new Exception("Unknown service type id: " + serviceId);
 		}
 	}
 
-	public static Property toJadeProperty(de.rwth_aachen.awap.ServiceProperty prop) throws Exception {
-%% set first = True
+	public static Property toJadeProperty(int serviceId, ServiceProperty prop) throws Exception {
+		Object value = null;
+		switch(serviceId) {
 %% for service in services
+		case {{ service.id }}:	// {{ service.name }}
+			switch(prop.propertyId) {
 	%% for prop in service.properties
-		%% set type = "de.rwth_aachen.awap.service.remote." ~ service.name ~ "." ~ prop.name ~ "Property"
-		%% if first
-			%% set first = False
-		if(prop instanceof {{ type }}) {
-		%% else
-		} else if(prop instanceof {{ type }}) {
-		%% endif
-			{{ type }} pp = ({{ type }})prop;
-		%% if prop.is_enum
-			Object value = de.rwth_aachen.awap.jade.generated.Enum.{{ prop.enum_name | camelCase }}ToString(pp.value);
-		%% else
-			Object value = pp.value;
-		%% endif
-			return new Property("{{ prop.name }}", value);
+			case {{ prop.id }}:	// {{ prop.name }}
+			%% if prop.is_enum
+				value = de.rwth_aachen.awap.jade.generated.Enum.{{ prop.enum_name | camelCase }}ToString(({{ prop.java.type }})prop.value);
+			%% else
+				value = prop.value;
+			%% endif
+				return new Property("{{ prop.name }}", value);
 	%% endfor
-		}
+			default:
+				throw new Exception("Unknown Service Property for service {{ service.name }}");
+			}
 %% endfor
-		throw new Exception("Unknown Service Property");
+		default:
+			throw new Exception("Unknown service.");
+		}
 	}
 }

@@ -29,11 +29,6 @@ generated_files += env.Template(
 	substitutions=communication)
 
 generated_files += env.Template(
-	target=os.path.join(generated_path, "ServiceListener.java"),
-	source=os.path.join('templates', 'ServiceListener.java.in'),
-	substitutions=communication)
-
-generated_files += env.Template(
 	target=os.path.join(generated_path, "Enum.java"),
 	source=os.path.join('templates', 'enum.java.in'),
 	substitutions=communication)

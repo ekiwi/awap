@@ -13,13 +13,6 @@ public class Communication {
 		int performative = ACLMessage.UNKNOWN;
 		JSONObject content=new JSONObject();
 
-		if(generic_tx.remoteService) {
-			content.put("receiver-is-service-provider", "yes");
-		} else {
-			content.put("receiver-is-service-provider", "no");
-		}
-		content.put("service-id" , generic_tx.serviceId);
-
 %% for msg in messages
 	%% if msg.tx
 		%% set type = "de.rwth_aachen.awap.service.local." ~ msg.service ~ "." ~ msg.name
@@ -56,6 +49,7 @@ public class Communication {
 		String service = (String)content.get("service");
 		String message = (String)content.get("message");
 		int performative = msg.getPerformative();
+		int serviceId = -1;
 		Message rx = null;
 
 %% for service in services
@@ -64,6 +58,7 @@ public class Communication {
 	%% else
 		} else if(service.equals("{{ service.name }}")) {
 	%% endif
+			serviceId = {{ service.id }};
 
 	%% for msg in service.messages
 		%# tx/rx is reversed since we are receiving here!
@@ -98,10 +93,7 @@ public class Communication {
 			throw new Exception("Unknown service type: " + service);
 		}
 
-		String receiverIsServiceProvider = (String)content.get("receiver-is-service-provider");
-		rx.remoteService = !receiverIsServiceProvider.equals("yes");
-		int serviceId = (Integer)content.get("service-id");
-		rx.serviceId = (byte)serviceId;
+		rx.serviceId = serviceId;
 		rx.remoteAgent = new RemoteAgent();
 		rx.remoteAgent.id = AgentRegistry.getId(msg.getSender());
 
@@ -109,7 +101,6 @@ public class Communication {
 	}
 
 	public static boolean dispatchRemoteServiceMessage(Agent agent, Message msg) {
-		if(msg.remoteService) {
 %% set first = True
 %% for service in services
 	%% set interface_type = "de.rwth_aachen.awap.service.remote.I" ~ service.name ~ "Client"
@@ -119,18 +110,17 @@ public class Communication {
 			%% set type = "de.rwth_aachen.awap.service.remote." ~ service.name ~ "." ~ msg.name
 			%% if first
 				%% set first = False
-			if(msg instanceof {{ type }}) {
+		if(msg instanceof {{ type }}) {
 			%% else
-			} else if(msg instanceof {{ type }}) {
+		} else if(msg instanceof {{ type }}) {
 			%% endif
-				(({{ interface_type }})agent).onReceive(
-					({{ type }})msg);
-				return true;
+			(({{ interface_type }})agent).onReceive(
+				({{ type }})msg);
+			return true;
 		%% endif
 	%% endfor
-			}
-%% endfor
 		}
+%% endfor
 		return false;
 	}
 }
