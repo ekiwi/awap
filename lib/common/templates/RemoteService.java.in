@@ -16,7 +16,7 @@ public final class {{service.name}} extends RemoteService {
 	public static class Type
 	{
 		Agent parent;
-		ServiceFilter filter = new ServiceFilter();
+		ServiceFilter filter = new ServiceFilter({{ service.id }});
 		public Type(Agent parent) {
 			this.parent = parent;
 		}

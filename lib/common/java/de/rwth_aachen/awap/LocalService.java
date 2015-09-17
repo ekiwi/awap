@@ -2,7 +2,7 @@ package de.rwth_aachen.awap;
 
 public abstract class LocalService {
 	protected Agent parent;
-	public int serviceId;
+	protected int serviceId;
 	public LocalService(Agent parent, int serviceId) {
 		this.parent = parent;
 		this.serviceId = serviceId;
@@ -10,4 +10,8 @@ public abstract class LocalService {
 	}
 
 	public abstract boolean handleMessage(Message msg);
+
+	public int getId() {
+		return this.serviceId;
+	}
 }
