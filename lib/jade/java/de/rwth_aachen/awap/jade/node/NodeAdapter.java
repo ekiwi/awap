@@ -106,8 +106,7 @@ public class NodeAdapter extends AbstractNode {
 
 	@Override
 	public void requestWakeUp(int milliseconds, Object obj) {
-		// TODO Auto-generated method stub
-
+		this.wrapper.addTimeout(milliseconds, obj);
 	}
 
 
