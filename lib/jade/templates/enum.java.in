@@ -10,7 +10,7 @@ public class Enum {
 	public static String {{ enum.name | camelCase }}ToString({{ enum.java.type }} value) throws Exception {
 		switch(value) {
 	%% for element in enum.elements
-		case {{ element.id }}: return "{{ element.name }}";
+		case {{enum.name}}.{{ element.name }}: return "{{ element.name }}";
 	%% endfor
 		}
 		throw new Exception("Invalid value for enum {{ enum.name }}: " + value);
