@@ -1,20 +1,14 @@
 package de.rwth_aachen.awap.jade.node;
 
-import java.util.ArrayList;
-import java.util.HashMap;
-
 import de.rwth_aachen.awap.AbstractNode;
-import de.rwth_aachen.awap.Agent;
 import de.rwth_aachen.awap.BroadcastMessage;
 import de.rwth_aachen.awap.LocalService;
 import de.rwth_aachen.awap.Message;
-import de.rwth_aachen.awap.RemoteAgent;
 import de.rwth_aachen.awap.ServiceProperty;
 import de.rwth_aachen.awap.jade.AgentRegistry;
 import de.rwth_aachen.awap.jade.WrapperAgent;
 import de.rwth_aachen.awap.jade.generated.Communication;
 import de.rwth_aachen.awap.jade.generated.Service;
-import de.rwth_aachen.awap.jade.generated.ServiceListener;
 import jade.domain.DFService;
 import jade.domain.FIPAException;
 import jade.domain.FIPAAgentManagement.DFAgentDescription;
@@ -53,8 +47,27 @@ public class NodeAdapter extends AbstractNode {
 
 	@Override
 	public void send(BroadcastMessage msg) {
-		// TODO Auto-generated method stub
+		try {
+			// 1.) find services that match description
+			DFAgentDescription dfd = new DFAgentDescription();
+			ServiceDescription sd = new ServiceDescription();
+			sd.setType(Service.typeIdToString(msg.recipients.serviceId));
+			for(ServiceProperty prop : msg.recipients.properties) {
+				sd.addProperties(Service.toJadeProperty(msg.recipients.serviceId, prop));
+			}
+			dfd.addServices(sd);
+			DFAgentDescription[] services = DFService.search(this.wrapper, this.wrapper.getDefaultDF(), dfd);
 
+			// send message to each service
+			ACLMessage jadeMsg = Communication.awapToJade(msg.msg);
+			jadeMsg.setSender(this.wrapper.getAID());
+			for(DFAgentDescription service : services) {
+				jadeMsg.addReceiver(service.getName());
+			}
+			this.wrapper.send(jadeMsg);
+		} catch(Exception e) {
+			e.printStackTrace();
+		}
 	}
 
 	@Override
@@ -88,79 +101,6 @@ public class NodeAdapter extends AbstractNode {
 		} catch (FIPAException fe) {
 			fe.printStackTrace();
 			return false;
-		}
-	}
-
-	// TODO: remove
-	public byte installServiceListener(Agent listener, int serviceTypeId,
-			ServiceProperty... properties) {
-		assert(this.wrapper.getAwapAgent() == listener);
-		//System.out.println("NodeAdapter: Agent " + this.wrapper.getName() + " called installServiceListener.");
-
-		// define search parameters
-		DFAgentDescription dfd = new DFAgentDescription();
-		try {
-			ServiceDescription sd = new ServiceDescription();
-			sd.setType(Service.typeIdToString(serviceTypeId)); // TODO
-			// sd.setName("");
-			for(de.rwth_aachen.awap.ServiceProperty prop : properties) {
-				sd.addProperties(Service.toJadeProperty(prop));
-			}
-			dfd.addServices(sd);
-		} catch (Exception e) {
-			// TODO Auto-generated catch block
-			e.printStackTrace();
-			return -1;
-		}
-
-		ACLMessage subscriptionMessage =
-				DFService.createSubscriptionMessage(this.wrapper, this.wrapper.getDefaultDF(), dfd, null);
-		DFService.search(a, dfd)
-
-
-		byte listenerId;
-		synchronized(this.subscriptionMessages) {
-			// save subscription message for later cancelation
-			listenerId = (byte)this.subscriptionMessages.size();
-			this.subscriptionMessages.add(subscriptionMessage);
-		}
-
-		this.subscriptionListeners.put(
-				subscriptionMessage.getConversationId(),
-				new SubscriptionListener(listenerId, serviceTypeId));
-
-		this.wrapper.send(subscriptionMessage);
-		return listenerId;
-	}
-
-	/**
-	 * Handles messages from the df.
-	 * @return `true` if message was consumed
-	 */
-	public void handleDfMessage(ACLMessage msg) {
-		try {
-			SubscriptionListener sub = this.subscriptionListeners.get(msg.getConversationId());
-			for(DFAgentDescription result : DFService.decodeNotification(msg.getContent())) {
-				boolean registration = result.getAllServices().hasNext();
-				RemoteAgent remoteAgent = new RemoteAgent();
-				remoteAgent.id = AgentRegistry.getId(result.getName());
-				byte serviceId = 0; // TODO: find service id
-				if(registration) {
-					//System.out.println("NodeAdapter: Found new agent: " + result.getName());
-					ServiceListener.callServiceFound(
-							this.wrapper.getAwapAgent(),
-							sub.serviceTypeId, sub.listenerId,
-							remoteAgent, serviceId);
-				} else {
-					//System.out.println("NodeAdapter: Agent died: " + result.getName());
-					ServiceListener.callServiceRemoved(
-							this.wrapper.getAwapAgent(),
-							sub.serviceTypeId, sub.listenerId,
-							remoteAgent, serviceId);
-				}
-			}
-		} catch (FIPAException fe) {
-			fe.printStackTrace();
 		}
 	}
 

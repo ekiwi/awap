@@ -3,7 +3,6 @@ package de.rwth_aachen.awap.jade;
 import java.lang.reflect.Constructor;
 
 import de.rwth_aachen.awap.Agent;
-import de.rwth_aachen.awap.Message;
 import de.rwth_aachen.awap.jade.generated.Communication;
 import de.rwth_aachen.awap.jade.node.Node;
 import de.rwth_aachen.awap.jade.node.NodeAdapter;
@@ -69,22 +68,17 @@ public class WrapperAgent extends jade.core.Agent {
 	}
 
 	protected void handleMessage(ACLMessage msg){
-		if(msg.getSender().equals(this.getDefaultDF())) {
-			this.adapter.handleDfMessage(msg);
-		} else {
-			//System.out.println(this.getName() + ":\n" + msg);
-			Message rx;
-			try {
-				rx = Communication.jadeToAwap(msg);
-
-				if(rx.remoteService) {
-					Communication.dispatchRemoteServiceMessage(this.agent, rx);
-				} else {
-					this.agent.handleLocalServiceMessage(rx);
-				}
-			} catch (Exception e) {
-				e.printStackTrace();
+		//System.out.println(this.getName() + ":\n" + msg);
+		try {
+			MetaMessage rx = Communication.jadeToAwap(msg);
+			// if this message was sent by a service, the service must be remote...
+			if(rx.serviceTxMessage) {
+				Communication.dispatchRemoteServiceMessage(this.agent, rx.msg);
+			} else {
+				this.agent.handleLocalServiceMessage(rx.msg);
 			}
+		} catch (Exception e) {
+			e.printStackTrace();
 		}
 	}
 
