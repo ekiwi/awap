@@ -15,6 +15,9 @@ The second pass will resolve all cross references.
 import os, math
 import lxml.etree as ET
 
+def camelCase(identifier):
+	return identifier[0].lower() + identifier[1:]
+
 def determine_max_id(mod, ee, max_id_found):
 	""" Tries to determine the max-id from max-id and or size arguments
 	"""
@@ -111,8 +114,8 @@ class Service(NamedCommunicationElement):
 		dd['max_property_id']  = self.max_property_id
 		dd['property_id_size'] = int(math.log(self.max_property_id,2) + 1)
 		if len(self.properties) > 0:
-			java = ["{} {}".format(prop.java_type, prop.name) for prop in self.properties]
-			cpp  = ["{} {}".format(prop.cpp_type,  prop.name) for prop in self.properties]
+			java = ["{} {}".format(prop.java_type, camelCase(prop.name)) for prop in self.properties]
+			cpp  = ["{} {}".format(prop.cpp_type,  camelCase(prop.name)) for prop in self.properties]
 			dd['java'] = {'initializer_list': ", " + ", ".join(java), 'args': java}
 			dd['cpp'] =  {'initializer_list': ", " + ", ".join(cpp), 'args': cpp}
 		return dd
@@ -143,8 +146,8 @@ class Message(NamedCommunicationElement):
 		dd['rx'] = self.rx
 		dd['fields'] = [field.to_dict() for field in self.fields]
 		if len(self.fields) > 0:
-			java = ["{} {}".format(field.java_type, field.name) for field in self.fields]
-			cpp  = ["{} {}".format(field.cpp_type,  field.name) for field in self.fields]
+			java = ["{} {}".format(field.java_type, camelCase(field.name)) for field in self.fields]
+			cpp  = ["{} {}".format(field.cpp_type,  camelCase(field.name)) for field in self.fields]
 			dd['java'] = {'initializer_list': ", " + ", ".join(java), 'args': java}
 			dd['cpp'] =  {'initializer_list': ", " + ", ".join(cpp), 'args': cpp}
 		return dd
