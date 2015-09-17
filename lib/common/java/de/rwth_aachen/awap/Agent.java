@@ -52,7 +52,7 @@ public abstract class Agent {
 	/**
 	 * This method is called when a timeout expires
 	 */
-	public void onWakeUp() {
+	public void onWakeUp(Object obj) {
 		// default: do nothing
 	}
 
