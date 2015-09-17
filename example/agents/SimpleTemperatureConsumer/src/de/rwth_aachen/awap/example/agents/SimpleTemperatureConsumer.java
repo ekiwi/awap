@@ -14,7 +14,7 @@ public class SimpleTemperatureConsumer extends Agent implements ITemperatureServ
 		this.requestWakeUp(500);
 		// temperature services in Building1 in Room1 or Room2
 		this.temperaturSensorType = new TemperatureService.Type(
-				this).building(Building.Build1).room(Room.R1, Room.R2);
+				this).building(Building.Build1).room(Room.R1);
 	}
 
 	public void onReceive(Temperature msg) {
@@ -22,9 +22,10 @@ public class SimpleTemperatureConsumer extends Agent implements ITemperatureServ
 		System.out.println("From: " + msg.remoteAgent.id);
 	}
 
-	public void onWakeUp() {
+	public void onWakeUp(Object obj) {
+		System.out.println("Agent: Woke up");
 		this.temperaturSensorType.send(new TemperatureService.RequestTemperature());
-		this.requestWakeUp(500);
+		this.requestWakeUp(1000);
 	}
 
 }
