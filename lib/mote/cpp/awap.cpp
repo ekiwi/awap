@@ -1,6 +1,6 @@
 #include <awap.hpp>
 #include "common.hpp"
-#include "mote.hpp"
+#include "node.hpp"
 
 extern "C"
 {
@@ -23,7 +23,7 @@ extern size_t di_lib_archive_size;
 
 static uint8_t mem[MEMSIZE];
 static Vm vm;
-static awap::Mote* mote = nullptr;
+static awap::Node* node = nullptr;
 
 static const char* AwapCommonInfusionName = "awap-common";
 static const char* AwapMoteInfusionName = "awap-mote";
@@ -73,20 +73,20 @@ void Awap::init(const NodeAddress nodeAddress)
 	if(!awapCommonInf.isValid()) Runtime::panic(Panic::AwapCommonInfusionNotFound);
 	if(!awapMoteInf.isValid()) Runtime::panic(Panic::AwapMoteInfusionNotFound);
 
-	// create mote instance
-	mote = new Mote(vm, awapCommonInf, awapMoteInf, nodeAddress);
+	// create node instance
+	node = new Node(vm, awapCommonInf, awapMoteInf, nodeAddress);
 }
 
 void  Awap::receive(const NodeAddress sender, const uint8_t* content, const size_t length)
 {
-	if(mote == nullptr) Runtime::panic(Panic::NotInitialized);
-	mote->receive(sender, content, length);
+	if(node == nullptr) Runtime::panic(Panic::NotInitialized);
+	node->receive(sender, content, length);
 }
 
 void Awap::loadAgent(const uint8_t* content, const size_t length )
 {
-	if(mote == nullptr) Runtime::panic(Panic::NotInitialized);
-	mote->loadAgent(content, length);
+	if(node == nullptr) Runtime::panic(Panic::NotInitialized);
+	node->loadAgent(content, length);
 }
 
 //----------------------------------------------------------------------------

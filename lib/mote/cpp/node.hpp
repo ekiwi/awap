@@ -1,23 +1,23 @@
-#ifndef MOTE_HPP
-#define MOTE_HPP
+#ifndef NODE_HPP
+#define NODE_HPP
 
 #include <hpp/ostfriesentee.hpp>
 #include <awap.hpp>
 
-namespace awap { class Mote; }
+namespace awap { class Node; }
 #include <agent.hpp>
 #include <agent_directory.hpp>
 
 namespace awap {
 
-class Mote
+class Node
 {
 public:
 	static constexpr size_t MaxAgents = 8;
 
 public:
-	Mote(ostfriesentee::Vm& vm, ostfriesentee::Infusion& awapCommon, ostfriesentee::Infusion& awapMote, const NodeAddress nodeAddress);
-	~Mote();
+	Node(ostfriesentee::Vm& vm, ostfriesentee::Infusion& awapCommon, ostfriesentee::Infusion& awapMote, const NodeAddress nodeAddress);
+	~Node();
 
 	void loadAgent(const uint8_t* content, const size_t length);
 	void receive(const NodeAddress sender, const uint8_t* content, const size_t length);
@@ -36,4 +36,4 @@ private:
 };
 
 }
-#endif // MOTE_HPP
+#endif // NODE_HPP

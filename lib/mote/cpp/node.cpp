@@ -1,14 +1,14 @@
-#include "mote.hpp"
+#include "node.hpp"
 #include <util.hpp>
 
 namespace awap {
 
-Mote::Mote(ostfriesentee::Vm& vm, ostfriesentee::Infusion& awapCommon, ostfriesentee::Infusion& awapMote, const NodeAddress nodeAddress)
+Node::Node(ostfriesentee::Vm& vm, ostfriesentee::Infusion& awapCommon, ostfriesentee::Infusion& awapMote, const NodeAddress nodeAddress)
 	: vm(vm), awapCommon(awapCommon), awapMote(awapMote), address(nodeAddress)
 {
 }
 
-Mote::~Mote()
+Node::~Node()
 {
 	for(auto agent : this->agents) {
 		if(agent != nullptr) {
@@ -18,7 +18,7 @@ Mote::~Mote()
 }
 
 void
-Mote::loadAgent(const uint8_t* content, const size_t length)
+Node::loadAgent(const uint8_t* content, const size_t length)
 {
 	for(size_t ii = 0; ii < arrayCount(agents); ++ii) {
 		if(agents[ii] == nullptr) {
@@ -34,7 +34,7 @@ Mote::loadAgent(const uint8_t* content, const size_t length)
 }
 
 void
-Mote::receive(const NodeAddress sender, const uint8_t* content, const size_t length)
+Node::receive(const NodeAddress sender, const uint8_t* content, const size_t length)
 {
 	// TODO!
 }

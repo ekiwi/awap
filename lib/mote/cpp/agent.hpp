@@ -6,24 +6,24 @@
 #include <common.hpp>
 
 namespace awap { class Agent; }
-#include <mote.hpp>
+#include <node.hpp>
 
 namespace awap {
 
 class Agent
 {
 public:
-	static Agent* fromPacket(Mote& mote, uint8_t localId, const uint8_t* content, const size_t length);
+	static Agent* fromPacket(Node& node, uint8_t localId, const uint8_t* content, const size_t length);
 
 	~Agent();
 
 	void setup();
 
 private:
-	Agent(Mote& mote, uint8_t localAgentId, ostfriesentee::Infusion& inf, uint8_t agentClassId, uint8_t* infusionData);
+	Agent(Node& node, uint8_t localAgentId, ostfriesentee::Infusion& inf, uint8_t agentClassId, uint8_t* infusionData);
 
 private:
-	Mote& mote;
+	Node& node;
 	uint8_t localAgentId;
 	::de::rwth_aachen::awap::Agent agent;
 	ostfriesentee::Infusion infusion;

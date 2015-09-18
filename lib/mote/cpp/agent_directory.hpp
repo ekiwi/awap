@@ -7,7 +7,7 @@ using namespace xpcc;
 #include <awap.hpp>
 
 namespace awap { template<size_t MaxPropDataSize> class AgentDirectory; }
-#include <mote.hpp>
+#include <node.hpp>
 
 namespace awap {
 
