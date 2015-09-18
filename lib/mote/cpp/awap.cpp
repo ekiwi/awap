@@ -55,9 +55,11 @@ void Awap::init(const NodeAddress nodeAddress)
 	dj_mem_setPanicExceptionObject(obj);
 
 	// start the main execution loop
+	// since we have only loaded libraries, that do not contain a main
+	// function, this will run the static constructors only
 	vm.run();
 
-	// find awap-common infusion
+	// find awap-common and awap-mote infusion
 	auto inf = vm.firstInfusion();
 	ostfriesentee::Infusion awapCommonInf(nullptr), awapMoteInf(nullptr);
 	while(inf.isValid()) {
