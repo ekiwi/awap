@@ -92,56 +92,64 @@ void Awap::loadAgent(const uint8_t* content, const size_t length )
 extern "C"
 int debug_printf(const char * format, ...);
 
-// void de.rwth_aachen.awap.mote.Mote.send(int, de.rwth_aachen.awap.Message)
-extern "C"
-void de_rwth_aachen_awap_mote_Mote_void_send_int_de_rwth_aachen_awap_Message()
+/// resolves the "this" reference to the NodeAdapter and
+/// reads out the id of the assosiated agent
+static inline uint8_t retriveAgentId()
 {
-	uint8_t agentId = static_cast<uint8_t>(dj_exec_stackPopInt());
+	// we assume,.that all reference arguments have been poped and
+	// thus the next item on the reference stack is the "this" reference
+	auto adapter = static_cast<_AWAP_MOTE_STRUCT_de_rwth_aachen_awap_mote_NodeAdapter*>(REF_TO_VOIDP(dj_exec_stackPeekRef()));
+	return static_cast<uint8_t>(adapter->agentId);
+}
+
+// void de.rwth_aachen.awap.mote.NodeAdapter.send(de.rwth_aachen.awap.Message)
+extern "C"
+void de_rwth_aachen_awap_mote_NodeAdapter_void_send_de_rwth_aachen_awap_Message()
+{
 	ref_t message = dj_exec_stackPopRef();
-	debug_printf("TODO: implement Mote.send method.\n");
+	debug_printf("TODO: implement NodeAdapter.send method.\n");
+	debug_printf("AgentId: %u\n", retriveAgentId());
 }
 
-// boolean de.rwth_aachen.awap.mote.Mote.deregisterService(int, de.rwth_aachen.awap.LocalService)
+// void de.rwth_aachen.awap.mote.NodeAdapter.send(de.rwth_aachen.awap.BroadcastMessage)
 extern "C"
-void de_rwth_aachen_awap_mote_Mote_boolean_deregisterService_int_de_rwth_aachen_awap_LocalService()
+void de_rwth_aachen_awap_mote_NodeAdapter_void_send_de_rwth_aachen_awap_BroadcastMessage()
 {
-	uint8_t agentId = static_cast<uint8_t>(dj_exec_stackPopInt());
-	ref_t service = dj_exec_stackPopRef();
-	debug_printf("TODO: implement Mote.deregisterService method.\n");
-	dj_exec_stackPushShort(static_cast<uint16_t>(true));
+	ref_t message = dj_exec_stackPopRef();
+	debug_printf("TODO: implement NodeAdapter.send method.\n");
+	debug_printf("AgentId: %u\n", retriveAgentId());
 }
 
-// byte de.rwth_aachen.awap.mote.Mote.installServiceListener(int, de.rwth_aachen.awap.Agent, int, de.rwth_aachen.awap.ServiceProperty[])
+// void de.rwth_aachen.awap.mote.NodeAdapter.requestWakeUp(int, java.lang.Object)
 extern "C"
-void de_rwth_aachen_awap_mote_Mote_byte_installServiceListener_int_de_rwth_aachen_awap_Agent_int_de_rwth_aachen_awap_ServiceProperty__()
+void de_rwth_aachen_awap_mote_NodeAdapter_void_requestWakeUp_int_java_lang_Object()
 {
-	uint8_t agentId = static_cast<uint8_t>(dj_exec_stackPopInt());
-	uint8_t serviceTypeId = static_cast<uint8_t>(dj_exec_stackPopInt());
-	ref_t listener = dj_exec_stackPopRef();
-	dj_array* properties = reinterpret_cast<dj_array*>(REF_TO_VOIDP(dj_exec_stackPopRef()));
-	debug_printf("TODO: implement Mote.installServiceListener method.\n");
-	dj_exec_stackPushShort(0);
+	uint32_t milliseconds = dj_exec_stackPopInt();
+	ref_t obj = dj_exec_stackPopRef();
+	debug_printf("TODO: implement NodeAdapter.requestWakeUp method.\n");
+	debug_printf("AgentId: %u\n", retriveAgentId());
 }
 
-// boolean de.rwth_aachen.awap.mote.Mote.registerService(int, de.rwth_aachen.awap.LocalService)
+// boolean de.rwth_aachen.awap.mote.NodeAdapter.registerService(de.rwth_aachen.awap.LocalService)
 extern "C"
-void de_rwth_aachen_awap_mote_Mote_boolean_registerService_int_de_rwth_aachen_awap_LocalService()
+void de_rwth_aachen_awap_mote_NodeAdapter_boolean_registerService_de_rwth_aachen_awap_LocalService()
 {
-	uint8_t agentId = static_cast<uint8_t>(dj_exec_stackPopInt());
 	ref_t service = dj_exec_stackPopRef();
 	debug_printf("TODO: implement Mote.registerService method.\n");
+	debug_printf("AgentId: %u\n", retriveAgentId());
 	dj_exec_stackPushShort(static_cast<uint16_t>(true));
 }
 
-// boolean de.rwth_aachen.awap.mote.Mote.uninstallServiceListener(int, byte)
+// boolean de.rwth_aachen.awap.mote.NodeAdapter.deregisterService(de.rwth_aachen.awap.LocalService)
 extern "C"
-void de_rwth_aachen_awap_mote_Mote_boolean_uninstallServiceListener_int_byte()
+void de_rwth_aachen_awap_mote_NodeAdapter_boolean_deregisterService_de_rwth_aachen_awap_LocalService()
 {
-	uint8_t agentId = static_cast<uint8_t>(dj_exec_stackPopInt());
-	uint8_t localServiceId = static_cast<uint8_t>(dj_exec_stackPopInt());
-	debug_printf("TODO: implement Mote.uninstallServiceListener method.\n");
+	ref_t service = dj_exec_stackPopRef();
+	debug_printf("TODO: implement Mote.deregisterService method.\n");
+	debug_printf("AgentId: %u\n", retriveAgentId());
 	dj_exec_stackPushShort(static_cast<uint16_t>(true));
 }
+
 
 //----------------------------------------------------------------------------
 // Darjeeling Functions
