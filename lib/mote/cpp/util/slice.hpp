@@ -2,6 +2,8 @@
 #define SLICE_HPP
 
 #include <cstddef>
+#include <algorithm>	// min/max
+#include <limits>
 
 namespace awap {
 
@@ -12,6 +14,10 @@ struct Slice
 
 	T* data;
 	size_t length;
+
+	inline bool isEmpty() {
+		return !(length > 0);
+	}
 
 	inline void increment() {
 		++data;
@@ -29,6 +35,26 @@ struct Slice
 			data += N;
 			length -= N;
 			return N;
+		}
+	}
+
+	inline Slice<T> sub(const int start = 0, const int end = std::numeric_limits<int>::max()) {
+		size_t norm_start = normalizeIndex(start);
+		size_t norm_end   = normalizeIndex(end);
+		if(norm_start > norm_end) {
+			return Slice<T>(nullptr, 0);
+		} else {
+			return Slice<T>(data + norm_start, norm_end - norm_start);
+		}
+	}
+
+private:
+	// TODO: fix index type for realy big slices
+	inline size_t normalizeIndex(const int index) {
+		if(index >= 0) {
+			return static_cast<size_t>(std::min(static_cast<int>(length), index));
+		} else {
+			return static_cast<size_t>(std::max(0, index + static_cast<int>(length)));
 		}
 	}
 };
