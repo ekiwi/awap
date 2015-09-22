@@ -42,17 +42,26 @@ SliceTest::testSubSlice()
 	TEST_ASSERT_TRUE(sl.sub() == sl);
 	TEST_ASSERT_TRUE(sl.sub(0,2) == Slice<uint8_t>(data, 2));
 	TEST_ASSERT_TRUE(sl.sub(0,5) == sl);
-	TEST_ASSERT_TRUE(sl.sub(0,10) == sl);
 
 	// start = 0, end < 0
 	TEST_ASSERT_TRUE(sl.sub(0,-2) == Slice<uint8_t>(data, 3));
 	TEST_ASSERT_TRUE(sl.sub(0,-1) == Slice<uint8_t>(data, 4));
 	TEST_ASSERT_TRUE(sl.sub(0,-4) == Slice<uint8_t>(data, 1));
 	TEST_ASSERT_TRUE(sl.sub(0,-5).isEmpty());
-	TEST_ASSERT_TRUE(sl.sub(0,-10).isEmpty());
 
 	// end > 0, start > 0
 	TEST_ASSERT_TRUE(sl.sub(1,5) == Slice<uint8_t>(data+1, 4));
 	TEST_ASSERT_TRUE(sl.sub(4,5) == Slice<uint8_t>(data+4, 1));
 	TEST_ASSERT_TRUE(sl.sub(2,3) == Slice<uint8_t>(data+2, 1));
+
+	// end < 0, start < 0
+	TEST_ASSERT_TRUE(sl.sub(-2,-1) == Slice<uint8_t>(data+3, 1));
+	TEST_ASSERT_TRUE(sl.sub(-4,-1) == Slice<uint8_t>(data+1, 3));
+	TEST_ASSERT_TRUE(sl.sub(-2)    == Slice<uint8_t>(data+3, 2));
+
+	// start, end, invalid values
+	TEST_ASSERT_TRUE(sl.sub(0,10) == sl);
+	TEST_ASSERT_TRUE(sl.sub(0,-10).isEmpty());
+	TEST_ASSERT_TRUE(sl.sub(3,2).isEmpty());
+	TEST_ASSERT_TRUE(sl.sub(-2,-3).isEmpty());
 }
