@@ -113,6 +113,7 @@ class Service(NamedCommunicationElement):
 		dd['properties'] = [prop.to_dict() for prop in self.properties]
 		dd['max_property_id']  = self.max_property_id
 		dd['property_id_size'] = int(math.log(self.max_property_id,2) + 1)
+		dd['property_bit_count'] = sum(pp.size for pp in self.properties)
 		if len(self.properties) > 0:
 			java = ["{} {}".format(prop.java_type, camelCase(prop.name)) for prop in self.properties]
 			cpp  = ["{} {}".format(prop.cpp_type,  camelCase(prop.name)) for prop in self.properties]
@@ -164,10 +165,14 @@ class BooleanField(NamedCommunicationElement):
 	def java_type(self):
 		return "boolean"
 
+	@property
+	def size(self):
+		return 1
+
 	def to_dict(self):
 		dd = super(BooleanField, self).to_dict()
 		dd['name'] = camelCase(dd['name'])
-		dd['size'] = 1
+		dd['size'] = self.size
 		dd['cpp']  = { 'type': self.cpp_type }
 		dd['java'] = { 'type': self.java_type, 'box': "Boolean"}
 		dd['is_enum'] = False
@@ -178,7 +183,7 @@ class IntField(NamedCommunicationElement):
 	def __init__(self, parent, node):
 		super(IntField, self).__init__(parent, node)
 		self.unsigned = (node.tag == "uint")
-		self.size = int(node.get("size"))
+		self._size = int(node.get("size"))
 
 	@property
 	def cpp_type(self):
@@ -196,6 +201,10 @@ class IntField(NamedCommunicationElement):
 		if size <= 8:    return "byte"
 		elif size <= 16: return "short"
 		elif size <= 32: return "int"
+
+	@property
+	def size(self):
+		return self._size
 
 	def to_dict(self):
 		dd = super(IntField, self).to_dict()
@@ -223,10 +232,14 @@ class EnumField(NamedCommunicationElement):
 	def cpp_type(self):
 		return self.enum_class.value.name
 
+	@property
+	def size(self):
+		return self.enum_class.value.size
+
 	def to_dict(self):
 		dd = super(EnumField, self).to_dict()
 		dd['name'] = camelCase(dd['name'])
-		dd['size'] = self.enum_class.value.size
+		dd['size'] = self.size
 		dd['cpp'] = { 'type': self.cpp_type }
 		dd['java'] = { 'type': self.java_type }
 		dd['enum_name'] = self.enum_class.value.name
@@ -557,6 +570,7 @@ class CommunicationParser(object):
 		output['properties'] = [prop.to_dict() for prop in properties]
 		output['services']   = [serv.to_dict() for serv in services]
 		output['enums']      = [enum.to_dict() for enum in enums]
+		output['max_property_bit_count'] = max(serv['property_bit_count'] for serv in output['services'])
 		return output
 
 if __name__ == "__main__":
