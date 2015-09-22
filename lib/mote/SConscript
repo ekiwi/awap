@@ -33,7 +33,7 @@ runtime_a = [ff for ff in runtime if str(ff).endswith(".a")]
 env.VariantDir(variant_dir=lib_path, src_dir='cpp')
 env.Append(CPPPATH = env['AWAP_LIB_MOTE_INCLUDE'])
 # some headerfiles from xpcc are used
-env.Append(CPPPATH = os.path.join('..', '..', 'ext', 'xpcc', 'src'))
+# env.Append(CPPPATH = os.path.join('..', '..', 'ext', 'xpcc', 'src'))
 source = env.Glob(os.path.join(lib_path, '*.cpp')) + runtime_c
 
 lib_env = env.Clone()
