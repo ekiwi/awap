@@ -7,7 +7,7 @@ using namespace awap;
 void
 SliceTest::testSlice()
 {
-	uint8_t sliceDataA[20];
+	char sliceDataA[20] = { 0 };
 	auto sliceA = slice(sliceDataA);
 	TEST_ASSERT_EQUALS(sliceA.data, sliceDataA);
 	TEST_ASSERT_EQUALS(sliceA.length, 20);
@@ -21,15 +21,23 @@ SliceTest::testSlice()
 	// reset sliceA
 	sliceA = slice(sliceDataA);
 
-	uint8_t sliceDataB[15];
+	char sliceDataB[15] = { 0 };
 	auto sliceB = slice(sliceDataB);
 	TEST_ASSERT_EQUALS(sliceB.data, sliceDataB);
 	TEST_ASSERT_EQUALS(sliceB.length, 15);
 
 	// compare slices of different lengths
 	TEST_ASSERT_FALSE(sliceA == sliceB);
+	// compare slices of equal length and same content (zeros)
+	TEST_ASSERT_TRUE(sliceA.sub(0,15) == sliceB);
+	TEST_ASSERT_TRUE(sliceA.sub(4,19) == sliceB);
 
-	
+	// test write
+	const char testStr[12] = "Hello World";
+	sliceA.write(testStr);
+	TEST_ASSERT_EQUALS_STRING(sliceDataA, "Hello World");
+	TEST_ASSERT_EQUALS(sliceA.data, sliceDataA + 12);
+	TEST_ASSERT_EQUALS(sliceA.length, 20 - 12);
 }
 
 void

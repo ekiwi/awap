@@ -25,7 +25,7 @@ struct Slice
 	}
 
 	template<size_t N>
-	inline size_t write(T(&src)[N]) {
+	inline size_t write(const T(&src)[N]) {
 		if(length < N) {
 			return 0;
 		} else {
