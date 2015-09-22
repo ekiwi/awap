@@ -3,6 +3,7 @@
 
 #include <cstddef>
 #include <cstring>	// std::strlen
+#include <type_traits>	// std::is_integral
 
 #include <hpp/ostfriesentee.hpp>	// ostfriesentee::String
 
@@ -14,6 +15,14 @@ template<typename T, size_t N>
 static constexpr inline size_t
 arrayCount(T (&)[N]) { return N; }
 
+
+template<typename T>
+static constexpr inline T
+divideCeil(const T& dividend, const T& divisor)
+{
+	static_assert(std::is_integral<T>::value, "divideCeil only works for integer types.");
+	return (dividend + divisor - 1) / divisor;
+}
 
 class String : public ostfriesentee::String
 {

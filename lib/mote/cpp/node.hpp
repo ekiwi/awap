@@ -6,7 +6,6 @@
 
 namespace awap { class Node; }
 #include <agent.hpp>
-#include <agent_directory.hpp>
 
 namespace awap {
 
@@ -21,6 +20,19 @@ public:
 
 	void loadAgent(const uint8_t* content, const size_t length);
 	void receive(const NodeAddress sender, const uint8_t* content, const size_t length);
+
+//	bool receiveRemoteServiceMessage(const uint8_t agentId, , ref_t messageObject)
+
+
+
+//	bool receivePacket(const uint8_t agentId, const bool remoteService, ref_t messageObject)
+//	{
+//		if(agentId >= MaxAgents || agents[agentId] == nullptr) {
+//			return false;
+//		} else {
+//			return agents[agentId]->receivePacket(remoteService, messageObject);
+//		}
+//	}
 
 	inline ostfriesentee::Vm& getVm() { return this->vm; }
 	inline ostfriesentee::Infusion& getAwapCommon() { return this->awapCommon; }
