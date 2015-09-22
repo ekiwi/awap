@@ -5,7 +5,9 @@
 
 import os
 
-awap_root = os.path.join('..', '..')
+awap_root  = os.path.join('..', '..')
+xpcc_root  = os.path.join(awap_root, 'ext', 'xpcc')
+xpcc_tools = os.path.join(xpcc_root, 'scons', 'site_tools')
 
 env = Environment(toolpath = [os.path.join(awap_root, 'scons')], tools = ['awap'])
 
@@ -15,6 +17,20 @@ env.LoadAwapConfiguration(os.path.join(awap_root, 'example', 'configuration.xml'
 env.Alias('awap-common', env.SConscript(env['AWAP_LIB_COMMON'], exports = 'env'))
 
 env.Architecture('amd64')
-env.Alias('libmote', env.SConscript(env['AWAP_LIB_MOTE'], exports = 'env'))
+libmote = env.SConscript(env['AWAP_LIB_MOTE'], exports = 'env')
+env.Alias('libmote', libmote)
+
+# unittests
+xpcc_env = Environment(toolpath = [xpcc_tools], tools = ['xpcc'], configfile = 'unittest_hosted.cfg')
+xpcc_env.XpccLibrary()
+files = xpcc_env.FindFiles(path=['cpp'], unittest=True)
+# declare a file which later runs all the tests
+template = xpcc_root + '/templates/unittest/runner_hosted.cpp.in'
+runner = xpcc_env.UnittestRunner(target = xpcc_env.Buildpath('runner.cpp'),
+							source = files.header,
+							template = template)
+program = xpcc_env.Program(target = 'build/unittest', source = [runner] + libmote)
+env.Alias('build_unittest', program)
+env.Alias('unittest', env.Run(program))
 
 env.Default('libmote')
