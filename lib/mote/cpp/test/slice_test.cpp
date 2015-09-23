@@ -38,6 +38,18 @@ SliceTest::testSlice()
 	TEST_ASSERT_EQUALS_STRING(sliceDataA, "Hello World");
 	TEST_ASSERT_EQUALS(sliceA.data, sliceDataA + 12);
 	TEST_ASSERT_EQUALS(sliceA.length, 20 - 12);
+
+	// make sure write does not leave slice
+	{
+		char data[10] = { 0 };
+		slice(data).sub(0,3).write(testStr);
+
+		// TODO: currently write just doesn't do anything when the
+		//       slice is not big enough
+		//       What should be the expected behavior?
+		char expected[10] = { 'H', 'e', 'l', 0, 0, 0, 0, 0, 0, 0 };
+		TEST_ASSERT_EQUALS_ARRAY(data, expected, 10);
+	}
 }
 
 void
