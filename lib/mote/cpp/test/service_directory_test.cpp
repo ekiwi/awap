@@ -20,15 +20,4 @@ ServiceDirectoryTest::testInsert()
 		TEST_ASSERT_FALSE(dir.insert(entry));
 		TEST_ASSERT_EQUALS(dir.count(), 8u);
 	}
-
-	// make sure duplicate entries do not take up space
-	{
-		Directory dir;
-		Directory::Entry entry { { 0x12345678 }, {1, 2}, 0x22};
-		for(auto ii = 0; ii < 8; ++ii) {
-			dir.insert(entry);
-		}
-		TEST_ASSERT_EQUALS(dir.count(), 1u);
-	}
-
 }

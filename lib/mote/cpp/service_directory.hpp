@@ -7,6 +7,9 @@
 namespace awap { template<size_t, size_t> class AgentDirectory; }
 #include <node.hpp>
 
+#include <array>
+#include <algorithm>
+
 namespace awap {
 
 
@@ -51,17 +54,22 @@ public:
 	// currently there is nothing preventing you from inserting the same
 	// service (AgentId, ServiceId) twice
 	bool inline insert(Entry newEntry) {
+		// insert
 		for(auto& entry : entries) {
 			if(!entry.used) {
 				entry = newEntry;
-				entry.used = true;
 				return true;
 			}
 		}
-		return false;
+
+		return false;	// no space left
 	}
 
 	// LocalService inline search(
+
+	size_t count() {
+		return std::count_if(entries.begin(), entries.end(), [](InternalEntry& e) {return e.used;});
+	}
 
 
 private:
@@ -81,7 +89,9 @@ private:
 			return *this;
 		}
 	};
-	InternalEntry entries[MaxEntries];
+
+private:
+	std::array<InternalEntry, MaxEntries> entries;
 
 };
 
