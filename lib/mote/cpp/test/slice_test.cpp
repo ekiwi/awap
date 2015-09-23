@@ -10,7 +10,7 @@ SliceTest::testSlice()
 	char sliceDataA[20] = { 0 };
 	auto sliceA = slice(sliceDataA);
 	TEST_ASSERT_EQUALS(sliceA.data, sliceDataA);
-	TEST_ASSERT_EQUALS(sliceA.length, 20);
+	TEST_ASSERT_EQUALS(sliceA.length, 20u);
 
 	// test if increment
 	for(auto ii = 0; ii < 20; ++ii) {
@@ -24,7 +24,7 @@ SliceTest::testSlice()
 	char sliceDataB[15] = { 0 };
 	auto sliceB = slice(sliceDataB);
 	TEST_ASSERT_EQUALS(sliceB.data, sliceDataB);
-	TEST_ASSERT_EQUALS(sliceB.length, 15);
+	TEST_ASSERT_EQUALS(sliceB.length, 15u);
 
 	// compare slices of different lengths
 	TEST_ASSERT_FALSE(sliceA == sliceB);
@@ -37,7 +37,7 @@ SliceTest::testSlice()
 	sliceA.write(testStr);
 	TEST_ASSERT_EQUALS_STRING(sliceDataA, "Hello World");
 	TEST_ASSERT_EQUALS(sliceA.data, sliceDataA + 12);
-	TEST_ASSERT_EQUALS(sliceA.length, 20 - 12);
+	TEST_ASSERT_EQUALS(sliceA.length, 20u - 12u);
 
 	// make sure write does not leave slice
 	{

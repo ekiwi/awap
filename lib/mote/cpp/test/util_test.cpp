@@ -10,9 +10,9 @@ UtilTest::testArrayCount()
 	float b[3];
 	int64_t c[3000];
 
-	TEST_ASSERT_EQUALS(arrayCount(a), 10);
-	TEST_ASSERT_EQUALS(arrayCount(b), 3);
-	TEST_ASSERT_EQUALS(arrayCount(c), 3000);
+	TEST_ASSERT_EQUALS(arrayCount(a), 10u);
+	TEST_ASSERT_EQUALS(arrayCount(b), 3u);
+	TEST_ASSERT_EQUALS(arrayCount(c), 3000u);
 }
 
 void
