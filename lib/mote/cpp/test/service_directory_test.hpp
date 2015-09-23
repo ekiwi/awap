@@ -4,4 +4,5 @@ class ServiceDirectoryTest : public unittest::TestSuite
 {
 public:
 	void testInsert();
+	void testFind();
 };
