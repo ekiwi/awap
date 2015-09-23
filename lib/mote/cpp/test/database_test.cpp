@@ -3,15 +3,15 @@
 
 
 struct IntegerQuery {
-	int key;
-	IntegerQuery(int key) : key(key) {}
-	bool match(int& other) { return other == key; }
+	const int key;
+	IntegerQuery(const int key) : key(key) {}
+	bool match(const int& other) const { return other == key; }
 };
 
 void
 DatabaseTest::testInsert()
 {
-	using DB = Database<int, IntegerQuery, 10>
+	using DB = awap::Database<int, IntegerQuery, 10>;
 
 	DB db;
 	TEST_ASSERT_EQUALS(db.count(), 0u);
@@ -19,9 +19,9 @@ DatabaseTest::testInsert()
 	TEST_ASSERT_EQUALS(db.count(), 1u);
 
 	// test inser with initializer list
-	TEST_ASSERT_TRUE(db.insert(3,5,7,11,13));
+	TEST_ASSERT_TRUE(db.insert({3,5,7,11,13}));
 	TEST_ASSERT_EQUALS(db.count(), 6u);
-	TEST_ASSERT_TRUE(db.insert(17,19,23,29));
+	TEST_ASSERT_TRUE(db.insert({17,19,23,29}));
 	TEST_ASSERT_EQUALS(db.count(), 10u);
 
 	// check that db rejects results if full
@@ -29,7 +29,7 @@ DatabaseTest::testInsert()
 	TEST_ASSERT_EQUALS(db.count(), 10u);
 
 	// test insert through constructor
-	DB db2(0,1,2,3);
+	DB db2({0,1,2,3});
 	TEST_ASSERT_EQUALS(db2.count(), 4u);
 }
 
@@ -51,9 +51,9 @@ static inline size_t countIterator(T queryResult) {
 void
 DatabaseTest::testFind()
 {
-	using DB = Database<int, IntegerQuery, 100>;
+	using DB = awap::Database<int, IntegerQuery, 100>;
 
-	DB db(2,3,5,7,5,19,11,2,13,19,17,7,2);
+	DB db({2,3,5,7,5,19,11,2,13,19,17,7,2});
 	TEST_ASSERT_EQUALS(db.count(), 10u);
 
 	// find single elements
@@ -67,15 +67,15 @@ DatabaseTest::testFind()
 		TEST_ASSERT_EQUALS(countIterator(db.find(IntegerQuery(value))), 2u);
 		auto res = db.find(IntegerQuery(value));
 		for(auto res_value : res) {
-			TEST_ASSERT_EQUALS(*res_value, value);
+			TEST_ASSERT_EQUALS(res_value, value);
 		}
 	}
 
 	// 2 appears three times
 	TEST_ASSERT_EQUALS(countIterator(db.find(IntegerQuery(2))), 3u);
-	auto res = db.find(IntegerQuery(value));
+	auto res = db.find(IntegerQuery(2));
 	for(auto res_value : res) {
-		TEST_ASSERT_EQUALS(*res_value, 2);
+		TEST_ASSERT_EQUALS(res_value, 2);
 	}
 
 }
