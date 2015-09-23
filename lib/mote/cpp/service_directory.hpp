@@ -4,7 +4,7 @@
 
 #include <awap.hpp>
 
-namespace awap { template<size_t MaxPropDataSize> class AgentDirectory; }
+namespace awap { template<size_t, size_t> class AgentDirectory; }
 #include <node.hpp>
 
 namespace awap {
@@ -13,12 +13,13 @@ namespace awap {
 template<size_t PropDataSize>
 struct DirectoryEntry
 {
-	using 
+	// not the actual number of properties, but the number of uint32_t values
+	// that are necessary to hold all properties
+	static constexpr size_t PropertyCount = divideCeil(PropDataSize, sizeof(uint32_t));
 	// properties as first member and 32bit wide for alignment reasons
-	uint32_t properties[divideCeil(PropDataSize, sizeof(uint32_t))];
+	uint32_t properties[PropertyCount];
 	LocalService service;
 	ServiceTypeId serviceType;
-	bool used;
 };
 
 template<size_t PropDataSize>
@@ -38,39 +39,49 @@ struct DirectoryQuery
 // insertion and search operations are both O(n)
 template<size_t MaxPropDataSize, size_t MaxEntries>
 class AgentDirectory {
+public:
 	using Entry = DirectoryEntry<MaxPropDataSize>;
 	using Query = DirectoryQuery<MaxPropDataSize>;
 
-public:
-	AgentDirectory() {
-		for(auto& entry : entries) {
-			entry.used = false;
-		}
-	}
 
-
+	AgentDirectory() {}
 	~AgentDirectory() {};
 
 public:
 	// currently there is nothing preventing you from inserting the same
 	// service (AgentId, ServiceId) twice
-	bool inline insert(DataEntry newEntry) {
+	bool inline insert(Entry newEntry) {
 		for(auto& entry : entries) {
 			if(!entry.used) {
-				newEntry.used = true;
 				entry = newEntry;
+				entry.used = true;
 				return true;
 			}
 		}
+		return false;
 	}
 
-	LocalService inline search(
+	// LocalService inline search(
 
-	// has to be called perioically to dispatch messages ... or maybe not ..
-	void run() {};
 
 private:
-	Entry entries[MaxEntries];
+	struct InternalEntry : public Entry{
+		bool used;
+		InternalEntry() : Entry(), used(false) {}
+
+		/// assignment to place Entry in InternalEntry
+		InternalEntry& operator=(const Entry& other) {
+			// TODO: this is extremely ugly and potentialle not performant
+			for(size_t ii = 0; ii < Entry::PropertyCount; ++ii) {
+				this->properties[ii] = other.properties[ii];
+			}
+			this->service = other.service;
+			this->serviceType = other.serviceType;
+			this->used = true;
+			return *this;
+		}
+	};
+	InternalEntry entries[MaxEntries];
 
 };
 

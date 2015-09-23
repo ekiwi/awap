@@ -17,8 +17,8 @@ struct RemoteService {
 };
 
 struct LocalService {
-	ServiceId service;
 	AgentId agent;
+	ServiceId service;
 };
 
 } // namespace awap
