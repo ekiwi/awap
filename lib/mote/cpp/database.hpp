@@ -55,9 +55,9 @@ public:
 		return res;
 	}
 
-	size_t inline remove(const RemoveQuery& query) const {
+	size_t inline remove(const RemoveQuery& query) {
 		size_t count = 0;
-		for(auto entry : entries) {
+		for(auto& entry : entries) {
 			if(entry.used && query.match(entry.data)) {
 				entry.used = false;
 				++count;
