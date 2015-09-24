@@ -30,8 +30,22 @@ struct DirectoryQuery
 	uint32_t properties[PropDataSize];
 	uint32_t propertiesMask[PropDataSize];
 	ServiceId serviceType;
-	// TODO: implement match algorithm
-	bool match(const Entry& /*e*/) const { return false; }
+
+	bool inline match(const Entry& entry) const {
+		if(entry.serviceType != serviceType) {
+			return false;
+		}
+		for(size_t ii = 0; ii < PropDataSize; ++ii) {
+			const uint32_t mask = propertiesMask[ii];
+			const uint32_t masked0 = entry.properties[ii] & mask;
+			// TODO: only mask once
+			const uint32_t masked1 = properties[ii] & mask;
+			if(masked0 != masked1) {
+				return false;
+			}
+		}
+		return true;
+	}
 };
 
 template<size_t PropDataSize>
@@ -40,7 +54,7 @@ struct DirectoryRemoveQuery
 	using Entry = DirectoryEntry<PropDataSize>;
 	LocalService service;
 	DirectoryRemoveQuery(LocalService service) : service(service) {}
-	bool match(Entry& e) const { return e.service == service; }
+	bool inline match(Entry& e) const { return e.service == service; }
 };
 
 
