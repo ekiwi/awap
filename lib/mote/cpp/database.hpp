@@ -91,7 +91,7 @@ public:
 
 		inline void find() {
 			itr = std::find_if(itr, db.entries.end(),
-				[this](const InternalEntry& e) {return query.match(e.data);});
+				[this](const InternalEntry& e) {return e.used && query.match(e.data);});
 		}
 
 		const DatabaseT& db;
