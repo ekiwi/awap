@@ -83,3 +83,34 @@ DatabaseTest::testFind()
 	}
 
 }
+
+void
+DatabaseTest::testRemove()
+{
+	using DB = awap::Database<int, IntegerQuery, IntegerQuery, 5>;
+
+	DB db({2,3,5,2,3});
+	TEST_ASSERT_EQUALS(db.count(), 5u);
+
+	// test for some values that should not be found
+	TEST_ASSERT_EQUALS(db.remove(IntegerQuery(4)), 0u);
+	TEST_ASSERT_EQUALS(db.remove(IntegerQuery(4000)), 0u);
+
+	// remove the 5
+	TEST_ASSERT_EQUALS(countIterator(db.find(IntegerQuery(5))), 1u);
+	TEST_ASSERT_EQUALS(db.remove(IntegerQuery(5)), 1u);
+	TEST_ASSERT_EQUALS(countIterator(db.find(IntegerQuery(5))), 0u);
+	TEST_ASSERT_EQUALS(db.count(), 4u);
+	TEST_ASSERT_TRUE(db.insert(5));
+
+	// remove all 2, 3
+	TEST_ASSERT_EQUALS(countIterator(db.find(IntegerQuery(2))), 2u);
+	TEST_ASSERT_EQUALS(db.remove(IntegerQuery(2)), 2u);
+	TEST_ASSERT_EQUALS(countIterator(db.find(IntegerQuery(2))), 0u);
+
+	DB db2({2,2,2,2,2});
+	TEST_ASSERT_EQUALS(db2.count(), 5u);
+	TEST_ASSERT_EQUALS(db2.remove(IntegerQuery(2)), 5u);
+	TEST_ASSERT_EQUALS(db2.count(), 0u);
+
+}

@@ -5,4 +5,5 @@ class DatabaseTest : public unittest::TestSuite
 public:
 	void testInsert();
 	void testFind();
+	void testRemove();
 };
