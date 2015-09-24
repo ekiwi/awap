@@ -45,6 +45,10 @@ DatabaseTest::testFind()
 	std::array<uint8_t, 4> testArray;
 	TEST_ASSERT_EQUALS(countIterator(testArray), 4u);
 
+	// find trailing element
+	db.insert(101);
+	TEST_ASSERT_EQUALS(countIterator(db.find(IntegerQuery(101))), 1u);
+
 	// find single elements
 	for(int value : { 3, 11, 13, 17 }) {
 		TEST_ASSERT_EQUALS(countIterator(db.find(IntegerQuery(value))), 1u);
