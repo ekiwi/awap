@@ -54,7 +54,11 @@ DatabaseTest::testFind()
 	using DB = awap::Database<int, IntegerQuery, 100>;
 
 	DB db({2,3,5,7,5,19,11,2,13,19,17,7,2});
-	TEST_ASSERT_EQUALS(db.count(), 10u);
+	TEST_ASSERT_EQUALS(db.count(), 13u);
+
+	// test count iterator
+	std::array<uint8_t, 4> testArray;
+	TEST_ASSERT_EQUALS(countIterator(testArray), 4u);
 
 	// find single elements
 	for(int value : { 3, 11, 13, 17 }) {
