@@ -31,21 +31,21 @@ ServiceDirectoryTest::testFind()
 
 	Directory dir;
 	// some entries with the same service type, but different properties
-	Directory::Entry entryA { { 0xaa101f50 }, {1, 1}, 0};
-	Directory::Entry entryB { { 0xbb110f50 }, {2, 2}, 0};
-	Directory::Entry entryC { { 0xcc011f00 }, {3, 3}, 0};
+	Directory::Entry entryA { { 0xaa101f }, {1, 1}, 0};
+	Directory::Entry entryB { { 0xbb110f }, {2, 2}, 0};
+	Directory::Entry entryC { { 0xcc011f }, {3, 3}, 0};
 
-	dir.insert(entryB);
-	dir.insert(entryC);
-	dir.insert(entryA);
+	TEST_ASSERT_TRUE(dir.insert(entryB));
+	TEST_ASSERT_TRUE(dir.insert(entryC));
+	TEST_ASSERT_TRUE(dir.insert(entryA));
 
 	// some queries for individual elements
-	Directory::Query queryA { { 0xff000000 },
-	                          { 0xaa000000 }, 0};
-	Directory::Query queryB { { 0xff000000 },
-	                          { 0xbb000000 }, 0};
-	Directory::Query queryC { { 0xff000000 },
-	                          { 0xcc000000 }, 0};
+	Directory::Query queryA { { 0xff0000 },
+	                          { 0xaa0000 }, 0};
+	Directory::Query queryB { { 0xff0000 },
+	                          { 0xbb0000 }, 0};
+	Directory::Query queryC { { 0xff0000 },
+	                          { 0xcc0000 }, 0};
 
 	// all queries should only find one element
 	TEST_ASSERT_EQUALS(countIterator(dir.find(queryA)), 1u);
@@ -58,12 +58,12 @@ ServiceDirectoryTest::testFind()
 	TEST_ASSERT_EQUALS(dir.find(queryC).begin()->service.agent, 3u);
 
 	// some queries that should result in two elements
-	Directory::Query queryAB { { 0x00f00000 },
-	                           { 0x00100000 }, 0};
-	Directory::Query queryAC { { 0x0000f000 },
-	                           { 0x00001000 }, 0};
-	Directory::Query queryBC { { 0x000f0000 },
-	                           { 0x00010000 }, 0};
+	Directory::Query queryAB { { 0x00f000 },
+	                           { 0x001000 }, 0};
+	Directory::Query queryAC { { 0x0000f0 },
+	                           { 0x000010 }, 0};
+	Directory::Query queryBC { { 0x000f00 },
+	                           { 0x000100 }, 0};
 
 	TEST_ASSERT_EQUALS(countIterator(dir.find(queryAB)), 2u);
 	TEST_ASSERT_EQUALS(countIterator(dir.find(queryAC)), 2u);
