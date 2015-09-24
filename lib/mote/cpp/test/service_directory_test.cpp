@@ -2,6 +2,8 @@
 #include <service_directory.hpp>
 using namespace awap;
 
+#include "iterator_utils.hpp"
+
 
 void
 ServiceDirectoryTest::testInsert()
@@ -20,23 +22,6 @@ ServiceDirectoryTest::testInsert()
 		TEST_ASSERT_FALSE(dir.insert(entry));
 		TEST_ASSERT_EQUALS(dir.count(), 8u);
 	}
-}
-
-
-template<typename T>
-static inline size_t countIterator(T begin, T end) {
-	size_t count = 0;
-	while(begin != end) {
-		++count;
-		++begin;
-	}
-	return count;
-}
-
-
-template<typename T>
-static inline size_t countIterator(T queryResult) {
-	return countIterator(queryResult.begin(), queryResult.end());
 }
 
 void

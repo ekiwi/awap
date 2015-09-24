@@ -1,6 +1,6 @@
 #include "database_test.hpp"
 #include <database.hpp>
-
+#include "iterator_utils.hpp"
 
 struct IntegerQuery {
 	const int key;
@@ -31,21 +31,6 @@ DatabaseTest::testInsert()
 	// test insert through constructor
 	DB db2({0,1,2,3});
 	TEST_ASSERT_EQUALS(db2.count(), 4u);
-}
-
-template<typename T>
-static inline size_t countIterator(T begin, T end) {
-	size_t count = 0;
-	while(begin != end) {
-		++count;
-		++begin;
-	}
-	return count;
-}
-
-template<typename T>
-static inline size_t countIterator(T queryResult) {
-	return countIterator(queryResult.begin(), queryResult.end());
 }
 
 void
