@@ -27,8 +27,8 @@ struct DirectoryQuery
 {
 	using Entry = DirectoryEntry<PropDataSize>;
 	// properties as first member and 32bit wide for alignment reasons
-	uint32_t properties[PropDataSize];
 	uint32_t propertiesMask[PropDataSize];
+	uint32_t properties[PropDataSize];
 	ServiceId serviceType;
 
 	bool inline match(const Entry& entry) const {
