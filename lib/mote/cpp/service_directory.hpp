@@ -1,14 +1,11 @@
 #ifndef AGENT_DIRECTORY_HPP
 #define AGENT_DIRECTORY_HPP
 
-
 #include <awap.hpp>
-
+#include <database.hpp>
 namespace awap { template<size_t, size_t> class AgentDirectory; }
 #include <node.hpp>
 
-#include <array>
-#include <algorithm>
 
 namespace awap {
 
@@ -28,11 +25,22 @@ struct DirectoryEntry
 template<size_t PropDataSize>
 struct DirectoryQuery
 {
+	using Entry = DirectoryEntry<PropDataSize>;
 	// properties as first member and 32bit wide for alignment reasons
 	uint32_t properties[PropDataSize];
 	uint32_t propertiesMask[PropDataSize];
-	ServiceId serviceTypeMask;
 	ServiceId serviceType;
+	// TODO: implement match algorithm
+	bool match(const Entry& /*e*/) const { return false; }
+};
+
+template<size_t PropDataSize>
+struct DirectoryRemoveQuery
+{
+	using Entry = DirectoryEntry<PropDataSize>;
+	LocalService service;
+	DirectoryRemoveQuery(LocalService service) : service(service) {}
+	bool match(Entry& e) const { return e.service == service; }
 };
 
 
@@ -46,53 +54,40 @@ public:
 	using Entry = DirectoryEntry<MaxPropDataSize>;
 	using Query = DirectoryQuery<MaxPropDataSize>;
 
+private:
+	using RemoveQuery = DirectoryRemoveQuery<MaxPropDataSize>;
+	using DB = Database<Entry, Query, RemoveQuery, MaxEntries>;
 
+public:
+	using QueryResult = typename DB::QueryResult;
+
+public:
 	AgentDirectory() {}
 	~AgentDirectory() {};
 
 public:
 	// currently there is nothing preventing you from inserting the same
 	// service (AgentId, ServiceId) twice
-	bool inline insert(Entry newEntry) {
-		// insert
-		for(auto& entry : entries) {
-			if(!entry.used) {
-				entry = newEntry;
-				return true;
-			}
-		}
-
-		return false;	// no space left
+	bool inline insert(Entry entry) {
+		return db.insert(entry);
 	}
 
-	// LocalService inline search(
+	QueryResult inline find(const Query& query) {
+		return db.find(query);
+	}
 
-	size_t count() {
-		return std::count_if(entries.begin(), entries.end(), [](InternalEntry& e) {return e.used;});
+	size_t inline remove(const LocalService service) {
+		const RemoveQuery query(service);
+		return db.remove(query);
+	}
+
+	size_t inline count() {
+		return db.count();
 	}
 
 
 private:
-	struct InternalEntry : public Entry{
-		bool used;
-		InternalEntry() : Entry(), used(false) {}
-
-		/// assignment to place Entry in InternalEntry
-		InternalEntry& operator=(const Entry& other) {
-			// TODO: this is extremely ugly and potentialle not performant
-			for(size_t ii = 0; ii < Entry::PropertyCount; ++ii) {
-				this->properties[ii] = other.properties[ii];
-			}
-			this->service = other.service;
-			this->serviceType = other.serviceType;
-			this->used = true;
-			return *this;
-		}
-	};
-
-private:
-	std::array<InternalEntry, MaxEntries> entries;
-
+	DB db;
 };
 
 } // namesapce awap

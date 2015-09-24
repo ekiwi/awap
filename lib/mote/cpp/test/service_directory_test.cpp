@@ -27,8 +27,6 @@ ServiceDirectoryTest::testInsert()
 void
 ServiceDirectoryTest::testFind()
 {
-// TODO: reenable tests, once they compile
-/*
 	using Directory = AgentDirectory<3, 10>;
 
 	Directory dir;
@@ -77,6 +75,5 @@ ServiceDirectoryTest::testFind()
 	TEST_ASSERT_EQUALS((++dir.find(queryAC).begin())->service.agent, 1u);
 	TEST_ASSERT_EQUALS(   dir.find(queryBC).begin()->service.agent,  2u);
 	TEST_ASSERT_EQUALS((++dir.find(queryBC).begin())->service.agent, 3u);
-*/
 
 }
