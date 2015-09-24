@@ -70,7 +70,7 @@ public:
 		friend class QueryResult; // is allowed to construct interators
 
 	public:
-		ResultIterator& operator ++ () { find(); return *this; }
+		ResultIterator& operator ++ () { find_next(); return *this; }
 		bool operator == (const ResultIterator& other) const { return this->itr == other.itr; }
 		bool operator != (const ResultIterator& other) const { return this->itr != other.itr; }
 		const Entry& operator * () const { return this->itr->data; }
@@ -83,8 +83,15 @@ public:
 			find();
 		}
 
+		inline void find_next() {
+			// find element **after** itr
+			++itr;
+			find();
+		}
+
 		inline void find() {
-			itr = std::find_if(itr, db.entries.end(), [this](const InternalEntry& e) {return query.match(e.data);});
+			itr = std::find_if(itr, db.entries.end(),
+				[this](const InternalEntry& e) {return query.match(e.data);});
 		}
 
 		const DatabaseT& db;
@@ -98,7 +105,7 @@ public:
 	public:
 		using iterator = ResultIterator;
 		iterator begin() const { return ResultIterator(db, query, db.entries.begin()); }
-		iterator end() const { return ResultIterator(db, query, db.entries.begin()); }
+		iterator end() const { return ResultIterator(db, query, db.entries.end()); }
 	private:
 		QueryResult(const DatabaseT& db, const Query& query) : db(db), query(query) {}
 		const DatabaseT& db;
