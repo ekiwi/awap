@@ -11,7 +11,7 @@ struct IntegerQuery {
 void
 DatabaseTest::testInsert()
 {
-	using DB = awap::Database<int, IntegerQuery, 10>;
+	using DB = awap::Database<int, IntegerQuery, IntegerQuery, 10>;
 
 	DB db;
 	TEST_ASSERT_EQUALS(db.count(), 0u);
@@ -51,7 +51,7 @@ static inline size_t countIterator(T queryResult) {
 void
 DatabaseTest::testFind()
 {
-	using DB = awap::Database<int, IntegerQuery, 100>;
+	using DB = awap::Database<int, IntegerQuery, IntegerQuery, 100>;
 
 	DB db({2,3,5,7,5,19,11,2,13,19,17,7,2});
 	TEST_ASSERT_EQUALS(db.count(), 13u);

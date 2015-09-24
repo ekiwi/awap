@@ -14,11 +14,12 @@
 
 namespace awap {
 
-template<class EntryType, class QueryType, size_t MaxEntries>
+template<class EntryType, class FindQueryType, class RemoveQueryType, size_t MaxEntries>
 class Database {
 public:
 	using Entry = EntryType;
-	using Query = QueryType;
+	using FindQuery = FindQueryType;
+	using RemoveQuery = RemoveQueryType;
 	static constexpr size_t Size = MaxEntries;
 
 public:
@@ -49,9 +50,20 @@ public:
 
 	class QueryResult;
 
-	QueryResult inline find(const Query& query) const {
+	QueryResult inline find(const FindQuery& query) const {
 		QueryResult res(*this, query);
 		return res;
+	}
+
+	size_t inline remove(const RemoveQuery& query) const {
+		size_t count = 0;
+		for(auto entry : entries) {
+			if(entry.used && query.match(entry.data)) {
+				entry.used = false;
+				++count;
+			}
+		}
+		return count;
 	}
 
 	size_t count() const {
@@ -61,14 +73,13 @@ public:
 private:
 	class InternalEntry;
 	using Storage = std::array<InternalEntry, Size>;
+	using DatabaseT = Database<Entry, FindQuery, RemoveQuery, MaxEntries>;
 
 public:
 	class QueryResult;
 	class ResultIterator {
 	private:
-		using DatabaseT = Database<Entry, Query, MaxEntries>;
 		friend class QueryResult; // is allowed to construct interators
-
 	public:
 		ResultIterator& operator ++ () { find_next(); return *this; }
 		bool operator == (const ResultIterator& other) const { return this->itr == other.itr; }
@@ -78,7 +89,7 @@ public:
 	
 	private:
 		ResultIterator() {}
-		ResultIterator(const DatabaseT& db, const Query& query, typename DatabaseT::Storage::const_iterator itr)
+		ResultIterator(const DatabaseT& db, const FindQuery& query, typename DatabaseT::Storage::const_iterator itr)
 			: db(db), query(query), itr(itr) {
 			find();
 		}
@@ -95,21 +106,20 @@ public:
 		}
 
 		const DatabaseT& db;
-		const Query& query;
+		const FindQuery& query;
 		typename DatabaseT::Storage::const_iterator itr;
 	};
 
 	class QueryResult {
-		using DatabaseT = Database<Entry, Query, MaxEntries>;
 		friend DatabaseT;	// is allowed to construct query result
 	public:
 		using iterator = ResultIterator;
 		iterator begin() const { return ResultIterator(db, query, db.entries.begin()); }
 		iterator end() const { return ResultIterator(db, query, db.entries.end()); }
 	private:
-		QueryResult(const DatabaseT& db, const Query& query) : db(db), query(query) {}
+		QueryResult(const DatabaseT& db, const FindQuery& query) : db(db), query(query) {}
 		const DatabaseT& db;
-		const Query& query;
+		const FindQuery& query;
 	};
 
 private:
