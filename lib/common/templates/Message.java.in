@@ -7,6 +7,10 @@ public class {{ msg.name }} extends Message {
 		public {{ field.java.type }} {{ field.name }};
 %% endfor
 
+%% if msg.java.args|length > 0
+		public {{ msg.name }}(){}
+%% endif
+
 		public {{ msg.name }}({{ msg.java.args|join(', ') }}){
 	%% for field in msg.fields
 			this.{{ field.name }} = {{ field.name }};
