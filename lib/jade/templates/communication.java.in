@@ -15,11 +15,7 @@ public class Communication {
 		JSONObject content=new JSONObject();
 
 %% for msg in messages
-	%% if msg.tx
-		%% set type = "de.rwth_aachen.awap.service.local." ~ msg.service ~ "." ~ msg.name
-	%% else
-		%% set type = "de.rwth_aachen.awap.service.remote." ~ msg.service ~ "." ~ msg.name
-	%% endif
+	%% set type = "de.rwth_aachen.awap.messages." ~ msg.service ~ "." ~ msg.name
 	%% if loop.first
 		if(generic_tx instanceof {{ type }}) {
 	%% else
@@ -50,7 +46,7 @@ public class Communication {
 		String service = (String)content.get("service");
 		String message = (String)content.get("message");
 		int performative = msg.getPerformative();
-		int serviceId = -1;
+		int serviceTypeId = -1;
 		MetaMessage ret = new MetaMessage();
 
 %% for service in services
@@ -59,15 +55,10 @@ public class Communication {
 	%% else
 		} else if(service.equals("{{ service.name }}")) {
 	%% endif
-			serviceId = {{ service.id }};
+			serviceTypeId = {{ service.id }};
 
 	%% for msg in service.messages
-		%# tx/rx is reversed since we are receiving here!
-		%% if msg.tx
-			%% set type = "de.rwth_aachen.awap.service.remote." ~ msg.service ~ "." ~ msg.name
-		%% else
-			%% set type = "de.rwth_aachen.awap.service.local." ~ msg.service ~ "." ~ msg.name
-		%% endif
+		%% set type = "de.rwth_aachen.awap.messages." ~ msg.service ~ "." ~ msg.name
 		%% if loop.first
 			if(message.equals("{{ msg.name }}") && performative == ACLMessage.{{ msg.performative }}) {
 		%% else
@@ -99,7 +90,7 @@ public class Communication {
 			throw new Exception("Unknown service type: " + service);
 		}
 
-		ret.msg.serviceId = serviceId;
+		ret.msg.serviceTypeId = serviceTypeId;
 		ret.msg.remoteAgent = new RemoteAgent();
 		ret.msg.remoteAgent.id = AgentRegistry.getId(msg.getSender());
 
@@ -113,7 +104,7 @@ public class Communication {
 	%% for msg in service.messages
 		%# tx/rx is reversed since we are receiving here!
 		%% if msg.tx
-			%% set type = "de.rwth_aachen.awap.service.remote." ~ service.name ~ "." ~ msg.name
+			%% set type = "de.rwth_aachen.awap.messages." ~ msg.service ~ "." ~ msg.name
 			%% if first
 				%% set first = False
 		if(msg instanceof {{ type }}) {
