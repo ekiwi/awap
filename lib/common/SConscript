@@ -37,7 +37,7 @@ for service in communication['services']:
 		substitutions={'service': service})
 
 enum_path = os.path.join(generated_path, *("de.rwth_aachen.awap.enums".split('.')))
-enum_template = os.path.join('templates', 'enum.java.in')
+enum_template = os.path.join('templates', 'Enum.java.in')
 for enum in communication['enums']:
 	target = os.path.join(enum_path, "{name}.java".format(**enum))
 	generated_files += env.Template(
