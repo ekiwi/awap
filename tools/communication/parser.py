@@ -146,6 +146,7 @@ class Message(NamedCommunicationElement):
 		dd['tx'] = self.tx
 		dd['rx'] = self.rx
 		dd['fields'] = [field.to_dict() for field in self.fields]
+		dd['size'] = sum([field.size for field in self.fields])
 		if len(self.fields) > 0:
 			java = ["{} {}".format(field.java_type, camelCase(field.name)) for field in self.fields]
 			cpp  = ["{} {}".format(field.cpp_type,  camelCase(field.name)) for field in self.fields]

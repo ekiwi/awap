@@ -43,7 +43,8 @@ env.VariantDir(variant_dir=lib_path, src_dir='cpp')
 env.Append(CPPPATH = env['AWAP_LIB_MOTE_INCLUDE'])
 # some headerfiles from xpcc are used
 # env.Append(CPPPATH = os.path.join('..', '..', 'ext', 'xpcc', 'src'))
-source = env.Glob(os.path.join(lib_path, '*.cpp')) + runtime_c
+source  = env.Glob(os.path.join(lib_path, '*.cpp')) + runtime_c
+source += env.Glob(os.path.join(generated_path, '*.cpp'))
 
 lib_env = env.Clone()
 lib_env.Append(CPPPATH = 'cpp')
