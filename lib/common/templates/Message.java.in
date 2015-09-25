@@ -1,0 +1,15 @@
+package de.rwth_aachen.awap.messages.{{ msg.service }};
+
+import de.rwth_aachen.awap.Message;
+
+public class {{ msg.name }} extends Message {
+%% for field in msg.fields
+		public {{ field.java.type }} {{ field.name }};
+%% endfor
+
+		public {{ msg.name }}({{ msg.java.args|join(', ') }}){
+	%% for field in msg.fields
+			this.{{ field.name }} = {{ field.name }};
+	%% endfor
+		}
+}

@@ -45,6 +45,15 @@ for enum in communication['enums']:
 		source=enum_template,
 		substitutions={'enum': enum})
 
+msg_path = os.path.join(generated_path, *("de.rwth_aachen.awap.messages".split('.')))
+msg_template = os.path.join('templates', 'Message.java.in')
+for msg in communication['messages']:
+	target = os.path.join(msg_path, msg['service'], "{name}.java".format(**msg))
+	generated_files += env.Template(
+		target=target,
+		source=msg_template,
+		substitutions={'msg': msg})
+
 env.Alias("awap-common.generate", generated_files)
 
 # Java sources
