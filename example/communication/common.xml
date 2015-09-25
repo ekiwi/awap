@@ -1,4 +1,11 @@
 <?xml version="1.0" encoding="UTF-8" ?>
+<!--
+common.xml
+
+Copyright (c) 2015 Kevin Laeufer <kevin.laeufer@rwth-aachen.de>
+
+This file is part of awap.
+-->
 <awap-communication version="0.1" module="common">
 
 <enum name="Building" size="4"  max-id="15">

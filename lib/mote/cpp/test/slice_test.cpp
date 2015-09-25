@@ -1,3 +1,11 @@
+/**
+ * slice_test.cpp
+ *
+ * Copyright (c) 2015 Kevin Laeufer <kevin.laeufer@rwth-aachen.de>
+ *
+ * This file is part of awap.
+ */
+
 #include "slice_test.hpp"
 
 #include <util.hpp>

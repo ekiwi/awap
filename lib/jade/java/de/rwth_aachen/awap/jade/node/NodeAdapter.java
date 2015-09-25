@@ -1,3 +1,13 @@
+/**
+ * NodeAdapter.java
+ *
+ * Copyright (c) 2015 Artur Loewen <aloewen@eonerc.rwth-aachen.de>
+ * Copyright (c) 2015 Kevin Laeufer <kevin.laeufer@rwth-aachen.de>
+ *
+ * This file is part of awap.
+ */
+
+
 package de.rwth_aachen.awap.jade.node;
 
 import de.rwth_aachen.awap.AbstractNode;

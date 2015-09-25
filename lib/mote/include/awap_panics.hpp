@@ -4,7 +4,7 @@
  * Copyright (c) 2015 Kevin Laeufer <kevin.laeufer@rwth-aachen.de>
  *
  * This file is part of awap.
-*/
+ */
 
 #ifndef AWAP_PANICS_HPP
 #define AWAP_PANICS_HPP

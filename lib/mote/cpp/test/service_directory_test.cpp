@@ -1,3 +1,11 @@
+/**
+ * service_directory_test.cpp
+ *
+ * Copyright (c) 2015 Kevin Laeufer <kevin.laeufer@rwth-aachen.de>
+ *
+ * This file is part of awap.
+ */
+
 #include "service_directory_test.hpp"
 #include <service_directory.hpp>
 using namespace awap;

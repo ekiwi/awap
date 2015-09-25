@@ -1,3 +1,11 @@
+/**
+ * iterator_utils.hpp
+ *
+ * Copyright (c) 2015 Kevin Laeufer <kevin.laeufer@rwth-aachen.de>
+ *
+ * This file is part of awap.
+ */
+
 #ifndef ITERATOR_UTILS_HPP
 #define ITERATOR_UTILS_HPP
 
