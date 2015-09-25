@@ -7,6 +7,7 @@ import de.rwth_aachen.awap.RemoteAgent;
 import de.rwth_aachen.awap.RemoteService;
 import de.rwth_aachen.awap.ServiceFilter;
 import de.rwth_aachen.awap.ServiceProperty;
+import de.rwth_aachen.awap.messages.{{ service.name }}.*;
 
 public final class {{service.name}} extends RemoteService {
 	public {{service.name}}(Agent parent, RemoteAgent remoteAgent, byte remoteServiceId) {
@@ -44,25 +45,7 @@ public final class {{service.name}} extends RemoteService {
 	// message handlers
 %% for msg in service.messages
 	%# Remember, that tx and rx are reversed, now that we are the client!
-	%% if msg.tx
-	public static class {{ msg.name }} extends Message {
-	%% for field in msg.fields
-			public {{ field.java.type }} {{ field.name }};
-	%% endfor
-	}
-	%% endif
-	%# Remember, that tx and rx are reversed, now that we are the client!
 	%% if msg.rx
-	public static class {{ msg.name }} extends Message {
-	%% for field in msg.fields
-			public {{ field.java.type }} {{ field.name }};
-	%% endfor
-			public {{ msg.name }}({{ msg.java.args|join(', ') }}){
-		%% for field in msg.fields
-				this.{{ field.name }} = {{ field.name }};
-		%% endfor
-			}
-	}
 	public void send({{ msg.name }} msg) {
 		msg.serviceId = {{ service.id }};
 		msg.remoteAgent = this.remoteAgent;
