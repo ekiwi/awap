@@ -1,0 +1,16 @@
+#ifndef GENERATED_CONFIGURATION_HPP
+#define GENERATED_CONFIGURATION_HPP
+
+namespace awap {
+namespace generated {
+
+/// contains values that depend on the slected configuration
+struct Configuration {
+	static constexpr size_t MaxPropertyBitCount = {{ max_property_bit_count }};
+
+}; // struct Configuration
+
+} // namespace generated
+} // namespace awap
+
+#endif // GENERATED_CONFIGURATION_HPP
