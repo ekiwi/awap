@@ -2,7 +2,8 @@
 #define NODE_HPP
 
 #include <hpp/ostfriesentee.hpp>
-#include <awap.hpp>
+#include <common.hpp>
+#include <service_directory.hpp>
 
 namespace awap { class Node; }
 #include <agent.hpp>
@@ -13,6 +14,7 @@ class Node
 {
 public:
 	static constexpr size_t MaxAgents = 8;
+	static constexpr size_t MaxServices = 16;
 
 public:
 	Node(ostfriesentee::Vm& vm, ostfriesentee::Infusion& awapCommon, ostfriesentee::Infusion& awapMote, const NodeAddress nodeAddress);
@@ -44,7 +46,9 @@ private:
 	ostfriesentee::Infusion awapCommon;
 	ostfriesentee::Infusion awapMote;
 	const NodeAddress address;
-	uint8_t awapCommonInfusionId;
+	static constexpr size_t MaxPropBytes =
+		divideCeil(generated::Configuration::MaxPropertyBitCount, 8u);
+	ServiceDirectory<MaxPropBytes, MaxServices> services;
 };
 
 }

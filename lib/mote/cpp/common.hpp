@@ -3,6 +3,7 @@
 
 #include <awap.hpp>
 #include <util.hpp>
+#include <generated/configuration.hpp>
 
 namespace awap {
 

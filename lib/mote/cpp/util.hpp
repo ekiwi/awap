@@ -16,11 +16,12 @@ static constexpr inline size_t
 arrayCount(T (&)[N]) { return N; }
 
 
-template<typename T>
-static constexpr inline T
-divideCeil(const T& dividend, const T& divisor)
+template<typename T0, typename T1>
+static constexpr inline T0
+divideCeil(const T0& dividend, const T1& divisor)
 {
-	static_assert(std::is_integral<T>::value, "divideCeil only works for integer types.");
+	static_assert(std::is_integral<T0>::value, "divideCeil only works for integer types.");
+	static_assert(std::is_integral<T1>::value, "divideCeil only works for integer types.");
 	return (dividend + divisor - 1) / divisor;
 }
 
