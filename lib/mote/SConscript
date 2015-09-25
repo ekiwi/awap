@@ -10,10 +10,19 @@ libname = 'awap-node'
 lib_path = os.path.join(env['AWAP_BUILDPATH'], 'lib', libname)
 
 # tell scons how to generate some files
-generated_path = os.path.join(lib_path, 'generated')
+generated_include_path = os.path.join(lib_path, 'generated')
+generated_path = os.path.join(generated_include_path, 'generated')
 generated_files = []
 
-# TODO: generate files
+communication = env.GetCommunicationDict()
+templates = env.Glob('cpp/templates/*.in')
+
+for template in templates:
+	generated_name = os.path.splitext(os.path.basename(str(template)))[0]
+	generated_files += env.Template(
+		target=os.path.join(generated_path, generated_name),
+		source=template,
+		substitutions=communication)
 
 env.Alias(libname + ".generate", generated_files)
 
@@ -38,6 +47,7 @@ source = env.Glob(os.path.join(lib_path, '*.cpp')) + runtime_c
 
 lib_env = env.Clone()
 lib_env.Append(CPPPATH = 'cpp')
+lib_env.Append(CPPPATH = generated_include_path)
 libmote = lib_env.StaticLibrary(os.path.join(lib_path, libname), source)
 # add libmote twice because of cicular dependencies
 libs = libmote + runtime_a + libmote
