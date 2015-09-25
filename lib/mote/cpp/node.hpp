@@ -4,6 +4,8 @@
 #include <hpp/ostfriesentee.hpp>
 #include <common.hpp>
 #include <service_directory.hpp>
+#include <util.hpp>
+#include <generated/configuration.hpp>
 
 namespace awap { class Node; }
 #include <agent.hpp>

@@ -1,8 +1,9 @@
 #ifndef AGENT_DIRECTORY_HPP
 #define AGENT_DIRECTORY_HPP
 
-#include <awap.hpp>
+#include <common.hpp>
 #include <database.hpp>
+#include <util.hpp>
 namespace awap { template<size_t, size_t> class AgentDirectory; }
 #include <node.hpp>
 
