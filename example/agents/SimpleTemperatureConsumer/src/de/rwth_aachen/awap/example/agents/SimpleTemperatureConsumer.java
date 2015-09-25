@@ -3,9 +3,10 @@ package de.rwth_aachen.awap.example.agents;
 import de.rwth_aachen.awap.Agent;
 import de.rwth_aachen.awap.enums.Building;
 import de.rwth_aachen.awap.enums.Room;
+import de.rwth_aachen.awap.messages.TemperatureService.RequestTemperature;
+import de.rwth_aachen.awap.messages.TemperatureService.Temperature;
 import de.rwth_aachen.awap.service.remote.ITemperatureServiceClient;
 import de.rwth_aachen.awap.service.remote.TemperatureService;
-import de.rwth_aachen.awap.service.remote.TemperatureService.Temperature;
 
 public class SimpleTemperatureConsumer extends Agent implements ITemperatureServiceClient {
 	private TemperatureService.Type temperaturSensorType;
@@ -24,7 +25,7 @@ public class SimpleTemperatureConsumer extends Agent implements ITemperatureServ
 
 	public void onWakeUp(Object obj) {
 		System.out.println("Agent: Woke up");
-		this.temperaturSensorType.send(new TemperatureService.RequestTemperature());
+		this.temperaturSensorType.send(new RequestTemperature());
 		this.requestWakeUp(1000);
 	}
 

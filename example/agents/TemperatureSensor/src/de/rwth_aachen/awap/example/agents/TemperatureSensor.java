@@ -5,6 +5,8 @@ import de.rwth_aachen.awap.enums.Building;
 import de.rwth_aachen.awap.enums.Room;
 import de.rwth_aachen.awap.enums.SupplyCircuit;
 import de.rwth_aachen.awap.enums.TemperatureSensorType;
+import de.rwth_aachen.awap.messages.TemperatureService.RequestTemperature;
+import de.rwth_aachen.awap.messages.TemperatureService.Temperature;
 
 public class TemperatureSensor extends Agent {
 
@@ -20,7 +22,7 @@ public class TemperatureSensor extends Agent {
 
 		public void onReceive(RequestTemperature msg) {
 			// TODO: read temperature from hardware
-			this.send(new Temperature(msg.remoteAgent, 1337));
+			this.send(msg.remoteAgent, new Temperature(1337));
 		}
 	}
 }
