@@ -67,7 +67,7 @@ public abstract class Agent {
 
 	public boolean handleLocalServiceMessage(Message msg) {
 		for(LocalService service : this.services) {
-			if(service.serviceId == msg.serviceId) {
+			if(service.serviceId == msg.serviceTypeId) {
 				return service.handleMessage(msg);
 			}
 		}

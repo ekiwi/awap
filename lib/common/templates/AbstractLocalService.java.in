@@ -23,8 +23,9 @@ public abstract class {{service.name}} extends LocalService {
 	%% endif
 	%% if msg.tx
 	// public abstract void onFailedToSend({{ msg.name }} msg);
-	public void send({{ msg.name }} msg) {
-		msg.serviceId = {{ service.id }};
+	public void send(RemoteAgent receiver, {{ msg.name }} msg) {
+		msg.remoteAgent = receiver;
+		msg.serviceTypeId = {{ service.id }};
 		this.parent.node.send(msg);
 	}
 	%% endif
