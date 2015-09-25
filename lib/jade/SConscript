@@ -20,17 +20,17 @@ generated_path = os.path.join(generated_path, *("de.rwth_aachen.awap.jade.genera
 # generate communication class
 generated_files += env.Template(
 	target=os.path.join(generated_path, "Communication.java"),
-	source=os.path.join('templates', 'communication.java.in'),
+	source=os.path.join('templates', 'Communication.java.in'),
 	substitutions=communication)
 
 generated_files += env.Template(
 	target=os.path.join(generated_path, "Service.java"),
-	source=os.path.join('templates', 'service.java.in'),
+	source=os.path.join('templates', 'Service.java.in'),
 	substitutions=communication)
 
 generated_files += env.Template(
 	target=os.path.join(generated_path, "Enum.java"),
-	source=os.path.join('templates', 'enum.java.in'),
+	source=os.path.join('templates', 'Enum.java.in'),
 	substitutions=communication)
 
 env.Alias(libname + ".generate", generated_files)
