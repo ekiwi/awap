@@ -1,1 +1,22 @@
 #include "message_parser.hpp"
+#include <hpp/ostfriesentee.hpp>
+#include <jlib_awap-common.hpp>
+
+
+namespace awap {
+namespace generated {
+namespace MessageParserFactory {
+
+%% for service in services
+	%% for msg in service.messages
+ref_t {{service.name}}::createJava_{{ msg.name }}(const Slice<uint8_t> data)
+{
+	return 0;
+}
+
+	%% endfor
+%% endfor
+
+} // namespace MessageParser
+} // namespace generated
+} // namespace awap

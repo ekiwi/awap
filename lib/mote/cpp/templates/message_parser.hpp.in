@@ -27,7 +27,7 @@ class {{ service.name }} {
 
 public:
 	%% for msg in service.messages
-		static ref_t createJava{{ msg.name }}(const Slice<uint8_t> data);
+	static ref_t createJava_{{ msg.name }}(const Slice<uint8_t> data);
 	%% endfor
 
 	static const MessageParser getMessageParser(const Slice<uint8_t> data) {
@@ -38,7 +38,7 @@ public:
 		switch(messageId) {
 	%% for msg in service.messages
 		case {{ msg.id }}:	// {{ msg.name }}
-			return { MessageIdBits + {{ msg.size}}, createJava{{ msg.name }} };
+			return { MessageIdBits + {{ msg.size}}, createJava_{{ msg.name }} };
 	%% endfor
 		default:
 			return { 0, nullptr };
