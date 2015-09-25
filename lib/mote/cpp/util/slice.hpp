@@ -15,7 +15,7 @@ struct Slice
 	T* data;
 	size_t length;
 
-	inline bool isEmpty() {
+	inline bool isEmpty() const {
 		return !(length > 0);
 	}
 
@@ -35,7 +35,7 @@ struct Slice
 		return nn;
 	}
 
-	inline Slice<T> sub(const int start = 0, const int end = std::numeric_limits<int>::max()) {
+	inline Slice<T> sub(const int start = 0, const int end = std::numeric_limits<int>::max()) const {
 		size_t norm_start = normalizeIndex(start);
 		size_t norm_end   = normalizeIndex(end);
 		if(norm_start > norm_end) {
@@ -47,7 +47,7 @@ struct Slice
 
 private:
 	// TODO: fix index type for realy big slices
-	inline size_t normalizeIndex(const int index) {
+	inline size_t normalizeIndex(const int index) const {
 		if(index >= 0) {
 			return static_cast<size_t>(std::min(static_cast<int>(length), index));
 		} else {
