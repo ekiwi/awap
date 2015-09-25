@@ -47,13 +47,14 @@ from huffman import HuffmanCode, HuffmanEncoder
 
 # generate code
 hc = HuffmanCode()
-files = ['../../example/jade/build/ostfriesentee/app/TemperatureSensor/TemperatureSensor.di',
-	'../../example/jade/build/ostfriesentee/app/SimpleTemperatureSubscriber/SimpleTemperatureSubscriber.di']
+files = ['../../example/mote/build/ostfriesentee/app/TemperatureSensor/TemperatureSensor.di',
+	'../../example/mote/build/ostfriesentee/app/SimpleTemperatureConsumer/SimpleTemperatureConsumer.di']
 for filename in files: hc.count_symbols_in_file(filename)
 hc.generate()
 code = hc.to_dict()
 
 # encode files
+Execute(Mkdir('python/temp'))
 enc = HuffmanEncoder(hc)
 for filename in files: 
 	output = os.path.join('python', 'temp', os.path.basename(filename))
@@ -66,7 +67,7 @@ env.Template(target='build/code.hpp', source='templates/code.hpp.in', substituti
 huffman = env.Program('build/huffman', env.Glob('build/*.cpp'))
 env.Alias('huffman', huffman)
 
-arguments = 'python/temp/TemperatureSensor.di ../../example/jade/build/ostfriesentee/app/TemperatureSensor/TemperatureSensor.di'
+arguments = 'python/temp/TemperatureSensor.di ../../example/mote/build/ostfriesentee/app/TemperatureSensor/TemperatureSensor.di'
 env.Alias('huffman.run', env.Command('run_huffman', huffman, '{} {}'.format(huffman[0].abspath, arguments)))
 
 env.Default('huffman.run')

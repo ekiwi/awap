@@ -44,7 +44,7 @@ env['CXXFLAGS'] = [
 # entropy calculator in c++
 entropy = env.Program('build/entropy', env.Glob('build/entropy.cpp'))
 env.Alias('entropy', entropy)
-arguments = '../../example/jade/build/ostfriesentee/app/TemperatureSensor/TemperatureSensor.di'
+arguments = '../../example/mote/build/ostfriesentee/app/TemperatureSensor/TemperatureSensor.di'
 env.Alias('entropy.run', env.Command('run_program', entropy, '{} {}'.format(entropy[0].abspath, arguments)))
 
 env.Default('entropy.run')
