@@ -26,16 +26,13 @@ struct Slice
 
 	template<size_t N>
 	inline size_t write(const T(&src)[N]) {
-		if(length < N) {
-			return 0;
-		} else {
-			for(size_t ii = 0; ii < N; ++ii) {
-				data[ii] = src[ii];
-			}
-			data += N;
-			length -= N;
-			return N;
+		const size_t nn = (N < length)? N : length;
+		for(size_t ii = 0; ii < nn; ++ii) {
+			data[ii] = src[ii];
 		}
+		data += nn;
+		length -= nn;
+		return nn;
 	}
 
 	inline Slice<T> sub(const int start = 0, const int end = std::numeric_limits<int>::max()) {
