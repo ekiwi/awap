@@ -63,7 +63,7 @@ struct DirectoryRemoveQuery
 // if they contain valid data
 // insertion and search operations are both O(n)
 template<size_t MaxPropDataSize, size_t MaxEntries>
-class AgentDirectory {
+class ServiceDirectory {
 public:
 	using Entry = DirectoryEntry<MaxPropDataSize>;
 	using Query = DirectoryQuery<MaxPropDataSize>;
@@ -74,10 +74,6 @@ private:
 
 public:
 	using QueryResult = typename DB::QueryResult;
-
-public:
-	AgentDirectory() {}
-	~AgentDirectory() {};
 
 public:
 	// currently there is nothing preventing you from inserting the same

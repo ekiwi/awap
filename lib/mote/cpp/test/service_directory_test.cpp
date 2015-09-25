@@ -8,7 +8,7 @@ using namespace awap;
 void
 ServiceDirectoryTest::testInsert()
 {
-	using Directory = AgentDirectory<3, 8>;
+	using Directory = ServiceDirectory<3, 8>;
 
 	// test capacity limit
 	{
@@ -27,7 +27,7 @@ ServiceDirectoryTest::testInsert()
 void
 ServiceDirectoryTest::testFind()
 {
-	using Directory = AgentDirectory<3, 10>;
+	using Directory = ServiceDirectory<3, 10>;
 
 	Directory dir;
 	// some entries with the same service type, but different properties
