@@ -1,0 +1,51 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!--
+room.xml
+
+Copyright (c) 2015 Kevin Laeufer <kevin.laeufer@rwth-aachen.de>
+
+This file is part of awap.
+-->
+<awap-communication version="0.1" module="service.room">
+
+<!-- imports values from common.xml in this modules namespace -->
+<import module="common" as="" />
+
+<enum name="TemperatureChangeRefuseReason" max-id="7">
+	<element name="NotOwnerOfRoom" id="0" />
+</enum>
+
+<enum name="TemperatureChangeFailedReason" max-id="7">
+	<element name="NotOwnerOfRoom" id="0" />
+</enum>
+
+
+<service name="RoomService">
+	<!-- This defines the service interface that can be used by other agents -->
+	<messages max-id="7" size="3">
+		<message name="RequestTemperatureChange" direction="rx" performative="REQUEST" id="0">
+			<enum name="userType" class="UserType" />
+			<enum name="action" class="TemperatureAction" />
+			<uint name="Tset" size="32" />
+			<uint name="deltaToTset" size="32" />
+			<uint name="prodLossCost" size="32" />
+			<uint name="worseCosts" size="32" />
+			<uint name="betterCosts" size="32" />
+		</message>
+		<message name="RefuseTemperatureChange" direction="tx" performative="REFUSE" id="1">
+			<enum name="reason" class="TemperatureChangeRefuseReason" />
+		</message>
+		<message name="AgreeToTemperatureChange" direction="tx" performative="AGREE" id="2" />
+		<message name="TemperatureChangeEnacted" direction="tx" performative="INFORM" id="3" />
+		<message name="TemperatureChangeFailed"  direction="tx" performative="FAILURE" id="4">
+			<enum name="reason" class="TemperatureChangeFailedReason" />
+		</message>
+	</messages>
+	<!-- This will be used by the DF in order to diferentiate different services of the same kind -->
+	<properties max-id="3">
+		<enum name="Building"      class="Building"      id="0" />
+		<enum name="SupplyCircuit" class="SupplyCircuit" id="1" />
+		<enum name="Room"          class="Room"          id="2" />
+	</properties>
+</service>
+</awap-communication>

@@ -11,9 +11,10 @@ xpcc_tools = os.path.join(xpcc_root, 'scons', 'site_tools')
 
 env = Environment(toolpath = [os.path.join(awap_root, 'scons')], tools = ['awap'])
 
-env.AppendUnique(AWAP_AGENT_PATH = os.path.join(awap_root, 'example', 'agents'))
-env.AppendUnique(AWAP_COMMUNICATION_PATH = os.path.join(awap_root, 'example', 'communication'))
-env.LoadAwapConfiguration(os.path.join(awap_root, 'example', 'configuration.xml'))
+# use unittest configuration to build lib
+env.AppendUnique(AWAP_AGENT_PATH = os.path.join('unittest', 'agents'))
+env.AppendUnique(AWAP_COMMUNICATION_PATH = os.path.join('unittest', 'communication'))
+env.LoadAwapConfiguration(os.path.join('unittest', 'configuration.xml'))
 env.Alias('awap-common', env.SConscript(env['AWAP_LIB_COMMON'], exports = 'env'))
 
 env.Architecture('amd64')
