@@ -323,7 +323,9 @@ class EnumType(NamedCommunicationElement):
 
 	@property
 	def cpp_type(self):
-		return self.name
+		if self.size <= 8:    return "uint8_t"
+		elif self.size <= 16: return "uint16_t"
+		elif self.size <= 32: return "uint32_t"
 
 	def to_dict(self):
 		dd = super(EnumType, self).to_dict()
