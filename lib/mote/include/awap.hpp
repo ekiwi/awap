@@ -38,6 +38,7 @@ enum class Panic {
 enum class Warning {
 	TimeoutExpiredInvalidAgentId,
 	MessageParserTooShort,
+	MessageParserOutputTooSmall,
 };
 
 //----------------------------------------------------------------------------

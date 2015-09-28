@@ -24,7 +24,11 @@ void setAwapCommonInfusion(ostfriesentee::Infusion& inf) {
 
 %% for service in services
 	%% for msg in service.messages
+		%% if msg.fields|length == 0
+ref_t {{service.name}}::createJava_{{ msg.name }}(const Slice<uint8_t> /*data*/)
+		%% else
 ref_t {{service.name}}::createJava_{{ msg.name }}(const Slice<uint8_t> data)
+		%% endif
 {
 	using Message = ::awap::generated::message::{{ service.name }}::{{ msg.name }};
 		%% if msg.fields|length == 0
@@ -33,7 +37,7 @@ ref_t {{service.name}}::createJava_{{ msg.name }}(const Slice<uint8_t> data)
 	//       or else it will be garbage collected!
 	return obj.getRef();
 		%% else
-	if(check(Message::Bytes > data.length, Warning::MessageParserTooShort)) {
+	if(check(Message::Bytes <= data.length, Warning::MessageParserTooShort)) {
 		// create java object
 		Message::JavaClass obj(awapCommonInfusion);
 		// this is safe, because we checked the length above
@@ -51,6 +55,28 @@ ref_t {{service.name}}::createJava_{{ msg.name }}(const Slice<uint8_t> data)
 		%% endif
 }
 
+		%% if msg.fields|length == 0
+size_t {{service.name}}::fromJava_{{ msg.name }}(ref_t /*obj*/, const Slice<uint8_t> /*output*/)
+{
+	return 0;	// this message does have any content
+}
+		%% else
+size_t {{service.name}}::fromJava_{{ msg.name }}(ref_t obj, const Slice<uint8_t> output)
+{
+	using Message = ::awap::generated::message::{{ service.name }}::{{ msg.name }};
+	if(check(Message::Bytes <= output.length, Warning::MessageParserOutputTooSmall)) {
+		auto java_data = static_cast<Message::JavaClass::UnderlyingType*>(REF_TO_VOIDP(obj));
+		// this is safe, because we checked the length above
+		auto structured_data = reinterpret_cast<Message*>(output.data);
+		%% for field in msg.fields
+		structured_data->{{ field.name }} = java_data->{{ field.name }};
+		%% endfor
+		return Message::Bits;
+	} else {
+		return 0;	// error, zero bits written
+	}
+}
+		%% endif
 	%% endfor
 %% endfor
 

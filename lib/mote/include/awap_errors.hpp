@@ -52,7 +52,7 @@ static inline const char* getWarningDescription(Warning warn)
 	case Warning::TimeoutExpiredInvalidAgentId:
 		return "Node::timeoutExpired: agent could not found found!";
 	case Warning::MessageParserTooShort:
-		return "MessageParser: received binary data is too short to decompose into packet!";
+		return "MessageParser: the buffer provided for the message data is too small!";
 	default:
 		return "Unknown Warning";
 	}

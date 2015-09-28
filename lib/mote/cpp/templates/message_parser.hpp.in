@@ -39,6 +39,7 @@ class {{ service.name }} {
 public:
 	%% for msg in service.messages
 	static ref_t createJava_{{ msg.name }}(const Slice<uint8_t> data);
+	static size_t fromJava_{{ msg.name }}(ref_t obj, const Slice<uint8_t> output);
 	%% endfor
 
 	static const MessageParser getMessageParser(const Slice<uint8_t> data) {
