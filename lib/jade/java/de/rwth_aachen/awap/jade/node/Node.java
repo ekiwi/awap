@@ -25,15 +25,14 @@ import de.rwth_aachen.awap.jade.WrapperAgent;
 public class Node {
 	private static int nodeCounter = 0;
 	private String name;
-	private Stack<Byte> ids;
+	private Stack<Integer> ids = new Stack<Integer>();;
 	private int address;
 	//private LocalAgent[] agents;
 
 	public Node(String name) {
 		this.address = nodeCounter;
 		nodeCounter++;
-		this.ids = new Stack<Byte>();
-		for(byte ii = 0; ii < 8; ++ii){
+		for(int ii = 0; ii < 8; ++ii){
 			this.ids.push(ii);
 		}
 		//this.agents = new LocalAgent[this.ids.size()];
@@ -50,7 +49,7 @@ public class Node {
 		return cc.createNewAgent(agent_name, WrapperAgent.class.getName(), args);
 	}
 
-	public void deregisterAgent(byte id) {
+	public void deregisterAgent(int id) {
 		this.ids.push(id);
 	}
 }

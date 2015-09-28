@@ -115,8 +115,8 @@ public class NodeAdapter extends AbstractNode {
 	}
 
 	@Override
-	public void requestWakeUp(int milliseconds, Object obj) {
-		this.wrapper.addTimeout(milliseconds, obj);
+	public void requestWakeUp(int milliseconds, byte index) {
+		this.wrapper.addTimeout(milliseconds, index);
 	}
 
 

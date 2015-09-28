@@ -42,11 +42,11 @@ public class WrapperAgent extends jade.core.Agent {
 		assert args.length == 3;
 		assert args[0] instanceof Node;		// the node this is running on
 		assert args[1] instanceof String;	// full name of the awap agent class
-		assert args[2] instanceof Byte;		// the local id of the agent
+		assert args[2] instanceof Integer;	// the local id of the agent
 
 		this.node = (Node)args[0];
 		String agent_class = (String)args[1];
-		byte agentId = (Byte)args[2];
+		int agentId = (Integer)args[2];
 
 		this.adapter = new NodeAdapter(this.node, this);
 
@@ -117,8 +117,8 @@ public class WrapperAgent extends jade.core.Agent {
 		this.agent.onWakeUp(data);
 	}
 
-	public void addTimeout(int milliseconds, Object obj) {
-		this.timeoutBehaviour.addTimeout(milliseconds, obj);
+	public void addTimeout(int milliseconds, int index) {
+		this.timeoutBehaviour.addTimeout(milliseconds, index);
 	}
 
 	public class TimeoutBehaviour extends WakerBehaviour
@@ -126,9 +126,9 @@ public class WrapperAgent extends jade.core.Agent {
 		class Timeout implements Comparable<Timeout>
 		{
 			public Date wakeup;
-			public Object data;
+			public int data;
 
-			public Timeout(int milliseconds, Object data)
+			public Timeout(int milliseconds, int data)
 			{
 				long timestamp = System.currentTimeMillis() + milliseconds;
 				this.wakeup = new Date(timestamp);
@@ -160,7 +160,7 @@ public class WrapperAgent extends jade.core.Agent {
 			reschedule();
 		}
 
-		public void addTimeout(int milliseconds, Object data) {
+		public void addTimeout(int milliseconds, int data) {
 			Timeout tt = new Timeout(milliseconds, data);
 			timeouts.add(tt);
 			reschedule();
