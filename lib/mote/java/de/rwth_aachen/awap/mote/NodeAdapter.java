@@ -12,13 +12,18 @@ import de.rwth_aachen.awap.BroadcastMessage;
 import de.rwth_aachen.awap.LocalService;
 import de.rwth_aachen.awap.Message;
 import de.rwth_aachen.awap.AbstractNode;
+import de.rwth_aachen.awap.Agent;
 
 public class NodeAdapter extends AbstractNode {
-	public int agentId;
-
-	public NodeAdapter(int agentId) {
-		this.agentId = agentId;
+	static void initializeAgent(Agent agent, int agentId) {
+		NodeAdapter adapter = new NodeAdapter();
+		adapter.agentId = agentId;
+		adapter.owner = agent;
+		agent.init(agentId, adapter);
 	}
+
+	public int agentId;
+	private Agent owner;
 
 	public native void send(Message msg);
 	public native void send(BroadcastMessage msg);

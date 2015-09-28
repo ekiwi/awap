@@ -88,10 +88,15 @@ Agent::Agent(Node& node, uint8_t localAgentId, ostfriesentee::Infusion& inf, uin
 {
 	std::cout << "New Agent of Type: " << name << std::endl;
 
-	// construct node adapter
-	de::rwth_aachen::awap::mote::NodeAdapter adapter(node.getAwapMote(), localAgentId);
-	// call agent init
-	agent.init(localAgentId, adapter.getRef());
+	// construct node adapter by calling
+	// de.rwth_aachen.awap.mote.NodeAdapter.initializeAgent
+	int16_t intParams[2];
+	ref_t refParams[1];
+	ostfriesentee::Object::setParam(intParams, 0, static_cast<int32_t>(localAgentId));
+	ostfriesentee::Object::setParam(refParams, 0, agent.getRef());
+	static constexpr uint8_t initializeAgentMethodId =
+		AWAP_MOTE_MIMPL_de_rwth_aachen_awap_mote_NodeAdapter_void_initializeAgent_de_rwth_aachen_awap_Agent_int;
+	ostfriesentee::Object::runMethod(node.getAwapMote(), initializeAgentMethodId, refParams, intParams);
 }
 
 void
