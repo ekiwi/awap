@@ -33,6 +33,14 @@ public:
 	void loadAgent(const uint8_t* content, const size_t length);
 	void receive(const NodeAddress sender, const uint8_t* content, const size_t length);
 
+	// node interface methods
+	void send(AgentId agent, ref_t message);
+	void sendBroadcast(AgentId agent, ref_t broadcastMessage);
+	// TODO: keep obj in java and only hand index to c++
+	void requestWakeUp(AgentId agent, uint32_t milliseconds, ref_t obj);
+	bool registerService(AgentId agent, ref_t service);
+	bool deregisterService(AgentId agent, ref_t service);
+
 //	bool receiveRemoteServiceMessage(const uint8_t agentId, , ref_t messageObject)
 
 

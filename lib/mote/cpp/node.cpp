@@ -47,4 +47,34 @@ Node::receive(const NodeAddress sender, const uint8_t* content, const size_t len
 	// TODO!
 }
 
+void
+Node::send(AgentId agent, ref_t message)
+{
+	// TODO!
+}
+
+void
+Node::sendBroadcast(AgentId agent, ref_t broadcastMessage)
+{
+	// TODO!
+}
+
+void
+Node::requestWakeUp(AgentId agent, uint32_t milliseconds, ref_t obj)
+{
+	// TODO!
+}
+
+bool
+Node::registerService(AgentId agent, ref_t service)
+{
+	// TODO!
+}
+
+bool
+Node::deregisterService(AgentId agent, ref_t service)
+{
+	// TODO!
+}
+
 } // namespace awap

@@ -87,13 +87,13 @@ void Awap::init(const NodeAddress nodeAddress)
 
 void  Awap::receive(const NodeAddress sender, const uint8_t* content, const size_t length)
 {
-	if(node == nullptr) Runtime::panic(Panic::NotInitialized);
+	assert(node != nullptr, Panic::NotInitialized);
 	node->receive(sender, content, length);
 }
 
 void Awap::loadAgent(const uint8_t* content, const size_t length )
 {
-	if(node == nullptr) Runtime::panic(Panic::NotInitialized);
+	assert(node != nullptr, Panic::NotInitialized);
 	node->loadAgent(content, length);
 }
 
@@ -116,48 +116,48 @@ static inline uint8_t retriveAgentId()
 extern "C"
 void de_rwth_aachen_awap_mote_NodeAdapter_void_send_de_rwth_aachen_awap_Message()
 {
+	assert(node != nullptr, Panic::NotInitialized);
 	ref_t message = dj_exec_stackPopRef();
-	debug_printf("TODO: implement NodeAdapter.send method.\n");
-	debug_printf("AgentId: %u\n", retriveAgentId());
+	node->send(retriveAgentId(), message);
 }
 
 // void de.rwth_aachen.awap.mote.NodeAdapter.send(de.rwth_aachen.awap.BroadcastMessage)
 extern "C"
 void de_rwth_aachen_awap_mote_NodeAdapter_void_send_de_rwth_aachen_awap_BroadcastMessage()
 {
+	assert(node != nullptr, Panic::NotInitialized);
 	ref_t message = dj_exec_stackPopRef();
-	debug_printf("TODO: implement NodeAdapter.send method.\n");
-	debug_printf("AgentId: %u\n", retriveAgentId());
+	node->sendBroadcast(retriveAgentId(), message);
 }
 
 // void de.rwth_aachen.awap.mote.NodeAdapter.requestWakeUp(int, java.lang.Object)
 extern "C"
 void de_rwth_aachen_awap_mote_NodeAdapter_void_requestWakeUp_int_java_lang_Object()
 {
+	assert(node != nullptr, Panic::NotInitialized);
 	uint32_t milliseconds = dj_exec_stackPopInt();
 	ref_t obj = dj_exec_stackPopRef();
-	debug_printf("TODO: implement NodeAdapter.requestWakeUp method.\n");
-	debug_printf("AgentId: %u\n", retriveAgentId());
+	node->requestWakeUp(retriveAgentId(), milliseconds, obj);
 }
 
 // boolean de.rwth_aachen.awap.mote.NodeAdapter.registerService(de.rwth_aachen.awap.LocalService)
 extern "C"
 void de_rwth_aachen_awap_mote_NodeAdapter_boolean_registerService_de_rwth_aachen_awap_LocalService()
 {
+	assert(node != nullptr, Panic::NotInitialized);
 	ref_t service = dj_exec_stackPopRef();
-	debug_printf("TODO: implement Mote.registerService method.\n");
-	debug_printf("AgentId: %u\n", retriveAgentId());
-	dj_exec_stackPushShort(static_cast<uint16_t>(true));
+	bool ret = node->registerService(retriveAgentId(), service);
+	dj_exec_stackPushShort(static_cast<uint16_t>(ret));
 }
 
 // boolean de.rwth_aachen.awap.mote.NodeAdapter.deregisterService(de.rwth_aachen.awap.LocalService)
 extern "C"
 void de_rwth_aachen_awap_mote_NodeAdapter_boolean_deregisterService_de_rwth_aachen_awap_LocalService()
 {
+	assert(node != nullptr, Panic::NotInitialized);
 	ref_t service = dj_exec_stackPopRef();
-	debug_printf("TODO: implement Mote.deregisterService method.\n");
-	debug_printf("AgentId: %u\n", retriveAgentId());
-	dj_exec_stackPushShort(static_cast<uint16_t>(true));
+	bool ret = node->deregisterService(retriveAgentId(), service);
+	dj_exec_stackPushShort(static_cast<uint16_t>(ret));
 }
 
 

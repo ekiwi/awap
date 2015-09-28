@@ -41,6 +41,12 @@ public:
 	String(const dj_di_pointer data, uint16_t length) : ostfriesentee::String(data, length) {}
 };
 
+static inline void assert(const bool expression, Panic panic) {
+	if(!expression) {
+		Runtime::panic(Panic::NotInitialized);
+	}
+}
+
 } // namespace awap
 
 #endif // UTIL_HPP
