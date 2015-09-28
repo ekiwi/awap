@@ -21,12 +21,21 @@ extern size_t di_temperature_agent_size;
 extern unsigned char di_consumer_agent_data[];
 extern size_t di_consumer_agent_size;
 
+namespace awap {
+void updateRuntime();
+}
+
 int main() {
 	XPCC_LOG_INFO << XPCC_FILE_INFO << "Awap Mote Runtime" << xpcc::endl;
 
 	Awap::init(0);
 	Awap::loadAgent(di_temperature_agent_data, di_temperature_agent_size);
 	Awap::loadAgent(di_consumer_agent_data, di_consumer_agent_size);
+
+	while(true) {
+		awap::updateRuntime();
+		sleep(1);
+	}
 
 	return 0;
 }

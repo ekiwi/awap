@@ -10,6 +10,7 @@
 #include <awap_panics.hpp>
 #include <xpcc/architecture.hpp>
 #include <xpcc/debug/logger.hpp>
+#include <xpcc/processing/timer.hpp>
 // Set the log level
 #undef	XPCC_LOG_LEVEL
 #define	XPCC_LOG_LEVEL xpcc::log::DEBUG
@@ -47,10 +48,38 @@ void Runtime::write(const char *buf, size_t nbyte)
 	}
 }
 
+struct TimeoutTouple {
+	xpcc::Timeout timeout;
+	uint32_t data;
+	bool used = false;
+};
+
+static TimeoutTouple timeouts[100];
+
 void Runtime::registerTimeout(uint32_t milliseconds, uint32_t id)
 {
 	XPCC_LOG_DEBUG << XPCC_FILE_INFO << "New timeout will expire in "
 		<< milliseconds << "ms" << xpcc::endl;
+	for(auto& timeout : timeouts) {
+		if(!timeout.used) {
+			timeout.used = true;
+			timeout.data = id;
+			timeout.timeout.restart(milliseconds);
+			break;
+		}
+	}
+}
+
+// needs to be called periodically
+void updateRuntime() {
+	// check timeouts
+	for(auto& timeout : timeouts) {
+		if(timeout.used && timeout.timeout.execute()) {
+			XPCC_LOG_DEBUG << XPCC_FILE_INFO << "A timeout expired..." << xpcc::endl;
+			Awap::timeoutExpired(timeout.data);
+			timeout.used = false;
+		}
+	}
 }
 
 }
