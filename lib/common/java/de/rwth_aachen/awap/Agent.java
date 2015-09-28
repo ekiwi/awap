@@ -11,19 +11,19 @@ package de.rwth_aachen.awap;
 import java.util.ArrayList;
 
 public abstract class Agent {
-	private byte id;
+	private int id;
 	private ArrayList<LocalService> services = new ArrayList<LocalService>();
 	public AbstractNode node;
 
 	/**
 	 * will be called immediately after the constructor
 	 */
-	public void init(byte id, AbstractNode node) {
+	public void init(int id, AbstractNode node) {
 		this.id = id;
 		this.node = node;
 	}
 
-	public byte getId() {
+	public int getId() {
 		return id;
 	}
 
