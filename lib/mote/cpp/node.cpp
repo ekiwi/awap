@@ -60,7 +60,7 @@ Node::sendBroadcast(AgentId agent, ref_t broadcastMessage)
 }
 
 void
-Node::requestWakeUp(AgentId agent, uint32_t milliseconds, ref_t obj)
+Node::requestWakeUp(AgentId agent, uint32_t milliseconds, uint16_t obj)
 {
 	// TODO!
 }
