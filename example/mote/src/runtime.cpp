@@ -7,7 +7,7 @@
  */
 
 #include <awap.hpp>
-#include <awap_panics.hpp>
+#include <awap_errors.hpp>
 #include <xpcc/architecture.hpp>
 #include <xpcc/debug/logger.hpp>
 #include <xpcc/processing/timer.hpp>
@@ -33,6 +33,12 @@ void Runtime::panic(Panic panic)
 	XPCC_LOG_ERROR << XPCC_FILE_INFO << "Panic: "
 		<< getPanicDescription(panic) << xpcc::endl;
 	exit(-1);
+}
+
+void Runtime::warn(Warning warn)
+{
+	XPCC_LOG_WARNING << XPCC_FILE_INFO
+		<< getWarningDescription(warn) << xpcc::endl;
 }
 
 int Runtime::debugPrintF(const char *fmt, va_list args)

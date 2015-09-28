@@ -35,6 +35,10 @@ enum class Panic {
 	JavaUnknown,
 };
 
+enum class Warning {
+	TimeoutExpiredInvalidAgentId,
+};
+
 //----------------------------------------------------------------------------
 // class that implements methofs that need to be called by the runtime
 //----------------------------------------------------------------------------
@@ -72,6 +76,9 @@ public:
 
 	/// called by awap if a fatal, unrecoverable failure happens
 	static void panic(Panic panic);
+
+	/// called when a unpredicted, but recoverable error happens
+	static void warn(Warning warn);
 
 	/// called by awap for debug output
 	static int debugPrintF(const char *fmt, va_list args);

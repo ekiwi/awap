@@ -6,12 +6,13 @@
  * This file is part of awap.
  */
 
-#ifndef AWAP_PANICS_HPP
-#define AWAP_PANICS_HPP
+#ifndef AWAP_ERRORS_HPP
+#define AWAP_ERRORS_HPP
 
 #include <awap.hpp>
 
-// This headerfile makes it possible to translate awap panic codes to strings.
+// This headerfile makes it possible to translate awap panic
+// and warning codes to strings.
 
 namespace awap {
 
@@ -45,6 +46,16 @@ static inline const char* getPanicDescription(Panic panic)
 	}
 }
 
+static inline const char* getWarningDescription(Warning warn)
+{
+	switch(warn) {
+	case Warning::TimeoutExpiredInvalidAgentId:
+		return "Node::timeoutExpired: agent could not found found!";
+	default:
+		return "Unknown Warning";
+	}
+}
+
 } // namespace awap
 
-#endif // AWAP_PANICS_HPP
+#endif // AWAP_ERRORS_HPP

@@ -47,6 +47,12 @@ static inline void assert(const bool expression, Panic panic) {
 	}
 }
 
+static inline void assert(const bool expression, Warning warn) {
+	if(!expression) {
+		Runtime::warn(warn);
+	}
+}
+
 } // namespace awap
 
 #endif // UTIL_HPP
