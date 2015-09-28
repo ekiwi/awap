@@ -8,43 +8,49 @@
 
 #include <awap.hpp>
 #include <awap_panics.hpp>
-#include <iostream>
-#include <time.h>
-#include <stdarg.h>
+#include <xpcc/architecture.hpp>
+#include <xpcc/debug/logger.hpp>
+// Set the log level
+#undef	XPCC_LOG_LEVEL
+#define	XPCC_LOG_LEVEL xpcc::log::DEBUG
 
 namespace awap {
 
 void Runtime::send(const NodeAddress receiver,
 		const uint8_t* content, const size_t length)
 {
-	std::cout << "trying to send out packet" << std::endl;
+	XPCC_LOG_DEBUG << XPCC_FILE_INFO << "trying to send out packet" << xpcc::endl;
 }
 
 uint32_t Runtime::getMilliseconds()
 {
-	return clock() / (CLOCKS_PER_SEC / 1000);
+	return xpcc::Clock::now().getTime();
 }
 
 void Runtime::panic(Panic panic)
 {
-	std::cout << "Panic: " << getPanicDescription(panic) << std::endl;
+	XPCC_LOG_ERROR << XPCC_FILE_INFO << "Panic: "
+		<< getPanicDescription(panic) << xpcc::endl;
 	exit(-1);
 }
 
 int Runtime::debugPrintF(const char *fmt, va_list args)
 {
-	vprintf(fmt, args);
+	XPCC_LOG_DEBUG.printf(fmt, args);
 	return 0;
 }
 
 void Runtime::write(const char *buf, size_t nbyte)
 {
-	std::cout.write(buf, nbyte);
+	for(size_t ii = 0; ii < nbyte; ++ii) {
+		XPCC_LOG_INFO.write(buf[ii]);
+	}
 }
 
 void Runtime::registerTimeout(uint32_t milliseconds, uint32_t id)
 {
-	std::cout << "New timeout will expire in " << milliseconds << "ms" << std::endl;
+	XPCC_LOG_DEBUG << XPCC_FILE_INFO << "New timeout will expire in "
+		<< milliseconds << "ms" << xpcc::endl;
 }
 
 }

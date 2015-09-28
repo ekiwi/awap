@@ -7,7 +7,12 @@
  */
 
 #include <awap.hpp>
-#include <iostream>
+#include <xpcc/architecture.hpp>
+#include <xpcc/debug/logger.hpp>
+
+// Set the log level
+#undef	XPCC_LOG_LEVEL
+#define	XPCC_LOG_LEVEL xpcc::log::DEBUG
 
 using namespace awap;
 
@@ -17,7 +22,7 @@ extern unsigned char di_consumer_agent_data[];
 extern size_t di_consumer_agent_size;
 
 int main() {
-	std::cout << "Awap Mote Runtime" << std::endl;
+	XPCC_LOG_INFO << XPCC_FILE_INFO << "Awap Mote Runtime" << xpcc::endl;
 
 	Awap::init(0);
 	Awap::loadAgent(di_temperature_agent_data, di_temperature_agent_size);
