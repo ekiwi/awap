@@ -12,9 +12,8 @@
 #include <cstddef>
 #include <cstring>	// std::strlen
 #include <type_traits>	// std::is_integral
-
 #include <hpp/ostfriesentee.hpp>	// ostfriesentee::String
-
+#include <awap.hpp>		// Runtime::panic, Runtime::warn
 #include <util/slice.hpp>
 
 namespace awap {

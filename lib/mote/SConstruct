@@ -21,7 +21,7 @@ libmote = env.SConscript(env['AWAP_LIB_MOTE'], exports = 'env')
 env.Alias('libmote', libmote)
 
 # unittests
-xpcc_env = Environment(toolpath = [xpcc_tools], tools = ['xpcc'], configfile = 'unittest_hosted.cfg')
+xpcc_env = Environment(toolpath = [xpcc_tools], tools = ['xpcc'], configfile = 'unittest/unittest_hosted.cfg')
 xpcc_env.XpccLibrary()
 files = xpcc_env.FindFiles(path=['cpp'], unittest=True)
 # declare a file which later runs all the tests
@@ -34,6 +34,7 @@ runner = xpcc_env.UnittestRunner(target = xpcc_env.Buildpath('runner.cpp'),
 source = [runner] + libmote + xpcc_env.Glob('cpp/test/*.cpp')
 # copy libmote include path
 xpcc_env.Append(CPPPATH = env['CPPPATH'])
+xpcc_env.Append(CPPPATH = env['AWAP_LIB_MOTE_GENERATED_INCLUDE_PATH'])
 xpcc_env.Append(CPPPATH = 'cpp')
 program = xpcc_env.Program(target = 'build/unittest', source = source)
 env.Alias('build_unittest', program)

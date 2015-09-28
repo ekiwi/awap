@@ -12,9 +12,6 @@
 #include <common.hpp>
 #include <database.hpp>
 #include <util.hpp>
-namespace awap { template<size_t, size_t> class AgentDirectory; }
-#include <node.hpp>
-
 
 namespace awap {
 
