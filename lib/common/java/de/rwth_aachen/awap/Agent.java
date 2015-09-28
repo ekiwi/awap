@@ -13,6 +13,7 @@ import java.util.ArrayList;
 public abstract class Agent {
 	private int id;
 	private ArrayList<LocalService> services = new ArrayList<LocalService>();
+	private ArrayList<Object> callbackObjects = new ArrayList<Object>();
 	public AbstractNode node;
 
 	/**
@@ -48,13 +49,37 @@ public abstract class Agent {
 	 */
 	public abstract void setup();
 
-	protected void requestWakeUp(int milliseconds) {
-		this.requestWakeUp(milliseconds, null);
+	protected final void requestWakeUp(int milliseconds) {
+		// 0xff always means null
+		this.node.requestWakeUp(milliseconds, (byte)0xff);
 	}
 
 
-	protected void requestWakeUp(int milliseconds, Object obj) {
-		this.node.requestWakeUp(milliseconds, obj);
+	protected final void requestWakeUp(int milliseconds, Object obj) {
+		// put obj into array list
+		// check if there are empty spots
+		for(short ii = 0; ii < callbackObjects.size(); ++ii) {
+			if(callbackObjects.get(ii) == null) {
+				callbackObjects.set(ii, obj);
+				this.node.requestWakeUp(milliseconds, (byte)ii);
+				return;
+			}
+		}
+		// if not insert at the end
+		callbackObjects.add(obj);
+		this.node.requestWakeUp(milliseconds, (byte)(callbackObjects.size()-1));
+	}
+
+	public final void wakeUp(byte index) {
+		if(index == (byte)0xff) {
+			this.onWakeUp(null);
+		} else {
+			// retrieve object
+			Object obj = callbackObjects.get(index);
+			callbackObjects.set(index, null);
+			// call agent
+			this.onWakeUp(obj);
+		}
 	}
 
 	/**

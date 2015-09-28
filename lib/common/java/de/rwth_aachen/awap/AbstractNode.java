@@ -26,5 +26,5 @@ public abstract class AbstractNode {
 	 */
 	public abstract boolean deregisterService(LocalService service);
 
-	public abstract void requestWakeUp(int milliseconds, Object obj);
+	public abstract void requestWakeUp(int milliseconds, byte index);
 }

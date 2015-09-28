@@ -137,7 +137,7 @@ void de_rwth_aachen_awap_mote_NodeAdapter_void_send_de_rwth_aachen_awap_Broadcas
 
 // void de.rwth_aachen.awap.mote.NodeAdapter.requestWakeUp(int, java.lang.Object)
 extern "C"
-void de_rwth_aachen_awap_mote_NodeAdapter_void_requestWakeUpWithIndex_int_short()
+void de_rwth_aachen_awap_mote_NodeAdapter_void_requestWakeUp_int_byte()
 {
 	assert(node != nullptr, Panic::NotInitialized);
 	uint16_t obj = dj_exec_stackPopShort();
