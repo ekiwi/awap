@@ -10,7 +10,7 @@
 #include "message_parser.hpp"
 #include <hpp/ostfriesentee.hpp>
 #include <jlib_awap-common.hpp>
-
+#include "messages.hpp"
 
 namespace awap {
 namespace generated {
