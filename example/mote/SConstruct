@@ -13,6 +13,8 @@ import os
 path_awap_root = os.path.abspath('../..')
 # path to awap scons tools
 path_awap_scons = os.path.join(path_awap_root, 'scons')
+# path to the xpcc scons tools
+path_xpcc_scons = os.path.join(path_awap_root, 'ext', 'xpcc', 'scons', 'site_tools')
 
 
 # create the scons environment which contains the custom awap build tools
@@ -26,40 +28,37 @@ env['AWAP_JADE_JAR'] = os.path.abspath(os.path.join(path_awap_root, '..', 'jade-
 # build awap configuration
 env.Architecture('amd64')
 env.Awap(configuration = '../configuration.xml')
-
-# build local source
-env.VariantDir(variant_dir='build', src_dir='src')
-
-# flags for C and C++
-env['CCFLAGS'] = [
-	"-Os",
-	"-gdwarf-3",
-	"-Wall",
-	"-Werror=maybe-uninitialized",
-	"-Wformat",
-	"-Wextra",
-	"-Wundef",
-	"-Winit-self",
-	"-Wcast-qual",
-	"-Wpointer-arith",
-	"-Wunused",
-	"-fdiagnostics-color=auto",
-]
-
-# C++ flags
-env['CXXFLAGS'] = [
-	"-std=c++14",
-	"-Woverloaded-virtual",
-	"-Wnon-virtual-dtor",
-#	"-Weffc++",
-]
-
 libmote_a = env['AWAP_LIB_MOTE_A']
-env.Append(CPPPATH = env['AWAP_LIB_MOTE_INCLUDE'])
-source = env.Glob('build/*.cpp') + [libmote_a]
-source += env.AgentCArray("build/di_temperature_agent.c", "TemperatureSensor")
-source += env.AgentCArray("build/di_consumer_agent.c", "SimpleTemperatureConsumer")
-mote = env.Program('build/mote', source)
+libmote_include = env['AWAP_LIB_MOTE_INCLUDE']
+
+# turn argents into c file using the awap environemnt
+sources  = libmote_a
+sources += env.AgentCArray("build/di_temperature_agent.c", "TemperatureSensor")
+sources += env.AgentCArray("build/di_consumer_agent.c", "SimpleTemperatureConsumer")
+
+# build local source using xpcc
+env = Environment(tools = ['xpcc'], toolpath = [path_xpcc_scons])
+
+# HACK: main sources need to be first in source list, in order to avoid linker
+#       problems
+sources = env.FindFiles('src').sources + sources
+env.Append(CPPPATH = libmote_include)
+
+# debug build
+env['CXXFLAGS'].append("-O0")
+env['CXXFLAGS'].append("-g")
+
+# build the program
+print(env['XPCC_CONFIG']['general']['name'])
+mote = env.Program(target = env['XPCC_CONFIG']['general']['name'], source = sources)
+
+# build the xpcc library
+env.XpccLibrary()
+
+# create a file called 'defines.hpp' with all preprocessor defines if necessary
+env.Defines()
+
+# run alias
 env.Alias('mote.run', env.Command('run_mote', mote, '{} {}'.format(mote[0].abspath, "")))
 
 env.Default('mote.run')
