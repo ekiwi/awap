@@ -47,9 +47,12 @@ static inline void assert(const bool expression, Panic panic) {
 	}
 }
 
-static inline void assert(const bool expression, Warning warn) {
+static inline bool check(const bool expression, Warning warn) {
 	if(!expression) {
 		Runtime::warn(warn);
+		return false;
+	} else {
+		return true;
 	}
 }
 

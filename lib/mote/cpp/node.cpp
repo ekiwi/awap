@@ -52,8 +52,9 @@ Node::timeoutExpired(uint32_t id)
 {
 	uint16_t obj  = static_cast<uint16_t>(id & 0xffff);
 	AgentId agent = static_cast<uint16_t>((id >> 16) & 0xffff);
-	assert(validAgent(agent), Warning::TimeoutExpiredInvalidAgentId);
-	agents[agent]->timeoutExpired(obj);
+	if(check(validAgent(agent), Warning::TimeoutExpiredInvalidAgentId)) {
+		agents[agent]->timeoutExpired(obj);
+	}
 }
 
 void
