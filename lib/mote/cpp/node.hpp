@@ -32,6 +32,7 @@ public:
 
 	void loadAgent(const uint8_t* content, const size_t length);
 	void receive(const NodeAddress sender, const uint8_t* content, const size_t length);
+	void timeoutExpired(uint32_t id);
 
 	// node interface methods
 	void send(AgentId agent, ref_t message);

@@ -47,6 +47,9 @@ public:
 	static void receive(const NodeAddress sender,
 			const uint8_t* content, const size_t length);
 
+	/// needs to be called when a timeout has elapsed
+	static void timeoutExpired(uint32_t id);
+
 	/// for testing: load an agent
 	static void loadAgent(const uint8_t* content, const size_t length);
 };
@@ -75,6 +78,9 @@ public:
 
 	/// write characters to standard output
 	static void write(const char *buf, size_t nbyte);
+
+	/// after `milliseconds` Awap::timeoutExpired(id) needs to be called
+	static void registerTimeout(uint32_t milliseconds, uint32_t id);
 };
 
 } // namespace awap

@@ -97,6 +97,11 @@ void Awap::loadAgent(const uint8_t* content, const size_t length )
 	node->loadAgent(content, length);
 }
 
+void Awap::timeoutExpired(uint32_t id)
+{
+	assert(node != nullptr, Panic::NotInitialized);
+	node->timeoutExpired(id);
+}
 //----------------------------------------------------------------------------
 // awap-mote infusion native functions
 extern "C"
@@ -135,8 +140,8 @@ extern "C"
 void de_rwth_aachen_awap_mote_NodeAdapter_void_requestWakeUpWithIndex_int_short()
 {
 	assert(node != nullptr, Panic::NotInitialized);
-	uint32_t milliseconds = dj_exec_stackPopInt();
 	uint16_t obj = dj_exec_stackPopShort();
+	uint32_t milliseconds = dj_exec_stackPopInt();
 	node->requestWakeUp(retriveAgentId(), milliseconds, obj);
 }
 

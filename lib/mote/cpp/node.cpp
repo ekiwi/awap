@@ -48,6 +48,14 @@ Node::receive(const NodeAddress sender, const uint8_t* content, const size_t len
 }
 
 void
+Node::timeoutExpired(uint32_t id)
+{
+	uint16_t obj  = static_cast<uint16_t>(id & 0xffff);
+	AgentId agent = static_cast<uint16_t>((id >> 16) & 0xffff);
+	// TODO: call node adapter
+}
+
+void
 Node::send(AgentId agent, ref_t message)
 {
 	// TODO!
@@ -62,7 +70,8 @@ Node::sendBroadcast(AgentId agent, ref_t broadcastMessage)
 void
 Node::requestWakeUp(AgentId agent, uint32_t milliseconds, uint16_t obj)
 {
-	// TODO!
+	const uint32_t id = obj | (static_cast<uint32_t>(agent) << 16);
+	Runtime::registerTimeout(milliseconds, id);
 }
 
 bool

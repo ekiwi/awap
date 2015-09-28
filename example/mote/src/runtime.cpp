@@ -42,4 +42,9 @@ void Runtime::write(const char *buf, size_t nbyte)
 	std::cout.write(buf, nbyte);
 }
 
+void Runtime::registerTimeout(uint32_t milliseconds, uint32_t id)
+{
+	std::cout << "New timeout will expire in " << milliseconds << "ms" << std::endl;
+}
+
 }
