@@ -35,7 +35,10 @@ def load_awap_confguration_method(env, configuration):
 		full_name = "{}.{}".format(service.module.name, service.name)
 		env['AWAP_SERVICE_NAMES'].append(full_name)
 	# TODO: enums
-	agents = [env.LoadAgent(agent.get("name")) for agent in root.find("agents")]
+	if root.find("agents"):
+		agents = [env.LoadAgent(agent.get("name")) for agent in root.find("agents")]
+	else:
+		agents = []
 	# at the end of this method, the communication has to be complete!
 	pp = env['AWAP_COMMUNICATION_PARSER']
 	env['AWAP_COMMUNICATION_DICT'] = pp.get_dict(env['AWAP_SERVICE_NAMES'], enum_names)
