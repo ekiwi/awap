@@ -43,7 +43,7 @@ public:
 
 static inline void assert(const bool expression, Panic panic) {
 	if(!expression) {
-		Runtime::panic(Panic::NotInitialized);
+		Runtime::panic(panic);
 	}
 }
 
