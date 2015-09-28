@@ -27,23 +27,28 @@ void setAwapCommonInfusion(ostfriesentee::Infusion& inf) {
 ref_t {{service.name}}::createJava_{{ msg.name }}(const Slice<uint8_t> data)
 {
 	using Message = ::awap::generated::message::{{ service.name }}::{{ msg.name }};
+		%% if msg.fields|length == 0
+	Message::JavaClass obj(awapCommonInfusion);
+	// WARN: needs to be handed to java code before any java memory is allocated
+	//       or else it will be garbage collected!
+	return obj.getRef();
+		%% else
 	if(check(Message::Bytes > data.length, Warning::MessageParserTooShort)) {
 		// create java object
 		Message::JavaClass obj(awapCommonInfusion);
-		%% if msg.fields|length > 0
 		// this is safe, because we checked the length above
 		auto structured_data = reinterpret_cast<Message*>(data.data);
 		auto java_data = obj.getUnderlying();
-			%% for field in msg.fields
+		%% for field in msg.fields
 		java_data->{{ field.name }} = structured_data->{{ field.name }};
-			%% endfor
-		%% endif
+		%% endfor
 		// WARN: needs to be handed to java code before any java memory is allocated
 		//       or else it will be garbage collected!
 		return obj.getRef();
 	} else {
 		return 0;	// error
 	}
+		%% endif
 }
 
 	%% endfor
