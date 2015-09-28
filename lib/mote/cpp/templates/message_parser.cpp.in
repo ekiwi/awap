@@ -16,11 +16,34 @@ namespace awap {
 namespace generated {
 namespace MessageParserFactory {
 
+static ostfriesentee::Infusion awapCommonInfusion{nullptr};
+void setAwapCommonInfusion(ostfriesentee::Infusion& inf) {
+	awapCommonInfusion = inf;
+	dj_mem_addSafePointer((void**)&awapCommonInfusion);
+}
+
 %% for service in services
 	%% for msg in service.messages
 ref_t {{service.name}}::createJava_{{ msg.name }}(const Slice<uint8_t> data)
 {
-	return 0;
+	using Message = ::awap::generated::message::{{ service.name }}::{{ msg.name }};
+	if(check(Message::Bytes > data.length, Warning::MessageParserTooShort)) {
+		// create java object
+		Message::JavaClass obj(awapCommonInfusion);
+		%% if msg.fields|length > 0
+		// this is safe, because we checked the length above
+		auto structured_data = reinterpret_cast<Message*>(data.data);
+		auto java_data = obj.getUnderlying();
+			%% for field in msg.fields
+		java_data->{{ field.name }} = structured_data->{{ field.name }};
+			%% endfor
+		%% endif
+		// WARN: needs to be handed to java code before any java memory is allocated
+		//       or else it will be garbage collected!
+		return obj.getRef();
+	} else {
+		return 0;	// error
+	}
 }
 
 	%% endfor

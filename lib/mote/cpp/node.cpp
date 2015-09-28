@@ -8,12 +8,14 @@
 
 #include "node.hpp"
 #include <util.hpp>
+#include <generated/message_parser.hpp>
 
 namespace awap {
 
 Node::Node(ostfriesentee::Vm& vm, ostfriesentee::Infusion& awapCommon, ostfriesentee::Infusion& awapMote, const NodeAddress nodeAddress)
 	: vm(vm), awapCommon(awapCommon), awapMote(awapMote), address(nodeAddress)
 {
+	awap::generated::MessageParserFactory::setAwapCommonInfusion(awapCommon);
 }
 
 Node::~Node()

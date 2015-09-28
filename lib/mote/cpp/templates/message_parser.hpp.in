@@ -27,6 +27,9 @@ struct MessageParser {
 namespace generated {
 namespace MessageParserFactory {
 
+/// needs to be called before the message parser can be used
+void setAwapCommonInfusion(ostfriesentee::Infusion& inf);
+
 %% for service in services
 class {{ service.name }} {
 	static constexpr uint8_t MessageIdBits = {{ service.message_id_size }};

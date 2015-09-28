@@ -26,13 +26,18 @@ using {{ enum.name }} = {{ enum.cpp.type }};
 namespace {{ service.name }} {
 	%% for msg in service.messages
 struct {{ msg.name }} {
+		%% set bytes = (msg.size / 8.0)|round(0, 'ceil')|int
 	using JavaClass = ::de::rwth_aachen::awap::messages::{{ service.name }}::{{ msg.name }};
 	static constexpr size_t Bits = {{ msg.size }};
-	static constexpr size_t Bytes = {{ (msg.size / 8.0)|round(0, 'ceil')|int }};
+	static constexpr size_t Bytes = {{ bytes }};
 		%% for field in msg.fields
 	{{ field.cpp.type }} {{ field.name }} : {{ field.size }};
 		%% endfor
-};	// struct {{msg.name}}
+} __attribute__((packed));	// struct {{msg.name}}
+		%% if bytes > 0
+static_assert(sizeof({{ msg.name }}) == {{ bytes }},
+	"sizeof({{ msg.name }}) needs to be {{ bytes }} bytes!");
+		%% endif
 
 	%% endfor
 } // namespace {{ service.name }}
