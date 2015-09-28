@@ -26,6 +26,9 @@ public:
 	~Agent();
 
 	void setup();
+	void timeoutExpired(uint16_t obj) {
+		agent.wakeUp(static_cast<int8_t>(obj));
+	}
 
 private:
 	Agent(Node& node, uint8_t localAgentId, ostfriesentee::Infusion& inf, uint8_t agentClassId, uint8_t* infusionData);
