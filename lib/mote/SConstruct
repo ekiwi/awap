@@ -11,13 +11,13 @@ xpcc_tools = os.path.join(xpcc_root, 'scons', 'site_tools')
 
 env = Environment(toolpath = [os.path.join(awap_root, 'scons')], tools = ['awap'])
 
+env.Architecture('amd64')
 # use unittest configuration to build lib
 env.AppendUnique(AWAP_AGENT_PATH = os.path.join('unittest', 'agents'))
 env.AppendUnique(AWAP_COMMUNICATION_PATH = os.path.join('unittest', 'communication'))
 env.LoadAwapConfiguration(os.path.join('unittest', 'configuration.xml'))
 env.Alias('awap-common', env.SConscript(env['AWAP_LIB_COMMON'], exports = 'env'))
 
-env.Architecture('amd64')
 libmote = env.SConscript(env['AWAP_LIB_MOTE'], exports = 'env')
 env.Alias('libmote', libmote)
 
@@ -32,7 +32,10 @@ runner = xpcc_env.UnittestRunner(target = xpcc_env.Buildpath('runner.cpp'),
 							template = template)
 # we only compile the unittest sources in cpp/test/*.cpp
 # the other files will be compiled to libmote and linked later
-source = [runner] + libmote + files.sources
+source  = files.sources + runner
+source += xpcc_env.FindFiles(path=['unittest'], unittest=False).sources
+source += env['AWAP_LIB_MOTE_A']
+
 # copy libmote include path
 xpcc_env.Append(CPPPATH = env['CPPPATH'])
 xpcc_env.Append(CPPPATH = env['AWAP_LIB_MOTE_GENERATED_INCLUDE_PATH'])
