@@ -13,5 +13,5 @@ class MessageParserTest : public unittest::TestSuite
 {
 public:
   	void setUp();
-	void testParseMessage();
+	void testSimpleUInt32Message();
 };

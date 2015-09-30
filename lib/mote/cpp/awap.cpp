@@ -102,6 +102,15 @@ void Awap::timeoutExpired(uint32_t id)
 	assert(node != nullptr, Panic::NotInitialized);
 	node->timeoutExpired(id);
 }
+
+//----------------------------------------------------------------------------
+// debug/unittest functions
+namespace debug {
+ostfriesentee::Infusion& getAwapCommonInfusion() {
+	assert(node != nullptr, Panic::NotInitialized);
+	return node->getAwapCommon();
+}
+}
 //----------------------------------------------------------------------------
 // awap-mote infusion native functions
 extern "C"

@@ -9,6 +9,6 @@ This file is part of awap.
 <awap-configuration version="0.1" name="Unittest">
 	<!-- max-id is needed for domain facilitator table field size -->
 	<services max-id="7">
-		<service module="service.temperature"   name="TemperatureService"  id="0" />
+		<service module="service.message_test"   name="MessageTestService"  id="0" />
 	</services>
 </awap-configuration>
