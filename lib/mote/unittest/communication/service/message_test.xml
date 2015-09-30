@@ -15,7 +15,10 @@ This file is part of awap.
 		<message name="SimpleUInt32Message" direction="rx" performative="INFORM" id="1" >
 			<int name="uint_value" size="32" />
 		</message>
-		<message name="EnumMessage" direction="rx" performative="INFORM" id="2" >
+		<message name="SimpleUInt12Message" direction="rx" performative="INFORM" id="2" >
+			<int name="uint_value" size="12" />
+		</message>
+		<message name="EnumMessage" direction="rx" performative="INFORM" id="3" >
 			<enum name="enum_value" class="Building" />
 		</message>
 	</messages>
