@@ -35,6 +35,12 @@ def determine_max_id(mod, ee, max_id_found):
 	elif max_id is not None:
 		return int(max_id)
 
+def number_of_bits_from_maxid(maxid):
+	if maxid == 0:
+		return 0
+	else:
+		return int(math.log(maxid,2) + 1)
+
 class ParserException(Exception):
 	def __init__(self, file, element, message):
 		with open(file) as ff:
@@ -85,9 +91,11 @@ class Service(NamedCommunicationElement):
 		max_id_found = max([msg.id for msg in self.messages])
 		self.max_message_id = determine_max_id(self.mod, messages, max_id_found)
 		self.mod.passert(node, self.max_message_id >= max_id_found,
-			'Found id "{}", but the maximum id is "{}"!'.format(max_id_found, self.max_message_id))
+			'Found id "{}", but the maximum message id is "{}"!'.format(max_id_found, self.max_message_id))
 
 		properties = node.find("properties")
+		if properties is None:
+			properties = []
 		for prop_ee in properties:
 			if prop_ee.tag in ['int', 'uint']:
 				self.properties.append(IntProperty(self, prop_ee))
@@ -97,11 +105,13 @@ class Service(NamedCommunicationElement):
 				self.properties.append(BooleanProperty(self, prop_ee))
 		if len(self.properties) > 0:
 			max_id_found = max([prop.id for prop in self.properties])
+			self.max_property_id = determine_max_id(self.mod, properties, max_id_found)
 		else:
 			max_id_found = 0
-		self.max_property_id = determine_max_id(self.mod, properties, max_id_found)
+			self.max_property_id = 0
+
 		self.mod.passert(node, self.max_property_id >= max_id_found,
-			'Found id "{}", but the maximum id is "{}"!'.format(max_id_found, self.max_property_id))
+			'Found id "{}", but the maximum property id is "{}"!'.format(max_id_found, self.max_property_id))
 
 	def to_dict(self):
 		dd = super(Service, self).to_dict()
@@ -109,10 +119,10 @@ class Service(NamedCommunicationElement):
 			dd['id'] = self.id
 		dd['messages']   = [msg.to_dict()  for msg  in self.messages]
 		dd['max_message_id']  = self.max_message_id
-		dd['message_id_size'] = int(math.log(self.max_message_id,2) + 1)
+		dd['message_id_size'] = number_of_bits_from_maxid(self.max_message_id)
 		dd['properties'] = [prop.to_dict() for prop in self.properties]
 		dd['max_property_id']  = self.max_property_id
-		dd['property_id_size'] = int(math.log(self.max_property_id,2) + 1)
+		dd['property_id_size'] = number_of_bits_from_maxid(self.max_property_id)
 		dd['property_bit_count'] = sum(pp.size for pp in self.properties)
 		if len(self.properties) > 0:
 			java = ["{} {}".format(prop.java_type, camelCase(prop.name)) for prop in self.properties]
