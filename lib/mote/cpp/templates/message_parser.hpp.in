@@ -43,7 +43,7 @@ public:
 	%% endfor
 
 	static const MessageParser getMessageParser(const Slice<const uint8_t> data) {
-		Slice<const uint8_t> input = data.sub(1);
+		Slice<const uint8_t> input = data.sub(0,1);
 		if(input.isEmpty()) return { 0, nullptr };	// Error
 		const uint8_t messageId = (input.data[0] & MessageIdMask) >> MessageIdOffset;
 
