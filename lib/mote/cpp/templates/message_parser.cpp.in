@@ -56,18 +56,19 @@ ref_t {{service.name}}::createJava_{{ msg.name }}(const Slice<const uint8_t> dat
 }
 
 		%% if msg.fields|length == 0
-size_t {{service.name}}::fromJava_{{ msg.name }}(ref_t /*obj*/, const Slice<uint8_t> /*output*/)
-{
-	return 0;	// this message does have any content
-}
+size_t {{service.name}}::fromJava_{{ msg.name }}(ref_t /*obj*/, const Slice<uint8_t> output)
 		%% else
 size_t {{service.name}}::fromJava_{{ msg.name }}(ref_t obj, const Slice<uint8_t> output)
+		%% endif
 {
 	using Message = ::awap::generated::message::{{ service.name }}::{{ msg.name }};
 	if(check(Message::Bytes <= output.length, Warning::MessageParserOutputTooSmall)) {
+		%% if msg.fields|length > 0
 		auto java_data = static_cast<const Message::JavaClass::UnderlyingType*>(REF_TO_VOIDP(obj));
+		%% endif
 		// this is safe, because we checked the length above
 		auto structured_data = reinterpret_cast<Message*>(output.data);
+		structured_data->id = Message::Id;
 		%% for field in msg.fields
 		structured_data->{{ field.name }} = java_data->{{ field.name }};
 		%% endfor
@@ -76,7 +77,7 @@ size_t {{service.name}}::fromJava_{{ msg.name }}(ref_t obj, const Slice<uint8_t>
 		return 0;	// error, zero bits written
 	}
 }
-		%% endif
+
 	%% endfor
 %% endfor
 
