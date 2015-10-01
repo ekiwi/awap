@@ -27,15 +27,20 @@ MessageParserTest::testSimpleUInt32Message()
 
 	{
 		// prepare SimpleUInt32Message body
-		uint8_t msg[4] = { 0x78, 0x56, 0x34, 0x12 };
+		uint8_t msg[5] = { 0x80, 0x67, 0x45, 0x23, 0x01 };
 
 		// parse to Java Object
 		ref_t obj = Service::createJava_SimpleUInt32Message(slice(msg));
 		TEST_ASSERT_FALSE(obj == 0);
+		auto obj_uint_raw = *static_cast<uint32_t*>(REF_TO_VOIDP(obj));
+		TEST_ASSERT_EQUALS(obj_uint_raw, 0x12345678u);
 
 		// test that 32bits were read
-		uint8_t out[4];
-		TEST_ASSERT_EQUALS(Service::fromJava_SimpleUInt32Message(obj, slice(out)), 32u);
+		uint8_t out[5] = { 0, 0, 0, 0, 0 };
+		// 32bit payload + 4bit message id
+		TEST_ASSERT_EQUALS(Service::fromJava_SimpleUInt32Message(obj, slice(out)), 36u);
+		// message id is 1 and should be set by the `fromJava` method
+		msg[0] |= 1;
 		TEST_ASSERT_EQUALS_ARRAY(msg, out, slice(msg).length);
 	}
 
@@ -47,8 +52,9 @@ MessageParserTest::testSimpleUInt32Message()
 		raw->uint_value = -57343298;
 
 		// to message...
-		uint8_t msg[4];
-		TEST_ASSERT_EQUALS(Service::fromJava_SimpleUInt32Message(obj.getRef(), slice(msg)), 32u);
+		uint8_t msg[5];
+		// 32bit payload + 4bit message id
+		TEST_ASSERT_EQUALS(Service::fromJava_SimpleUInt32Message(obj.getRef(), slice(msg)), 36u);
 		// ...and back
 		ref_t out = Service::createJava_SimpleUInt32Message(slice(msg));
 		TEST_ASSERT_FALSE(out == 0);
@@ -67,14 +73,17 @@ MessageParserTest::testSimpleUInt12Message()
 
 	{
 		// prepare SimpleUInt12Message body
-		uint8_t msg[2] = { 0x78, 0x06 };
+		uint8_t msg[2] = { 0x80, 0x076 };
 
 		// parse to Java Object
 		ref_t obj = Service::createJava_SimpleUInt12Message(slice(msg));
 		TEST_ASSERT_FALSE(obj == 0);
 
 		uint8_t out[2] = { 0, 0 };
-		TEST_ASSERT_EQUALS(Service::fromJava_SimpleUInt12Message(obj, slice(out)), 12u);
+		// 12bit payload + 4bit message id
+		TEST_ASSERT_EQUALS(Service::fromJava_SimpleUInt12Message(obj, slice(out)), 16u);
+		// message id is 2 and should be set by the `fromJava` method
+		msg[0] |= 2;
 		TEST_ASSERT_EQUALS_ARRAY(msg, out, slice(msg).length);
 	}
 
@@ -87,12 +96,13 @@ MessageParserTest::testSimpleUInt12Message()
 
 		// to message...
 		uint8_t msg[2];
-		TEST_ASSERT_EQUALS(Service::fromJava_SimpleUInt12Message(obj.getRef(), slice(msg)), 12u);
+		// 12bit payload + 4bit message id
+		TEST_ASSERT_EQUALS(Service::fromJava_SimpleUInt12Message(obj.getRef(), slice(msg)), 16u);
 		// ...and back
 		ref_t out = Service::createJava_SimpleUInt12Message(slice(msg));
 		TEST_ASSERT_FALSE(out == 0);
 
-		auto out_raw = *static_cast<int16_t*>(REF_TO_VOIDP(out));;
+		auto out_raw = *static_cast<int16_t*>(REF_TO_VOIDP(out));
 		TEST_ASSERT_EQUALS(out_raw, -1234);
 	}
 

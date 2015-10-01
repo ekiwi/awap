@@ -10,7 +10,7 @@ This file is part of awap.
 <import module="common" as="" />
 
 <service name="MessageTestService">
-	<messages max-id="7" size="3">
+	<messages max-id="15" size="4">
 		<message name="EmptyMessage" direction="rx" performative="INFORM" id="0" />
 		<message name="SimpleUInt32Message" direction="rx" performative="INFORM" id="1" >
 			<int name="uint_value" size="32" />
