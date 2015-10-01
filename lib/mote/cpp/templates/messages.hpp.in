@@ -26,10 +26,11 @@ using {{ enum.name }} = {{ enum.cpp.type }};
 namespace {{ service.name }} {
 	%% for msg in service.messages
 struct {{ msg.name }} {
-		%% set bytes = (msg.size / 8.0)|round(0, 'ceil')|int
+		%% set bytes = ((msg.size + service.message_id_size) / 8.0)|round(0, 'ceil')|int
 	using JavaClass = ::de::rwth_aachen::awap::messages::{{ service.name }}::{{ msg.name }};
 	static constexpr size_t Bits = {{ msg.size }};
 	static constexpr size_t Bytes = {{ bytes }};
+	uint32_t /* messageId */ : {{ service.message_id_size }};
 		%% for field in msg.fields
 	{{ field.cpp.type }} {{ field.name }} : {{ field.size }};
 		%% endfor
