@@ -39,6 +39,7 @@ enum class Warning {
 	TimeoutExpiredInvalidAgentId,
 	MessageParserTooShort,
 	MessageParserOutputTooSmall,
+	NodeReceiveMessageTooShort,
 };
 
 //----------------------------------------------------------------------------

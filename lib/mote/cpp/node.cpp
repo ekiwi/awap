@@ -44,9 +44,17 @@ Node::loadAgent(const uint8_t* content, const size_t length)
 }
 
 void
-Node::receive(const NodeAddress sender, const uint8_t* content, const size_t length)
+Node::receive(const NodeAddress sender, Slice<const uint8_t> content)
 {
-	// TODO!
+	if(content.length < 2) {
+		Runtime::warn(Warning::NodeReceiveMessageTooShort);
+		return;
+	}
+
+	// parse message header
+	auto header = reinterpret_cast<const CommonMessageHeader*>(content.data);
+	auto body = content.sub(2);
+	auto parser = generated::MessageParserFactory::getMessageParser(header->serviceType, body);
 }
 
 void

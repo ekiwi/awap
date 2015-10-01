@@ -53,6 +53,10 @@ static inline const char* getWarningDescription(Warning warn)
 		return "Node::timeoutExpired: agent could not found found!";
 	case Warning::MessageParserTooShort:
 		return "MessageParser: the buffer provided for the message data is too small!";
+	case Warning::MessageParserOutputTooSmall:
+		return "MessageParser: The output buffer is too small";
+	case Warning::NodeReceiveMessageTooShort:
+		return "Node::receive: The message is too short. At least 2 bytes for the header are required.";
 	default:
 		return "Unknown Warning";
 	}

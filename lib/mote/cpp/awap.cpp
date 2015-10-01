@@ -88,7 +88,7 @@ void Awap::init(const NodeAddress nodeAddress)
 void  Awap::receive(const NodeAddress sender, const uint8_t* content, const size_t length)
 {
 	assert(node != nullptr, Panic::NotInitialized);
-	node->receive(sender, content, length);
+	node->receive(sender, Slice<const uint8_t>(content, length));
 }
 
 void Awap::loadAgent(const uint8_t* content, const size_t length )

@@ -31,7 +31,7 @@ public:
 	~Node();
 
 	void loadAgent(const uint8_t* content, const size_t length);
-	void receive(const NodeAddress sender, const uint8_t* content, const size_t length);
+	void receive(const NodeAddress sender, Slice<const uint8_t> content);
 	void timeoutExpired(uint32_t id);
 
 	// node interface methods
