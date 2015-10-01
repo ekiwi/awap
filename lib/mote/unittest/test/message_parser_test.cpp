@@ -107,3 +107,25 @@ MessageParserTest::testSimpleUInt12Message()
 	}
 
 }
+
+void
+MessageParserTest::testMessageParserFactory()
+{
+	auto getMessageParser = generated::MessageParserFactory::getMessageParser;
+	using Service = generated::MessageParserFactory::MessageTestService;
+	const uint8_t MessageTestServiceId = 0;
+
+	// test with valid SimpleUInt32Message
+	{
+		uint8_t msg[5] = { 0x81, 0x67, 0x45, 0x23, 0x01 };
+		auto parser = getMessageParser(MessageTestServiceId, slice(msg));
+		TEST_ASSERT_EQUALS(parser.createJava, Service::createJava_SimpleUInt32Message);
+	}
+
+	// test with invalid SimpleUInt32Message
+	{
+		uint8_t msg[4] = { 0x81, 0x67, 0x45, 0x23 };
+		auto parser = getMessageParser(MessageTestServiceId, slice(msg));
+		TEST_ASSERT_EQUALS(parser.createJava, static_cast<void*>(nullptr));
+	}
+}
