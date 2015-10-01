@@ -19,6 +19,8 @@ template<typename T>
 struct Slice
 {
 	Slice(T* ptr, size_t len) : data(ptr), length(len) {}
+	Slice(std::remove_const<T>* ptr, size_t len) : data(ptr), length(len) {}
+	Slice(const Slice<typename std::remove_const<T>::type>& other) : data(other.data), length(other.length) {}
 
 	T* data;
 	size_t length;
@@ -47,7 +49,7 @@ struct Slice
 		size_t norm_start = normalizeIndex(start);
 		size_t norm_end   = normalizeIndex(end);
 		if(norm_start > norm_end) {
-			return Slice<T>(nullptr, 0);
+			return Slice<T>(static_cast<T*>(nullptr), 0);
 		} else {
 			return Slice<T>(data + norm_start, norm_end - norm_start);
 		}
