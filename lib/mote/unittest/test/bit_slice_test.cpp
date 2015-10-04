@@ -35,12 +35,12 @@ BitSliceTest::testStaticBitRead()
 	TEST_ASSERT_EQUALS(sl.readBits<3>(), 0b110);
 	TEST_ASSERT_EQUALS(sl.bitCount(), (arrayCount(testBytes) * 8u) - 3);
 	// byte count is always rounded down
-	TEST_ASSERT_EQUALS(sl.byteCount(), arrayCount(testBytes)) - 1u);
+	TEST_ASSERT_EQUALS(sl.byteCount(), arrayCount(testBytes) - 1u);
 	TEST_ASSERT_EQUALS(sl.readBits<2>(), 3u);
 	// read over byte boundary
 	TEST_ASSERT_EQUALS(sl.readBits<7>(), 0b0101001);
 	TEST_ASSERT_EQUALS(sl.bitCount(), (arrayCount(testBytes) * 8u) - 12);
-	TEST_ASSERT_EQUALS(sl.byteCount(), arrayCount(testBytes)) - 2u);
+	TEST_ASSERT_EQUALS(sl.byteCount(), arrayCount(testBytes) - 2u);
 	// read value bigger than one byte (0b1001 => 0x9)
 	TEST_ASSERT_EQUALS(sl.readBits<12>(), 0x98a);
 	TEST_ASSERT_EQUALS(sl.readBits<4>(), 0xe);
