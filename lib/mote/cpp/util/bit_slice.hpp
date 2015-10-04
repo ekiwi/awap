@@ -15,19 +15,22 @@ namespace awap {
 
 class BitSlice
 {
+	// either `uint8_t` or `const uint8_t`
+	using T = uint8_t;
 public:
-	BitSlice() {}
+	BitSlice(T* ptr, size_t len) : bytes(ptr, len) {}
+	BitSlice(const Slice<T>& bytes) : bytes(bytes) {}
 
 	inline bool isEmpty() const {
-		return true;
+		return bytes.isEmpty();
 	}
 
 	size_t bitCount() const {
-		return 0;
+		return (8u * bytes.length) + bits;
 	}
 
 	size_t byteCount() const {
-		return 0;
+		return bytes.length;
 	}
 
 	template<size_t N>
@@ -39,20 +42,23 @@ public:
 	inline uint32_t readBits() {
 		return 0;
 	}
+private:
+	Slice<T> bytes;
+	uint8_t bits = 0;
 };
 
 
 template<typename T, size_t N>
 inline BitSlice bit_slice(T(&ptr)[N])
 {
-	BitSlice sl;
+	BitSlice sl(ptr, N);
 	return sl;
 }
 
 template<typename T>
 inline BitSlice bit_slice(T* ptr, size_t len)
 {
-	BitSlice sl;
+	BitSlice sl(ptr, len);
 	return sl;
 }
 
