@@ -68,12 +68,7 @@ class NamedCommunicationElement(object):
 		return self.mod
 
 	def to_dict(self):
-		return {
-			'name': self.name,
-			'full_name': self.full_name,
-			'cpp':  {'name': self.full_name.replace('.', '::')},
-			'java': {'name': self.full_name }
-		}
+		return { 'name': self.name }
 
 
 class Service(NamedCommunicationElement):
@@ -162,6 +157,9 @@ class Message(NamedCommunicationElement):
 			cpp  = ["{} {}".format(field.cpp_type,  camelCase(field.name)) for field in self.fields]
 			dd['java'] = {'initializer_list': ", " + ", ".join(java), 'args': java}
 			dd['cpp'] =  {'initializer_list': ", " + ", ".join(cpp), 'args': cpp}
+		else:
+			dd['java'] = {}
+			dd['cpp'] = {}
 		return dd
 
 class BooleanField(NamedCommunicationElement):
