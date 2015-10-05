@@ -12,8 +12,10 @@ class Field(object):
 		self.bits = bits
 		self.pos_byte = -1
 		self.pos_bit = -1		# LSB
+		self.id = -1			# nth field in byte
 
-	def place(self, byte, bit):
+	def place(self, id, byte, bit):
+		self.id = id
 		self.pos_byte = byte
 		self.pos_bit = bit		# LSB
 		return self.leading_bits
@@ -78,6 +80,15 @@ class Field(object):
 		#cpp = "{value:10} = (({data}[{byte:2}] >> {bit}) & {mask})"
 		return cpp
 
+	def cpp_get_byte(self, byte_id, prefix=""):
+		shift = self.pos_bit - (self.additional_byte_count - byte_id) * 8
+		cpp = "(({value} & {mask})".format(value=prefix + self.name, mask=self.full_mask)
+		if shift >= 0:
+			cpp += " << {:2})".format(shift)
+		else:
+			cpp += " >> {:2})".format(-shift)
+		return cpp
+
 	def __str__(self):
 		s = "{:<8}".format(self.name) + "#" * self.bits
 		if self.pos_bit >= 0:
@@ -92,6 +103,7 @@ class Byte(object):
 		self.free_bits = 8
 		self.fields = []
 		self.bytes = 0	#additional bytes to hold fields with bits > 8
+		self.pos = -1
 		if isinstance(field, Field):
 			self.insert(field)
 
@@ -110,14 +122,29 @@ class Byte(object):
 
 	def place(self, pos):
 		""" propagates placement information to the fields """
+		self.pos = pos
 		# place fields from LSB to MSB
 		bit = 0
 		# make sure that field with bits > 8 are placed at the LSB
 		fields = sorted(self.fields, key=lambda field: -field.bits)
+		field_id = 0
 		for f in fields:
-			bit += f.place(byte=pos, bit=bit)
+			bit += f.place(id=field_id, byte=self.pos, bit=bit)
+			field_id += 1
 		# return position of next byte
-		return pos + 1 + self.bytes
+		return self.pos + 1 + self.bytes
+
+	def cpp_write(self, data="data", prefix=""):
+		cpp = "{data}[{byte:2}] = ".format(data=data, byte=self.pos)
+		fields = sorted(self.fields, key=lambda field: -field.pos_bit)
+		cpp += " | ".join(ff.cpp_get_byte(0, prefix) for ff in fields) + ";"
+		for ii in range(1, self.bytes + 1):
+			cpp += "\n{data}[{byte:2}] = ({value} >> ({shift} * 8) & 0xff;".format(
+				data=data,
+				byte=self.pos + ii,
+				value=prefix + self.fields[0].name,
+				shift=self.fields[0].additional_byte_count - ii)
+		return cpp
 
 def sort(fields):
 	print(fields)
@@ -167,6 +194,9 @@ if __name__ == "__main__":
 	print()
 	for ff in fields:
 		print(ff.cpp_write())
+	print()
+	for bb in bytes:
+		print(bb.cpp_write())
 
 	byte_count = sum((1 + b.bytes) for b in bytes)
 	bits = sum(f.bits for f in fields)
