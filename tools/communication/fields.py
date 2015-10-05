@@ -146,60 +146,77 @@ class Byte(object):
 				shift=self.fields[0].additional_byte_count - ii)
 		return cpp
 
-def sort(fields):
-	print(fields)
-	fields = sorted(fields, key=lambda field: -field.bits)
-	print(fields)
-	bytes = []
-	for field in fields:
-		print(field)
-		for byte in bytes:
-			if byte.insert(field):
-				field = None
-				break
-		if field:
-			bytes.append(Byte(field))
-	return bytes
+class Fields(object):
+	""" main class, generated C++ code from fields """
+	def __init__(self, data_src="data", field_prefix=""):
+		self.data_src = data_src
+		self.field_prefix = field_prefix
+		self.fields = []
+		self.bytes = []
 
+	def add_field(self, name, bits):
+		assert(isinstance(name, str))
+		bits = int(bits)
+		assert(bits > 0)
+		self.fields.append(Field(name, bits))
+
+	def to_dict(self):
+		(fields, bytes) = self._sort_and_place()
+		from_data = "\n".join(
+			ff.cpp_read(self.data_src, self.field_prefix) for ff in fields)
+		to_data = "\n".join(
+			bb.cpp_write(self.data_src, self.field_prefix) for bb in bytes)
+		byte_count = sum((1 + b.bytes) for b in bytes)
+		return {
+			'unmarshal': from_data,
+			'marshal': to_data,
+			'bytes': byte_count,
+		}
+
+	def _sort_and_place(self):
+		fields = sorted(self.fields, key=lambda field: -field.bits)
+		bytes = []
+		for field in fields:
+			print(field)
+			for byte in bytes:
+				if byte.insert(field):
+					field = None
+					break
+			if field:
+				bytes.append(Byte(field))
+		# place
+		pos = 0
+		for bb in bytes:
+			pos = bb.place(pos=pos)
+		# sort by position
+		fields = sorted(fields, key=lambda field: field.pos_byte)
+		return (fields, bytes)
 
 if __name__ == "__main__":
-	fields = []
-	fields.append(Field("a", 4))
-	fields.append(Field("c", 7))
-	fields.append(Field("b0", 1))
-	fields.append(Field("d", 5))
-	fields.append(Field("e", 3))
-	fields.append(Field("f", 2))
-	fields.append(Field("b1", 1))
-	fields.append(Field("g", 8))
-	fields.append(Field("h", 5))
-	fields.append(Field("i", 3))
-	fields.append(Field("b2", 1))
-	fields.append(Field("j", 5))
-	fields.append(Field("k", 5))
-	fields.append(Field("l", 2))
-	fields.append(Field("m", 12))
-	fields.append(Field("n", 17))
-	fields.append(Field("b3", 1))
+	fields = Fields()
+	fields.add_field("a", 4)
+	fields.add_field("c", 7)
+	fields.add_field("b0", 1)
+	fields.add_field("d", 5)
+	fields.add_field("e", 3)
+	fields.add_field("f", 2)
+	fields.add_field("b1", 1)
+	fields.add_field("g", 8)
+	fields.add_field("h", 5)
+	fields.add_field("i", 3)
+	fields.add_field("b2", 1)
+	fields.add_field("j", 5)
+	fields.add_field("k", 5)
+	fields.add_field("l", 2)
+	fields.add_field("m", 12)
+	fields.add_field("n", 17)
+	fields.add_field("b3", 1)
 
-	bytes = sort(fields)
+	dd = fields.to_dict()
+	print("\nunmarshal:\n{}".format(dd['unmarshal']))
+	print("\nmarshal:\n{}".format(dd['marshal']))
+	print("\nbytes:\n{}".format(dd['bytes']))
 
-	pos = 0
-	for bb in bytes:
-		pos = bb.place(pos=pos)
-
-	fields = sorted(fields, key=lambda field: field.pos_byte)
-	for ff in fields:
-		print(ff.cpp_read())
-	print()
-	for ff in fields:
-		print(ff.cpp_write())
-	print()
-	for bb in bytes:
-		print(bb.cpp_write())
-
-	byte_count = sum((1 + b.bytes) for b in bytes)
-	bits = sum(f.bits for f in fields)
-
-	print("Could fit {} bits ({} bytes) into {} bytes => {}%.".format(
-		bits, bits / 8.0, byte_count, int(byte_count / (bits / 8.0) * 100)))
+	# TODO: reenable statistics
+	#print("Could fit {} bits ({} bytes) into {} bytes => {}%.".format(
+	#	bits, bits / 8.0, byte_count, int(byte_count / (bits / 8.0) * 100)))
