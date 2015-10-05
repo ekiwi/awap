@@ -33,9 +33,15 @@ class Field(object):
 	def cpp_read(self, data="data", prefix=""):
 		cpp = "{value:10} = (({data}[{byte:2}] >> {bit}) & {mask})".format(
 			value=prefix + self.name,
-			data=data, byte=self.pos_byte, bit=self.pos_bit, mask=self.mask)
-		#for ii in range(0, self.addition_byte_count):
-		#	
+			data=data,
+			byte=self.pos_byte,
+			bit=self.pos_bit,
+			mask=self.mask)
+		for ii in range(0, self.additional_byte_count):
+			cpp += " << ({shift} * 8) | {data}[{byte}]".format(
+				shift=self.additional_byte_count - ii,
+				data=data,
+				byte=ii+self.pos_byte + 1)
 		return cpp
 
 	def __str__(self):
