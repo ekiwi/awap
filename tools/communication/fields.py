@@ -19,29 +19,63 @@ class Field(object):
 		return self.leading_bits
 
 	@property
+	def bytes(self):
+		return int(math.ceil(self.bits / 8.0))
+
+	@property
 	def additional_byte_count(self):
-		return int(math.ceil(self.bits / 8.0)) - 1
+		return self.bytes - 1
 
 	@property
 	def leading_bits(self):
 		return self.bits - (self.additional_byte_count * 8)
 
 	@property
-	def mask(self):
+	def byte_mask(self):
 		return "{:#04x}".format((1 << self.leading_bits) - 1)
 
+	@property
+	def full_mask(self):
+		return "{value:#0{zeros}x}".format(
+			value=(1 << self.bits) - 1,
+			zeros=(2 + 2 * self.bytes))
+
 	def cpp_read(self, data="data", prefix=""):
-		cpp = "{value:10} = (({data}[{byte:2}] >> {bit}) & {mask})".format(
+		cpp = "{value:{padding}} = (({data}[{byte:2}] >> {bit}) & {mask})".format(
 			value=prefix + self.name,
+			padding=10,
 			data=data,
 			byte=self.pos_byte,
 			bit=self.pos_bit,
-			mask=self.mask)
+			mask=self.byte_mask)
 		for ii in range(0, self.additional_byte_count):
 			cpp += " << ({shift} * 8) | {data}[{byte}]".format(
 				shift=self.additional_byte_count - ii,
 				data=data,
 				byte=ii+self.pos_byte + 1)
+		return cpp + ";"
+
+	def cpp_write(self, data="data", prefix=""):
+		cpp = "auto temp = ({value} & {full_mask});\n".format(
+			value=prefix + self.name,
+			padding=10,
+			full_mask=self.full_mask)
+		shift = self.pos_bit - (self.additional_byte_count * 8);
+		cpp += "{data}[{byte:2}] = {data}[{byte:2}] & ({mask} << {bit}) | temp".format(
+			data=data,
+			byte=self.pos_byte,
+			bit=self.pos_bit,
+			mask=self.byte_mask)
+		if shift >= 0:
+			cpp += " << {:2};".format(shift)
+		else:
+			cpp += " >> {:2};".format(-shift)
+		for ii in range(0, self.additional_byte_count):
+			cpp += "\n{data}[{byte:2}] = (temp >> ({shift} * 8)) & 0xff;".format(
+				shift=self.additional_byte_count - ii - 1,
+				data=data,
+				byte=ii+self.pos_byte + 1)
+		#cpp = "{value:10} = (({data}[{byte:2}] >> {bit}) & {mask})"
 		return cpp
 
 	def __str__(self):
@@ -130,6 +164,9 @@ if __name__ == "__main__":
 	fields = sorted(fields, key=lambda field: field.pos_byte)
 	for ff in fields:
 		print(ff.cpp_read())
+	print()
+	for ff in fields:
+		print(ff.cpp_write())
 
 	byte_count = sum((1 + b.bytes) for b in bytes)
 	bits = sum(f.bits for f in fields)
