@@ -10,12 +10,42 @@ class Field(object):
 	def __init__(self, name, bits):
 		self.name = name
 		self.bits = bits
+		self.pos_byte = -1
+		self.pos_bit = -1		# LSB
+
+	def place(self, byte, bit):
+		self.pos_byte = byte
+		self.pos_bit = bit		# LSB
+		return self.leading_bits
+
+	@property
+	def additional_byte_count(self):
+		return int(math.ceil(self.bits / 8.0)) - 1
+
+	@property
+	def leading_bits(self):
+		return self.bits - (self.additional_byte_count * 8)
+
+	@property
+	def mask(self):
+		return "{:#04x}".format((1 << self.leading_bits) - 1)
+
+	def cpp_read(self, data="data", prefix=""):
+		cpp = "{value:10} = (({data}[{byte:2}] >> {bit}) & {mask})".format(
+			value=prefix + self.name,
+			data=data, byte=self.pos_byte, bit=self.pos_bit, mask=self.mask)
+		#for ii in range(0, self.addition_byte_count):
+		#	
+		return cpp
 
 	def __str__(self):
-		return "#" * self.bits
+		s = "{:<8}".format(self.name) + "#" * self.bits
+		if self.pos_bit >= 0:
+			s += "[]"
+		return s
 
 	def __repr__(self):
-		return str(self)
+		return self.name + ": " + "#" * self.bits
 
 class Byte(object):
 	def __init__(self, field=None):
@@ -27,18 +57,27 @@ class Byte(object):
 
 
 	def insert(self, field):
-		additional_bytes_needed = int(math.ceil(field.bits / 8.0)) - 1
-		bits_needed = field.bits - (additional_bytes_needed * 8)
-		if(bits_needed > self.free_bits):
+		if(field.leading_bits > self.free_bits):
 			return False
-		if additional_bytes_needed > 0:
+		if field.additional_byte_count > 0:
 			if self.bytes > 0:
 				return False
 			else:
-				self.bytes = additional_bytes_needed
-		self.free_bits -= bits_needed
+				self.bytes = field.additional_byte_count
+		self.free_bits -= field.leading_bits
 		self.fields.append(field)
 		return True
+
+	def place(self, pos):
+		""" propagates placement information to the fields """
+		# place fields from LSB to MSB
+		bit = 0
+		# make sure that field with bits > 8 are placed at the LSB
+		fields = sorted(self.fields, key=lambda field: -field.bits)
+		for f in fields:
+			bit += f.place(byte=pos, bit=bit)
+		# return position of next byte
+		return pos + 1 + self.bytes
 
 def sort(fields):
 	print(fields)
@@ -77,8 +116,16 @@ if __name__ == "__main__":
 	fields.append(Field("b3", 1))
 
 	bytes = sort(fields)
-	byte_count = sum((1 + b.bytes) for b in bytes)
 
+	pos = 0
+	for bb in bytes:
+		pos = bb.place(pos=pos)
+
+	fields = sorted(fields, key=lambda field: field.pos_byte)
+	for ff in fields:
+		print(ff.cpp_read())
+
+	byte_count = sum((1 + b.bytes) for b in bytes)
 	bits = sum(f.bits for f in fields)
 
 	print("Could fit {} bits ({} bytes) into {} bytes => {}%.".format(
