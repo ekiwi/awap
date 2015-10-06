@@ -14,6 +14,7 @@ The second pass will resolve all cross references.
 
 import os, math
 import lxml.etree as ET
+import fields
 
 def camelCase(identifier):
 	return identifier[0].lower() + identifier[1:]
@@ -87,6 +88,7 @@ class Service(NamedCommunicationElement):
 		self.max_message_id = determine_max_id(self.mod, messages, max_id_found)
 		self.mod.passert(node, self.max_message_id >= max_id_found,
 			'Found id "{}", but the maximum message id is "{}"!'.format(max_id_found, self.max_message_id))
+		self.message_id_size = number_of_bits_from_maxid(self.max_message_id)
 
 		properties = node.find("properties")
 		if properties is None:
@@ -114,16 +116,18 @@ class Service(NamedCommunicationElement):
 			dd['id'] = self.id
 		dd['messages']   = [msg.to_dict()  for msg  in self.messages]
 		dd['max_message_id']  = self.max_message_id
-		dd['message_id_size'] = number_of_bits_from_maxid(self.max_message_id)
+		dd['message_id_size'] = self.message_id_size
 		dd['properties'] = [prop.to_dict() for prop in self.properties]
 		dd['max_property_id']  = self.max_property_id
 		dd['property_id_size'] = number_of_bits_from_maxid(self.max_property_id)
 		dd['property_bit_count'] = sum(pp.size for pp in self.properties)
+		dd['cpp'] = {}
+		dd['java'] = {}
 		if len(self.properties) > 0:
-			java = ["{} {}".format(prop.java_type, camelCase(prop.name)) for prop in self.properties]
-			cpp  = ["{} {}".format(prop.cpp_type,  camelCase(prop.name)) for prop in self.properties]
-			dd['java'] = {'initializer_list': ", " + ", ".join(java), 'args': java}
-			dd['cpp'] =  {'initializer_list': ", " + ", ".join(cpp), 'args': cpp}
+			dd['java']['args'] = ["{} {}".format(prop.java_type, camelCase(prop.name)) for prop in self.properties]
+			dd['cpp']['args']  = ["{} {}".format(prop.cpp_type,  camelCase(prop.name)) for prop in self.properties]
+			dd['java']['initializer_list'] = ", " + ", ".join(dd['java']['args'])
+			dd['cpp']['initializer_list'] = ", " + ", ".join(dd['cpp']['args'])
 		return dd
 
 class Message(NamedCommunicationElement):
@@ -143,6 +147,13 @@ class Message(NamedCommunicationElement):
 			elif field_ee.tag in ['bool']:
 				self.fields.append(BooleanField(self, field_ee))
 
+	def generate_field_placement(self):
+		ff = fields.Fields(data_src="data", field_prefix="msg->")
+		for field in self.fields:
+			ff.add_field(name=field.name, bits=field.size)
+		ff.set_front_field("id", self.parent.message_id_size)
+		return ff.to_dict()
+
 	def to_dict(self):
 		dd = super(Message, self).to_dict()
 		dd['id'] = self.id
@@ -152,14 +163,13 @@ class Message(NamedCommunicationElement):
 		dd['rx'] = self.rx
 		dd['fields'] = [field.to_dict() for field in self.fields]
 		dd['size'] = sum([field.size for field in self.fields])
+		dd['cpp'] = self.generate_field_placement()
+		dd['java'] = {}
 		if len(self.fields) > 0:
-			java = ["{} {}".format(field.java_type, camelCase(field.name)) for field in self.fields]
-			cpp  = ["{} {}".format(field.cpp_type,  camelCase(field.name)) for field in self.fields]
-			dd['java'] = {'initializer_list': ", " + ", ".join(java), 'args': java}
-			dd['cpp'] =  {'initializer_list': ", " + ", ".join(cpp), 'args': cpp}
-		else:
-			dd['java'] = {}
-			dd['cpp'] = {}
+			dd['java']['args'] = ["{} {}".format(field.java_type, camelCase(field.name)) for field in self.fields]
+			dd['cpp']['args']  = ["{} {}".format(field.cpp_type,  camelCase(field.name)) for field in self.fields]
+			dd['java']['initializer_list'] = ", " + ", ".join(dd['java']['args'])
+			dd['cpp']['initializer_list'] = ", " + ", ".join(dd['cpp']['args'])
 		return dd
 
 class BooleanField(NamedCommunicationElement):
