@@ -162,7 +162,6 @@ class Message(NamedCommunicationElement):
 		dd['tx'] = self.tx
 		dd['rx'] = self.rx
 		dd['fields'] = [field.to_dict() for field in self.fields]
-		dd['size'] = sum([field.size for field in self.fields])
 		dd['cpp'] = self.generate_field_placement()
 		dd['java'] = {}
 		if len(self.fields) > 0:
@@ -170,6 +169,7 @@ class Message(NamedCommunicationElement):
 			dd['cpp']['args']  = ["{} {}".format(field.cpp_type,  camelCase(field.name)) for field in self.fields]
 			dd['java']['initializer_list'] = ", " + ", ".join(dd['java']['args'])
 			dd['cpp']['initializer_list'] = ", " + ", ".join(dd['cpp']['args'])
+		dd['bytes'] = dd['cpp']['bytes']
 		return dd
 
 class BooleanField(NamedCommunicationElement):
