@@ -15,7 +15,6 @@
 #include <hpp/ostfriesentee.hpp>	// ostfriesentee::String
 #include <awap.hpp>		// Runtime::panic, Runtime::warn
 #include <util/slice.hpp>
-#include <util/bit_slice.hpp>
 
 namespace awap {
 
