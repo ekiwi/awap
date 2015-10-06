@@ -58,29 +58,6 @@ class Field(object):
 				byte=ii+self.pos_byte + 1)
 		return cpp + ";"
 
-	def cpp_write(self, data="data", prefix=""):
-		cpp = "auto temp = ({value} & {full_mask});\n".format(
-			value=prefix + self.name,
-			padding=10,
-			full_mask=self.full_mask)
-		shift = self.pos_bit - (self.additional_byte_count * 8);
-		cpp += "{data}[{byte:2}] = {data}[{byte:2}] & ({mask} << {bit}) | temp".format(
-			data=data,
-			byte=self.pos_byte,
-			bit=self.pos_bit,
-			mask=self.byte_mask)
-		if shift >= 0:
-			cpp += " << {:2};".format(shift)
-		else:
-			cpp += " >> {:2};".format(-shift)
-		for ii in range(0, self.additional_byte_count):
-			cpp += "\n{data}[{byte:2}] = (temp >> ({shift} * 8)) & 0xff;".format(
-				shift=self.additional_byte_count - ii - 1,
-				data=data,
-				byte=ii+self.pos_byte + 1)
-		#cpp = "{value:10} = (({data}[{byte:2}] >> {bit}) & {mask})"
-		return cpp
-
 	def cpp_get_byte(self, byte_id, prefix=""):
 		shift = self.pos_bit - (self.additional_byte_count - byte_id) * 8
 		cpp = "(({value} & {mask})".format(value=prefix + self.name, mask=self.full_mask)
