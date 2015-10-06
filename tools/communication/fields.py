@@ -13,6 +13,7 @@ class Field(object):
 		self.pos_byte = -1
 		self.pos_bit = -1		# LSB
 		self.id = -1			# nth field in byte
+		self.place_last = False		# placement **hint**
 
 	def place(self, id, byte, bit):
 		self.id = id
@@ -126,7 +127,7 @@ class Byte(object):
 		# place fields from LSB to MSB
 		bit = 0
 		# make sure that field with bits > 8 are placed at the LSB
-		fields = sorted(self.fields, key=lambda field: -field.bits)
+		fields = sorted(self.fields, key=lambda field: -field.bits + 100 * field.place_last)
 		field_id = 0
 		for f in fields:
 			bit += f.place(id=field_id, byte=self.pos, bit=bit)
@@ -153,6 +154,14 @@ class Fields(object):
 		self.field_prefix = field_prefix
 		self.fields = []
 		self.bytes = []
+		self.front_field = None
+
+	def set_front_field(self, name, bits):
+		assert(isinstance(name, str))
+		bits = int(bits)
+		assert(bits > 0)
+		self.front_field = Field(name, bits)
+		self.front_field.place_last = True
 
 	def add_field(self, name, bits):
 		assert(isinstance(name, str))
@@ -164,6 +173,9 @@ class Fields(object):
 		(fields, bytes) = self._sort_and_place()
 		from_data = "\n".join(
 			ff.cpp_read(self.data_src, self.field_prefix) for ff in fields)
+		if self.front_field:
+			from_data = self.front_field.cpp_read(
+				self.data_src, self.field_prefix) + "\n" + from_data
 		to_data = "\n".join(
 			bb.cpp_write(self.data_src, self.field_prefix) for bb in bytes)
 		byte_count = sum((1 + b.bytes) for b in bytes)
@@ -176,6 +188,9 @@ class Fields(object):
 	def _sort_and_place(self):
 		fields = sorted(self.fields, key=lambda field: -field.bits)
 		bytes = []
+		if self.front_field:
+			self.front_field.place_last = True
+			bytes.append(Byte(self.front_field))
 		for field in fields:
 			print(field)
 			for byte in bytes:
@@ -211,6 +226,7 @@ if __name__ == "__main__":
 	fields.add_field("m", 12)
 	fields.add_field("n", 17)
 	fields.add_field("b3", 1)
+	fields.set_front_field("first_id", 5)
 
 	dd = fields.to_dict()
 	print("\nunmarshal:\n{}".format(dd['unmarshal']))
