@@ -26,7 +26,7 @@ public:
 	}
 
 	size_t bitCount() const {
-		return (8u * bytes.length) + bits;
+		return (8u * bytes.length) - bitsRead;
 	}
 
 	size_t byteCount() const {
@@ -40,11 +40,18 @@ public:
 
 	template<size_t N>
 	inline uint32_t readBits() {
+		if(N - bitsAvailable <= 0) {
+			const uint8_t mask = (1 << bitsAvailable) - 1;
+			uint32_t result = bytes.data[0]  >> (bitsAvailable - N)
+		}
+		uint32_t result = tempByte;
+
 		return 0;
 	}
 private:
 	Slice<T> bytes;
-	uint8_t bits = 0;
+	uint8_t bitsAvailable = 8;
+	uint8_t tempByte;
 };
 
 
