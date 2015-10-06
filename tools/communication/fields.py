@@ -169,7 +169,6 @@ class Fields(object):
 			self.front_field.place_last = True
 			bytes.append(Byte(self.front_field))
 		for field in fields:
-			print(field)
 			for byte in bytes:
 				if byte.insert(field):
 					field = None
