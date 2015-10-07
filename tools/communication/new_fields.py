@@ -72,7 +72,25 @@ class Field(object):
 		if lsb < 0:
 			return False	# field does not fit into bytes
 
-		# TODO: check if bytes have space, add field to bytes
+		# remove not needed bytes from list
+		remove_leading_byte_count = len(bytes) - ((msb / 8) + 1)
+		remove_trailing_byte_count = lsb / 8
+		if remove_trailing_byte_count > 0:
+			bytes = bytes[remove_leading_byte_count:-remove_trailing_byte_count]
+		else:
+			bytes = bytes[remove_leading_byte_count:]
+		msb -= remove_trailing_byte_count * 8
+		lsb -= remove_trailing_byte_count * 8
+
+		# check if bytes have space
+		byte_msb = [(msb % 8) + 8 * ii for ii in range(0, len(bytes))]
+		if not all(bb.can_place(self, msb) for bb, msb in zip(bytes, byte_msb)):
+			return False	# not all bytes can contain the value
+
+		# place field in bytes
+		for bb, msb in zip(bytes, byte_msb):
+			bb.place(self, msb)
+
 		self.bytes = list(bytes)	# shallow copy
 		self._msb = msb
 		return True		# success
