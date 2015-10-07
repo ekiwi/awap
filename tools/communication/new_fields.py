@@ -55,6 +55,21 @@ class Field(object):
 		if self._msb == -1:	return -1
 		else: return self._msb + 1 - self.size
 
+	def _bit_offset(self, byte):
+		return (len(self.bytes) - self.bytes.index(byte) - 1) * 8
+
+	def msb_in_byte(self, byte):
+		assert(isinstance(byte, Byte))
+		if not byte in self.bytes:
+			return -1
+		return min(self.msb - self._bit_offset(byte), 7)
+
+	def lsb_in_byte(self, byte):
+		assert(isinstance(byte, Byte))
+		if not byte in self.bytes:
+			return -1
+		return max(self.lsb - self._bit_offset(byte), 0)
+
 	def place(self, bytes, msb):
 		if self._msb > -1 or len(self.bytes) > 0:
 			return False	# already placed
