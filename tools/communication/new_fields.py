@@ -111,6 +111,11 @@ class TestFields(unittest.TestCase):
 		self.assertEqual(f.msb, -1)
 		self.assertEqual(f.lsb, -1)
 
+		# byte relative msb/lsb are only defined for bytes that the field
+		# is placed in
+		self.assertEqual(f.msb_in_byte(Byte()), -1)
+		self.assertEqual(f.lsb_in_byte(Byte()), -1)
+
 	def test_field_place(self):
 		f = Field("test", 4)
 		# place Field in single byte, msb = f.size - 1 = 3 (=> lsb should be 0)
