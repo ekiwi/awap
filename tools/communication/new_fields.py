@@ -9,7 +9,28 @@ import unittest
 
 
 class Field(object):
-	pass
+	def __init__(self, name, size):
+		assert(isinstance(name, str))
+		assert(isinstance(size, int))
+		assert(size > 0)
+		self.name = name
+		self.bytes = []
+		# size is immutable
+		self._size = size
+		self._msb = -1
+
+	@property
+	def size(self):
+		return self._size
+
+	@property
+	def msb(self):
+		return self._msb
+
+	@property
+	def lsb(self):
+		if self._msb == -1:	return -1
+		else: return self._msb + 1 - self.size
 
 class TestFields(unittest.TestCase):
 	def test_field_defaults(self):
