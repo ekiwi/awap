@@ -9,7 +9,7 @@ import unittest
 
 class Byte(object):
 	def __init__(self):
-		pass
+		self.fields = []
 
 class Field(object):
 	def __init__(self, name, size):
@@ -136,7 +136,6 @@ class TestFields(unittest.TestCase):
 		self.assertEqual(f3.bytes[0], bytes3[1])
 		self.assertEqual(f3.bytes[1], bytes3[2])
 
-	@unittest.skip("skip byte test for now")
 	def test_byte_defaults(self):
 		b = Byte()
 		# a byte maintain references to all fields it holds
