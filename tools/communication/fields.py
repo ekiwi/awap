@@ -20,12 +20,8 @@ class Field(object):
 		return self.leading_bits
 
 	@property
-	def bytes(self):
-		return int(math.ceil(self.bits / 8.0))
-
-	@property
 	def additional_byte_count(self):
-		return self.bytes - 1
+		return int(math.ceil(self.bits / 8.0)) - 1
 
 	@property
 	def leading_bits(self):
@@ -39,7 +35,7 @@ class Field(object):
 	def full_mask(self):
 		return "{value:#0{zeros}x}".format(
 			value=(1 << self.bits) - 1,
-			zeros=(2 + 2 * self.bytes))
+			zeros=(2 + self.bits / 4))
 
 	def cpp_read(self, data="data", prefix=""):
 		cpp = "{value:{padding}} = (({data}[{byte:2}] >> {bit}) & {mask})".format(
@@ -197,6 +193,7 @@ if __name__ == "__main__":
 	fields.add_field("l", 2)
 	fields.add_field("m", 12)
 	fields.add_field("n", 17)
+	fields.add_field("big", 32)
 	fields.add_field("b3", 1)
 	fields.set_front_field("first_id", 5)
 
