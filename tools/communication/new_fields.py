@@ -12,7 +12,7 @@ class Byte(object):
 		self.fields = []
 		self._bits = [0] * 8
 
-	def place(self, field, msb):
+	def place(self, field, msb, dry_run=False):
 		assert(isinstance(field, Field))
 		# calculate msb and lsb in the local (Byte) context
 		local_msb = min(msb, 7)
@@ -23,9 +23,13 @@ class Byte(object):
 		# check if space available
 		if sum(self._bits[local_lsb:local_msb + 1]) > 0:
 			return False	# error: overlapping with already place field
-		self._bits[local_lsb:local_msb + 1] = [1] * local_size
-		self.fields.append(field)
+		if not dry_run:
+			self._bits[local_lsb:local_msb + 1] = [1] * local_size
+			self.fields.append(field)
 		return True
+
+	def can_place(self, field, msb):
+		return self.place(field=field, msb=msb, dry_run=True)
 
 class Field(object):
 	def __init__(self, name, size):
@@ -165,6 +169,18 @@ class TestFields(unittest.TestCase):
 		self.assertTrue(b.place(f0, 3))
 		self.assertEqual(len(b.fields), 1)
 		self.assertEqual(b.fields[0], f0)
+		# field remains unaffected
+		self.assertEqual(f0.msb, -1)
+		self.assertEqual(f0.lsb, -1)
+		self.assertEqual(f0.size, 4)
+		self.assertEqual(len(f0.bytes), 0)
+
+	def test_byte_can_place(self):
+		b = Byte()
+		f0 = Field("f0", 4)
+		self.assertTrue(b.can_place(f0, 3))
+		# byte remaons unaffected
+		self.assertEqual(len(b.fields), 0)
 		# field remains unaffected
 		self.assertEqual(f0.msb, -1)
 		self.assertEqual(f0.lsb, -1)
