@@ -12,11 +12,9 @@ class Field(object):
 		self.bits = bits
 		self.pos_byte = -1
 		self.pos_bit = -1		# LSB
-		self.id = -1			# nth field in byte
 		self.place_last = False		# placement **hint**
 
-	def place(self, id, byte, bit):
-		self.id = id
+	def place(self, byte, bit):
 		self.pos_byte = byte
 		self.pos_bit = bit		# LSB
 		return self.leading_bits
@@ -105,10 +103,8 @@ class Byte(object):
 		bit = 0
 		# make sure that field with bits > 8 are placed at the LSB
 		fields = sorted(self.fields, key=lambda field: -field.bits + 100 * field.place_last)
-		field_id = 0
 		for f in fields:
-			bit += f.place(id=field_id, byte=self.pos, bit=bit)
-			field_id += 1
+			bit += f.place(byte=self.pos, bit=bit)
 		# return position of next byte
 		return self.pos + 1 + self.bytes
 
