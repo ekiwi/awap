@@ -10,6 +10,22 @@ import unittest
 class Byte(object):
 	def __init__(self):
 		self.fields = []
+		self._bits = [0] * 8
+
+	def place(self, field, msb):
+		assert(isinstance(field, Field))
+		# calculate msb and lsb in the local (Byte) context
+		local_msb = min(msb, 7)
+		local_lsb = max(msb - field.size + 1, 0)
+		local_size = local_msb - local_lsb + 1
+		if local_size <= 0:
+			return False	# nothing to insert
+		# check if space available
+		if sum(self._bits[local_lsb:local_msb + 1]) > 0:
+			return False	# error: overlapping with already place field
+		self._bits[local_lsb:local_msb + 1] = [1] * local_size
+		self.fields.append(field)
+		return True
 
 class Field(object):
 	def __init__(self, name, size):
@@ -142,7 +158,6 @@ class TestFields(unittest.TestCase):
 		self.assertTrue(isinstance(b.fields, list))
 		self.assertEqual(len(b.fields), 0)
 
-	@unittest.skip("skip byte test for now")
 	def test_byte_place_single_field(self):
 		b = Byte()
 		# place a field with lsb = 0 (=> msb = 3)
@@ -150,22 +165,32 @@ class TestFields(unittest.TestCase):
 		self.assertTrue(b.place(f0, 3))
 		self.assertEqual(len(b.fields), 1)
 		self.assertEqual(b.fields[0], f0)
-		self.assertEqual(f0.msb, 3)
-		self.assertEqual(f0.lsb, 0)
+		# field remains unaffected
+		self.assertEqual(f0.msb, -1)
+		self.assertEqual(f0.lsb, -1)
+		self.assertEqual(f0.size, 4)
+		self.assertEqual(len(f0.bytes), 0)
 
-	@unittest.skip("skip byte test for now")
 	def test_byte_place_overlapping(self):
 		b = Byte()
 		self.assertTrue(b.place(Field("f0", 4), 3))
 		# trying to place an overlapping field should fail
 		self.assertFalse(b.place(Field("fail", 4), 3))	# bit3 is occupied by f0
 
-	@unittest.skip("skip byte test for now")
 	def test_byte_place_multibyte_field(self):
 		b = Byte()
 		# placing fields, that occupy multiple bytes is fine
 		self.assertTrue(b.place(Field("f2", 4), 0))
 		self.assertTrue(b.place(Field("f3", 4), 10))
+
+	def test_byte_place_out_of_byte(self):
+		# trying to place a field that will not be contained in the current byte
+		# should return false and leave the byte unaffected
+		b = Byte()
+		self.assertFalse(b.place(Field("f3", 4), 11))
+		self.assertFalse(b.place(Field("f3", 4), -1))
+		self.assertTrue(isinstance(b.fields, list))
+		self.assertEqual(len(b.fields), 0)
 
 
 if __name__ == "__main__":
