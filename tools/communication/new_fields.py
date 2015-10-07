@@ -102,7 +102,7 @@ class TestFields(unittest.TestCase):
 		bytes = [Byte(), Byte()]
 		f = Field("too_long_for_one_byte", 12)
 		self.assertTrue(f.place(bytes, 14))
-		self.assertEqual(len(f.bytes), 1)
+		self.assertEqual(len(f.bytes), 2)
 		self.assertEqual(f.bytes[0], bytes[0])
 		self.assertEqual(f.bytes[1], bytes[1])
 		# msb and lsb are always relative to the underlying byte list
@@ -120,6 +120,21 @@ class TestFields(unittest.TestCase):
 		# in bytes[1]: FFFFF000
 		self.assertEqual(f.msb_in_byte(bytes[1]), 7)
 		self.assertEqual(f.lsb_in_byte(bytes[1]), 3)
+
+		# place one field in more bytes than needed
+		bytes2 = [Byte(), Byte(), Byte()]
+		f2 = Field("too_long_for_one_byte", 12)
+		self.assertTrue(f2.place(bytes2, 23))
+		self.assertEqual(len(f2.bytes), 2)
+		self.assertEqual(f2.bytes[0], bytes2[0])
+		self.assertEqual(f2.bytes[1], bytes2[1])
+
+		bytes3 = [Byte(), Byte(), Byte()]
+		f3 = Field("too_long_for_one_byte", 12)
+		self.assertTrue(f3.place(bytes3, 14))
+		self.assertEqual(len(f3.bytes), 2)
+		self.assertEqual(f3.bytes[0], bytes3[1])
+		self.assertEqual(f3.bytes[1], bytes3[2])
 
 	def test_byte_defaults(self):
 		b = Byte()
