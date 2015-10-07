@@ -7,6 +7,9 @@
 import math
 import unittest
 
+class Byte(object):
+	def __init__(self):
+		pass
 
 class Field(object):
 	def __init__(self, name, size):
@@ -32,6 +35,28 @@ class Field(object):
 		if self._msb == -1:	return -1
 		else: return self._msb + 1 - self.size
 
+	def place(self, bytes, msb):
+		if self._msb > -1 or len(self.bytes) > 0:
+			return False	# already placed
+
+		if isinstance(bytes, Byte):
+			bytes = [bytes]
+		assert(isinstance(bytes, list))
+		assert(isinstance(bytes[0], Byte))
+
+		max_msb = (len(bytes) * 8) - 1
+		if msb > max_msb:
+			return False	# field does not fit into bytes
+
+		lsb = msb + 1 - self._size
+		if lsb < 0:
+			return False	# field does not fit into bytes
+
+		# TODO: check if bytes have space, add field to bytes
+		self.bytes = list(bytes)	# shallow copy
+		self._msb = msb
+		return True		# success
+
 class TestFields(unittest.TestCase):
 	def test_field_defaults(self):
 		f = Field("test", 4)
@@ -49,6 +74,7 @@ class TestFields(unittest.TestCase):
 		self.assertEqual(f.lsb, -1)
 
 	def test_field_place(self):
+		f = Field("test", 4)
 		# place Field in single byte, msb = f.size - 1 = 3 (=> lsb should be 0)
 		b0 = Byte()
 		self.assertTrue(f.place(b0, 3))
@@ -64,6 +90,12 @@ class TestFields(unittest.TestCase):
 		self.assertFalse(Field("too_long", 12).place(b1, 7))
 		self.assertFalse(Field("overlap_msb", 4).place(b1, 10))
 		self.assertFalse(Field("overlap_lsb", 12).place(b1, 2))
+
+		f = Field("test", 4)
+		self.assertTrue(f.place(b1, 3))
+		# field cannot be placed twice, no matter, what the byte looks like
+		b2 = Byte()
+		self.assertFalse(f.place(b2, 3))
 
 	def test_field_place_multiple_bytes(self):
 		# place long field in two bytes
