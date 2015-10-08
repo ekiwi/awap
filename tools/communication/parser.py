@@ -148,11 +148,14 @@ class Message(NamedCommunicationElement):
 				self.fields.append(BooleanField(self, field_ee))
 
 	def generate_field_placement(self):
-		ff = fields.Fields(data_src="data", field_prefix="msg->")
-		for field in self.fields:
-			ff.add_field(name=field.name, bits=field.size)
-		ff.set_front_field("id", self.parent.message_id_size)
-		return ff.to_dict()
+		field_list  = [fields.Field("name", self.parent.message_id_size)]
+		field_list += [fields.Field(ff.name, ff.size) for ff in self.fields]
+		byte_list = fields.InOrderPlacement().place(field_list)
+		gc = fields.CodeGenerator(data_src="data", field_prefix="")
+		dd = { 'unmarshal': "\n".join(gc.unmarshal(ff) for ff in field_list),
+			'marshal': "\n".join(gc.marshal(bb) for bb in byte_list),
+			'bytes': len(byte_list) }
+		return dd
 
 	def to_dict(self):
 		dd = super(Message, self).to_dict()
