@@ -175,6 +175,15 @@ class TestCodeGeneration(unittest.TestCase):
 		self.assertTrue(f1.place([b0, b1], 11))
 		self.assertEqual(self.cg.unmarshal(f1), "pre->test2 = ((data[ 0] >> 0) & 0x0f) << 4 | ((data[ 1] >> 4) & 0x0f) << 0;")
 
+	def test_multibyte_unmarshal(self):
+		bytes = [Byte(ii) for ii in range(0,5)]
+		f = Field("big", 32)
+		self.assertTrue(f.place(bytes, (len(bytes) * 8) - 1 - 4))
+		self.assertEqual(self.cg.unmarshal(f),
+			"pre->big = ((data[ 0] >> 0) & 0x0f) << 28 | ((data[ 1] >> 0) & 0xff) << 20" +
+			" | ((data[ 2] >> 0) & 0xff) << 12 | ((data[ 3] >> 0) & 0xff) << 4" +
+			" | ((data[ 4] >> 4) & 0x0f) << 0;")
+
 class TestPlacement(unittest.TestCase):
 	def test_in_order_placement(self):
 		pp = InOrderPlacement()
