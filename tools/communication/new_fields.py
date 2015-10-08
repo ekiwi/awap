@@ -321,5 +321,40 @@ class TestCodeGeneration(unittest.TestCase):
 		self.assertTrue(f1.place([b0, b1], 11))
 		self.assertEqual(self.cg.unmarshal(f1), "test2 = ((data[ 0] >> 0) & 0x0f) << 4 | ((data[ 1] >> 4) & 0x0f) << 0;")
 
+class InOrderPlacement(object):
+	def place(self, fields):
+		if not isinstance(fields, list):
+			fields = [fields]
+		total_size = sum(ff.size for ff in fields)
+		byte_count = int(math.ceil(total_size / 8.0))
+		bytes = [Byte(ii) for ii in range(0, byte_count)]
+		msb = (byte_count * 8) - 1
+		for field in fields:
+			field.place(bytes, msb)
+			msb -= field.size
+		return (bytes, fields)
+
+class TestPlacement(unittest.TestCase):
+	def test_in_order_placement(self):
+		pp = InOrderPlacement()
+		f0 = Field("f0", 4)
+		f1 = Field("f1", 5)
+		f2 = Field("f2", 12)
+		f3 = Field("f3", 2)
+		f4 = Field("f4", 32)
+		fields = [f0, f1, f2, f3, f4]
+		(bytes, fields) = pp.place(fields)
+		self.assertEqual(len(bytes), 7)
+		self.assertEqual(f0.msb_in_byte(bytes[0]), 7)
+		self.assertEqual(f0.lsb_in_byte(bytes[0]), 4)
+		self.assertEqual(f1.msb_in_byte(bytes[0]), 3)
+		self.assertEqual(f1.lsb_in_byte(bytes[1]), 7)
+		self.assertEqual(f2.msb_in_byte(bytes[1]), 6)
+		self.assertEqual(f2.lsb_in_byte(bytes[2]), 3)
+		self.assertEqual(f3.msb_in_byte(bytes[2]), 2)
+		self.assertEqual(f3.lsb_in_byte(bytes[2]), 1)
+		self.assertEqual(f4.msb_in_byte(bytes[2]), 0)
+		self.assertEqual(f4.lsb_in_byte(bytes[6]), 1)
+
 if __name__ == "__main__":
 	unittest.main()
