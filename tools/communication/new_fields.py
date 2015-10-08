@@ -334,6 +334,12 @@ class InOrderPlacement(object):
 			msb -= field.size
 		return (bytes, fields)
 
+class ByteBoundarySortPlacement(object):
+	def place(self, fields, front_field=None):
+		if not isinstance(fields, list):
+			fields = [fields]
+		return ([], fields)
+
 class TestPlacement(unittest.TestCase):
 	def test_in_order_placement(self):
 		pp = InOrderPlacement()
@@ -355,6 +361,44 @@ class TestPlacement(unittest.TestCase):
 		self.assertEqual(f3.lsb_in_byte(bytes[2]), 1)
 		self.assertEqual(f4.msb_in_byte(bytes[2]), 0)
 		self.assertEqual(f4.lsb_in_byte(bytes[6]), 1)
+
+	def test_byte_boundary_sort_placement(self):
+		pp = ByteBoundarySortPlacement()
+		f0 = Field("a", 4)
+		f1 = Field("c", 7)
+		f2 = Field("b0", 1)
+		f3 = Field("d", 5)
+		f4 = Field("e", 3)
+		f5 = Field("big", 32)
+		f6 = Field("b3", 1)
+		fields = [f0, f1, f2, f3, f4, f5, f6]
+		front_field = Field("first_id", 5)
+		(bytes, fields) = pp.place(fields, front_field=front_field)
+		self.assertEqual(len(bytes), 7)
+		self.assertEqual(front_field.msb_in_byte(bytes[0]), 7)
+		self.assertEqual(front_field.lsb_in_byte(bytes[0]), 3)
+		self.assertEqual(f4.msb_in_byte(bytes[0]), 2)
+		self.assertEqual(f4.lsb_in_byte(bytes[0]), 0)
+		# 32bit data
+		self.assertEqual(f5.msb_in_byte(bytes[1]), 7)
+		self.assertEqual(f5.lsb_in_byte(bytes[1]), 0)
+		self.assertEqual(f5.msb_in_byte(bytes[2]), 7)
+		self.assertEqual(f5.lsb_in_byte(bytes[2]), 0)
+		self.assertEqual(f5.msb_in_byte(bytes[3]), 7)
+		self.assertEqual(f5.lsb_in_byte(bytes[3]), 0)
+		self.assertEqual(f5.msb_in_byte(bytes[4]), 7)
+		self.assertEqual(f5.lsb_in_byte(bytes[4]), 0)
+		#
+		self.assertEqual(f2.msb_in_byte(bytes[5]), 7)
+		self.assertEqual(f2.lsb_in_byte(bytes[5]), 7)
+		self.assertEqual(f1.msb_in_byte(bytes[5]), 6)
+		self.assertEqual(f1.lsb_in_byte(bytes[5]), 0)
+		self.assertEqual(f6.msb_in_byte(bytes[6]), 5)
+		self.assertEqual(f6.lsb_in_byte(bytes[6]), 5)
+		self.assertEqual(f3.msb_in_byte(bytes[6]), 4)
+		self.assertEqual(f3.lsb_in_byte(bytes[6]), 0)
+		self.assertEqual(f0.msb_in_byte(bytes[7]), 3)
+		self.assertEqual(f0.lsb_in_byte(bytes[7]), 0)
 
 if __name__ == "__main__":
 	unittest.main()
