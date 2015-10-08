@@ -338,7 +338,14 @@ class ByteBoundarySortPlacement(object):
 	def place(self, fields, front_field=None):
 		if not isinstance(fields, list):
 			fields = [fields]
-		return []
+		# sort fields, biggest fields first
+		fields = sorted(fields, key=lambda field: -field.size)
+		# allocate bytes for the worst case
+		worst_byte_count = sum(int(math.ceil(ff.size / 8.0)) for ff in fields) + 1
+		bytes = [Byte(ii) for ii in range(0, worst_byte_count)]
+		if front_field:
+			front_field.place(bytes, (worst_byte_count * 8) - 1)
+		return bytes
 
 class TestPlacement(unittest.TestCase):
 	def test_in_order_placement(self):
