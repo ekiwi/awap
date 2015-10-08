@@ -139,12 +139,16 @@ class CodeGenerator(object):
 		return cpp
 
 	def _read_and_shift_byte(self, byte, field):
+		# calculate bits in less significant bytes
+		offset  = (len(field.bytes) - field.bytes.index(byte) - 1) * 8
+		offset += field.lsb_in_byte(byte) - field.lsb
+		# offset = field.lsb - field.lsb_in_byte(byte) 
 		cpp = "(({data}[{index:2}] >> {lsb}) & 0x{mask}) << {offset}".format(
 			data=self.data_src,
 			index=byte.index,
 			lsb=field.lsb_in_byte(byte),
 			mask="{:02x}".format((1 << field.size_in_byte(byte)) - 1),
-			offset=field.lsb - field.lsb_in_byte(byte))
+			offset=offset)
 		return cpp
 
 	def unmarshal(self, field):
