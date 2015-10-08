@@ -43,8 +43,10 @@ ref_t {{service.name}}::createJava_{{ msg.name }}(const Slice<const uint8_t> inp
 		// this is safe, because we checked the length above
 		auto java_struct = obj.getUnderlying();
 		const auto data = input.data;
+
 		// unmarshal
-		{{ msg.cpp.unmarshal }}
+		{{ msg.cpp.unmarshal | indent(2) }}
+
 		// WARN: needs to be handed to java code before any java memory is allocated
 		//       or else it will be garbage collected!
 		return obj.getRef();
@@ -70,9 +72,11 @@ size_t {{service.name}}::fromJava_{{ msg.name }}(ref_t obj, const Slice<uint8_t>
 		%% for field in msg.fields
 		const auto {{ field.name }} = java_data->{{ field.name }};
 		%% endfor
+
 		// marshal, this is safe, because we checked the length above
 		auto data = output.data;
-		{{ msg.cpp.marshal }}
+		{{ msg.cpp.marshal | indent(2) }}
+
 		return Message::Bytes;
 	} else {
 		return 0;	// error, zero bytes written
