@@ -247,5 +247,30 @@ class TestFields(unittest.TestCase):
 		self.assertEqual(len(b.fields), 0)
 
 
+class MarshalCodeGenerator(object):
+	def __init__(self, data_src="data", field_prefix=""):
+		assert(isinstance(data_src, str))
+		assert(isinstance(field_prefix, str))
+		self.data_src = data_src
+		self.field_prefix = field_prefix
+
+	def generate(self, byte):
+		assert(isinstance(byte, Byte))
+		return ""
+
+class TestCodeGeneration(unittest.TestCase):
+	def setUp(self):
+		self.cg = MarshalCodeGenerator(data_src="data", field_prefix="pre->")
+
+	def test_marshall(self):
+		b = Byte()
+		f = Field("test", 4)
+		self.assertTrue(f.place(b, 3))
+		# for marshalling we need the bytes, not the field
+		self.assertRaises(AssertionError, self.cg.generate, f)
+		self.assertEqual(self.cg.generate(b), "data[ 0] = (test << 0);")
+		self.assertTrue(Field("test2", 2).place(b,5))
+		self.assertEqual(self.cg.generate(b), "data[ 0] = (test2 << 4) | (test << 0);")
+
 if __name__ == "__main__":
 	unittest.main()
