@@ -171,6 +171,8 @@ class ByteBoundarySortPlacement(object):
 	def place(self, fields, front_field=None):
 		if not isinstance(fields, list):
 			fields = [fields]
+		if front_field:
+			assert(front_field in fields)
 		# sort fields, biggest fields first
 		fields = sorted(fields, key=lambda field: -field.size)
 		# allocate bytes for the worst case
