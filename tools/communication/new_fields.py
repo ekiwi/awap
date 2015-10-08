@@ -284,9 +284,10 @@ class CodeGenerator(object):
 		assert(isinstance(byte, Byte))
 		assert(isinstance(field, Field))
 		mask = "{:02x}".format((1 << field.size_in_byte(byte)) - 1)
+		offset = field.lsb - field.lsb_in_byte(byte)
 		return "(({data}[{index:2}] >> {lsb}) & 0x{mask}) << {offset}".format(
 				data=self.data_src, index=byte.index,
-				lsb=field.lsb_in_byte(byte), mask=mask, offset=0)
+				lsb=field.lsb_in_byte(byte), mask=mask, offset=offset)
 
 	def unmarshal(self, field):
 		assert(isinstance(field, Field))
