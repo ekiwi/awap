@@ -269,7 +269,7 @@ class CodeGenerator(object):
 
 	def _read_and_shift_field(self, field, byte):
 		cpp = "({name} << {lsb})".format(
-			name=field.name,
+			name=self.field_prefix + field.name,
 			lsb=field.lsb_in_byte(byte))
 		return cpp
 
@@ -305,9 +305,9 @@ class TestCodeGeneration(unittest.TestCase):
 		self.assertTrue(f.place(b, 3))
 		# for marshalling we need the bytes, not the field
 		self.assertRaises(AssertionError, self.cg.marshal, f)
-		self.assertEqual(self.cg.marshal(b), "data[ 0] = (test << 0);")
+		self.assertEqual(self.cg.marshal(b), "data[ 0] = (pre->test << 0);")
 		self.assertTrue(Field("test2", 2).place(b,5))
-		self.assertEqual(self.cg.marshal(b), "data[ 0] = (test2 << 4) | (test << 0);")
+		self.assertEqual(self.cg.marshal(b), "data[ 0] = (pre->test2 << 4) | (pre->test << 0);")
 
 	def test_unmarshal(self):
 		b0 = Byte(0)
