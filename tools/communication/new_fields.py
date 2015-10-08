@@ -8,8 +8,10 @@ import math
 import unittest
 
 class Byte(object):
-	def __init__(self):
+	def __init__(self, index=0):
+		assert(isinstance(index, int))
 		self.fields = []
+		self.index = index
 		self._bits = [0] * 8
 
 	def place(self, field, msb, dry_run=False):
@@ -199,6 +201,9 @@ class TestFields(unittest.TestCase):
 		# a byte maintain references to all fields it holds
 		self.assertTrue(isinstance(b.fields, list))
 		self.assertEqual(len(b.fields), 0)
+		self.assertEqual(b.index, 0)
+		b1 = Byte(1)
+		self.assertEqual(b1.index, 1)
 
 	def test_byte_place_single_field(self):
 		b = Byte()
