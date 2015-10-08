@@ -259,9 +259,18 @@ class MarshalCodeGenerator(object):
 		self.data_src = data_src
 		self.field_prefix = field_prefix
 
+	def _read_and_shift_field(self, field, byte):
+		assert(isinstance(byte, Byte))
+		assert(isinstance(field, Field))
+		return "({name} << {lsb})".format(
+			name=field.name, lsb=field.lsb_in_byte(byte))
+
 	def generate(self, byte):
 		assert(isinstance(byte, Byte))
-		return ""
+		cpp = "{data}[{index:2}] = ".format(data=self.data_src, index=byte.index)
+		fields = sorted(byte.fields, key=lambda field: -field.lsb_in_byte(byte))
+		cpp += " | ".join(self._read_and_shift_field(ff, byte) for ff in fields) + ";"
+		return cpp
 
 class TestCodeGeneration(unittest.TestCase):
 	def setUp(self):
