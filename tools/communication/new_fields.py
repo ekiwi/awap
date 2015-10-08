@@ -332,13 +332,13 @@ class InOrderPlacement(object):
 		for field in fields:
 			field.place(bytes, msb)
 			msb -= field.size
-		return (bytes, fields)
+		return bytes
 
 class ByteBoundarySortPlacement(object):
 	def place(self, fields, front_field=None):
 		if not isinstance(fields, list):
 			fields = [fields]
-		return ([], fields)
+		return []
 
 class TestPlacement(unittest.TestCase):
 	def test_in_order_placement(self):
@@ -349,7 +349,7 @@ class TestPlacement(unittest.TestCase):
 		f3 = Field("f3", 2)
 		f4 = Field("f4", 32)
 		fields = [f0, f1, f2, f3, f4]
-		(bytes, fields) = pp.place(fields)
+		bytes = pp.place(fields)
 		self.assertEqual(len(bytes), 7)
 		self.assertEqual(f0.msb_in_byte(bytes[0]), 7)
 		self.assertEqual(f0.lsb_in_byte(bytes[0]), 4)
@@ -373,7 +373,7 @@ class TestPlacement(unittest.TestCase):
 		f6 = Field("b3", 1)
 		fields = [f0, f1, f2, f3, f4, f5, f6]
 		front_field = Field("first_id", 5)
-		(bytes, fields) = pp.place(fields, front_field=front_field)
+		bytes = pp.place(fields, front_field=front_field)
 		self.assertEqual(len(bytes), 7)
 		self.assertEqual(front_field.msb_in_byte(bytes[0]), 7)
 		self.assertEqual(front_field.lsb_in_byte(bytes[0]), 3)
