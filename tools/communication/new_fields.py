@@ -268,10 +268,10 @@ class CodeGenerator(object):
 		self.field_prefix = field_prefix
 
 	def _read_and_shift_field(self, field, byte):
-		assert(isinstance(byte, Byte))
-		assert(isinstance(field, Field))
-		return "({name} << {lsb})".format(
-			name=field.name, lsb=field.lsb_in_byte(byte))
+		cpp = "({name} << {lsb})".format(
+			name=field.name,
+			lsb=field.lsb_in_byte(byte))
+		return cpp
 
 	def marshal(self, byte):
 		assert(isinstance(byte, Byte))
@@ -281,13 +281,13 @@ class CodeGenerator(object):
 		return cpp
 
 	def _read_and_shift_byte(self, byte, field):
-		assert(isinstance(byte, Byte))
-		assert(isinstance(field, Field))
-		mask = "{:02x}".format((1 << field.size_in_byte(byte)) - 1)
-		offset = field.lsb - field.lsb_in_byte(byte)
-		return "(({data}[{index:2}] >> {lsb}) & 0x{mask}) << {offset}".format(
-				data=self.data_src, index=byte.index,
-				lsb=field.lsb_in_byte(byte), mask=mask, offset=offset)
+		cpp = "(({data}[{index:2}] >> {lsb}) & 0x{mask}) << {offset}".format(
+			data=self.data_src,
+			index=byte.index,
+			lsb=field.lsb_in_byte(byte),
+			mask="{:02x}".format((1 << field.size_in_byte(byte)) - 1),
+			offset=field.lsb - field.lsb_in_byte(byte))
+		return cpp
 
 	def unmarshal(self, field):
 		assert(isinstance(field, Field))
