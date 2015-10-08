@@ -149,7 +149,7 @@ class CodeGenerator(object):
 
 	def unmarshal(self, field):
 		assert(isinstance(field, Field))
-		cpp = "{name} = ".format(name=field.name)
+		cpp = "{name} = ".format(name=self.field_prefix + field.name)
 		cpp += " | ".join(self._read_and_shift_byte(bb, field) for bb in field.bytes) + ";"
 		return cpp
 

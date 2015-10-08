@@ -171,9 +171,9 @@ class TestCodeGeneration(unittest.TestCase):
 		self.assertTrue(f0.place(b1, 3))
 		# for unmarshalling we need the field, not the byte
 		self.assertRaises(AssertionError, self.cg.unmarshal, b1)
-		self.assertEqual(self.cg.unmarshal(f0), "test = ((data[ 1] >> 0) & 0x0f) << 0;")
+		self.assertEqual(self.cg.unmarshal(f0), "pre->test = ((data[ 1] >> 0) & 0x0f) << 0;")
 		self.assertTrue(f1.place([b0, b1], 11))
-		self.assertEqual(self.cg.unmarshal(f1), "test2 = ((data[ 0] >> 0) & 0x0f) << 4 | ((data[ 1] >> 4) & 0x0f) << 0;")
+		self.assertEqual(self.cg.unmarshal(f1), "pre->test2 = ((data[ 0] >> 0) & 0x0f) << 4 | ((data[ 1] >> 4) & 0x0f) << 0;")
 
 class TestPlacement(unittest.TestCase):
 	def test_in_order_placement(self):
