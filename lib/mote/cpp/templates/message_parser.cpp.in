@@ -37,13 +37,14 @@ ref_t {{service.name}}::createJava_{{ msg.name }}(const Slice<const uint8_t> inp
 	//       or else it will be garbage collected!
 	return obj.getRef();
 		%% else
-	if(check(Message::Bytes <= data.length, Warning::MessageParserTooShort)) {
+	if(check(Message::Bytes <= input.length, Warning::MessageParserTooShort)) {
 		// create java object
 		Message::JavaClass obj(awapCommonInfusion);
 		// this is safe, because we checked the length above
-		auto java_data = obj.getUnderlying();
+		auto java_struct = obj.getUnderlying();
 		const auto data = input.data;
-		{{ msg.unmarshal }}
+		// unmarshal
+		{{ msg.cpp.unmarshal }}
 		// WARN: needs to be handed to java code before any java memory is allocated
 		//       or else it will be garbage collected!
 		return obj.getRef();
@@ -64,15 +65,17 @@ size_t {{service.name}}::fromJava_{{ msg.name }}(ref_t obj, const Slice<uint8_t>
 		%% if msg.fields|length > 0
 		auto java_data = static_cast<const Message::JavaClass::UnderlyingType*>(REF_TO_VOIDP(obj));
 		%% endif
-		// this is safe, because we checked the length above
-		auto structured_data = reinterpret_cast<Message*>(output.data);
-		structured_data->id = Message::Id;
+		// field aliases
+		const auto id = Message::Id;
 		%% for field in msg.fields
-		structured_data->{{ field.name }} = java_data->{{ field.name }};
+		const auto {{ field.name }} = java_data->{{ field.name }};
 		%% endfor
-		return Message::Bits;
+		// marshal, this is safe, because we checked the length above
+		auto data = output.data;
+		{{ msg.cpp.marshal }}
+		return Message::Bytes;
 	} else {
-		return 0;	// error, zero bits written
+		return 0;	// error, zero bytes written
 	}
 }
 
