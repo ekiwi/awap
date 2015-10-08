@@ -6,7 +6,7 @@
 
 
 import unittest
-from new_fields import Byte, Field, CodeGenerator, InOrderPlacement, ByteBoundarySortPlacement
+from fields import Byte, Field, CodeGenerator, InOrderPlacement, ByteBoundarySortPlacement
 
 class TestFields(unittest.TestCase):
 	def test_field_defaults(self):

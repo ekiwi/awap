@@ -1,207 +1,183 @@
 #!/usr/bin/env python2
 # -*- coding: utf-8 -*-
 
-# fiels.py
+# fields.py
 # Copyright (c) 2015, Kevin Laeufer <kevin.laeufer@rwth-aachen.de>
 
 import math
 
-class Field(object):
-	def __init__(self, name, bits):
-		self.name = name
-		self.bits = bits
-		self.pos_byte = -1
-		self.pos_bit = -1		# LSB
-		self.place_last = False		# placement **hint**
-
-	def place(self, byte, bit):
-		self.pos_byte = byte
-		self.pos_bit = bit		# LSB
-		return self.leading_bits
-
-	@property
-	def additional_byte_count(self):
-		return int(math.ceil(self.bits / 8.0)) - 1
-
-	@property
-	def leading_bits(self):
-		return self.bits - (self.additional_byte_count * 8)
-
-	@property
-	def byte_mask(self):
-		return "{:#04x}".format((1 << self.leading_bits) - 1)
-
-	@property
-	def full_mask(self):
-		return "{value:#0{zeros}x}".format(
-			value=(1 << self.bits) - 1,
-			zeros=(2 + self.bits / 4))
-
-	def cpp_read(self, data="data", prefix=""):
-		cpp = "{value:{padding}} = (({data}[{byte:2}] >> {bit}) & {mask})".format(
-			value=prefix + self.name,
-			padding=10,
-			data=data,
-			byte=self.pos_byte,
-			bit=self.pos_bit,
-			mask=self.byte_mask)
-		for ii in range(0, self.additional_byte_count):
-			cpp += " << ({shift} * 8) | {data}[{byte}]".format(
-				shift=self.additional_byte_count - ii,
-				data=data,
-				byte=ii+self.pos_byte + 1)
-		return cpp + ";"
-
-	def cpp_get_byte(self, byte_id, prefix=""):
-		shift = self.pos_bit - (self.additional_byte_count - byte_id) * 8
-		cpp = "(({value} & {mask})".format(value=prefix + self.name, mask=self.full_mask)
-		if shift >= 0:
-			cpp += " << {:2})".format(shift)
-		else:
-			cpp += " >> {:2})".format(-shift)
-		return cpp
-
-	def __str__(self):
-		s = "{:<8}".format(self.name) + "#" * self.bits
-		if self.pos_bit >= 0:
-			s += "[]"
-		return s
-
-	def __repr__(self):
-		return self.name + ": " + "#" * self.bits
-
 class Byte(object):
-	def __init__(self, field=None):
-		self.free_bits = 8
+	def __init__(self, index=0):
+		assert(isinstance(index, int))
 		self.fields = []
-		self.bytes = 0	#additional bytes to hold fields with bits > 8
-		self.pos = -1
-		if isinstance(field, Field):
-			self.insert(field)
+		self.index = index
+		self._bits = [0] * 8
 
-
-	def insert(self, field):
-		if(field.leading_bits > self.free_bits):
-			return False
-		if field.additional_byte_count > 0:
-			if self.bytes > 0:
-				return False
-			else:
-				self.bytes = field.additional_byte_count
-		self.free_bits -= field.leading_bits
-		self.fields.append(field)
+	def place(self, field, msb, dry_run=False):
+		assert(isinstance(field, Field))
+		# calculate msb and lsb in the local (Byte) context
+		local_msb = min(msb, 7)
+		local_lsb = max(msb - field.size + 1, 0)
+		local_size = local_msb - local_lsb + 1
+		if local_size <= 0:
+			return False	# nothing to insert
+		# check if space available
+		if sum(self._bits[local_lsb:local_msb + 1]) > 0:
+			return False	# error: overlapping with already place field
+		if not dry_run:
+			self._bits[local_lsb:local_msb + 1] = [1] * local_size
+			self.fields.append(field)
 		return True
 
-	def place(self, pos):
-		""" propagates placement information to the fields """
-		self.pos = pos
-		# place fields from LSB to MSB
-		bit = 0
-		# make sure that field with bits > 8 are placed at the LSB
-		fields = sorted(self.fields, key=lambda field: -field.bits + 100 * field.place_last)
-		for f in fields:
-			bit += f.place(byte=self.pos, bit=bit)
-		# return position of next byte
-		return self.pos + 1 + self.bytes
+	def can_place(self, field, msb):
+		return self.place(field=field, msb=msb, dry_run=True)
 
-	def cpp_write(self, data="data", prefix=""):
-		cpp = "{data}[{byte:2}] = ".format(data=data, byte=self.pos)
-		fields = sorted(self.fields, key=lambda field: -field.pos_bit)
-		cpp += " | ".join(ff.cpp_get_byte(0, prefix) for ff in fields) + ";"
-		for ii in range(1, self.bytes + 1):
-			cpp += "\n{data}[{byte:2}] = ({value} >> ({shift} * 8) & 0xff;".format(
-				data=data,
-				byte=self.pos + ii,
-				value=prefix + self.fields[0].name,
-				shift=self.fields[0].additional_byte_count - ii)
-		return cpp
+class Field(object):
+	def __init__(self, name, size):
+		assert(isinstance(name, str))
+		assert(isinstance(size, int))
+		assert(size > 0)
+		self.name = name
+		self.bytes = []
+		# size is immutable
+		self._size = size
+		self._msb = -1
 
-class Fields(object):
-	""" main class, generated C++ code from fields """
+	@property
+	def size(self):
+		return self._size
+
+	@property
+	def msb(self):
+		return self._msb
+
+	@property
+	def lsb(self):
+		if self._msb == -1:	return -1
+		else: return self._msb + 1 - self.size
+
+	def _bit_offset(self, byte):
+		return (len(self.bytes) - self.bytes.index(byte) - 1) * 8
+
+	def msb_in_byte(self, byte):
+		assert(isinstance(byte, Byte))
+		if not byte in self.bytes:
+			return -1
+		return min(self.msb - self._bit_offset(byte), 7)
+
+	def lsb_in_byte(self, byte):
+		assert(isinstance(byte, Byte))
+		if not byte in self.bytes:
+			return -1
+		return max(self.lsb - self._bit_offset(byte), 0)
+
+	def size_in_byte(self, byte):
+		assert(isinstance(byte, Byte))
+		if not byte in self.bytes:
+			return -1
+		return self.msb_in_byte(byte) - self.lsb_in_byte(byte) + 1
+
+	def place(self, bytes, msb):
+		if self._msb > -1 or len(self.bytes) > 0:
+			return False	# already placed
+
+		if isinstance(bytes, Byte):
+			bytes = [bytes]
+		assert(isinstance(bytes, list))
+		assert(isinstance(bytes[0], Byte))
+
+		max_msb = (len(bytes) * 8) - 1
+		if msb > max_msb:
+			return False	# field does not fit into bytes
+
+		lsb = msb + 1 - self._size
+		if lsb < 0:
+			return False	# field does not fit into bytes
+
+		# remove not needed bytes from list
+		remove_leading_byte_count = len(bytes) - ((msb / 8) + 1)
+		remove_trailing_byte_count = lsb / 8
+		if remove_trailing_byte_count > 0:
+			bytes = bytes[remove_leading_byte_count:-remove_trailing_byte_count]
+		else:
+			bytes = bytes[remove_leading_byte_count:]
+		msb -= remove_trailing_byte_count * 8
+		lsb -= remove_trailing_byte_count * 8
+
+		# check if bytes have space
+		byte_msb = [(msb % 8) + 8 * ii for ii in range(0, len(bytes))]
+		if not all(bb.can_place(self, msb) for bb, msb in zip(bytes, byte_msb)):
+			return False	# not all bytes can contain the value
+
+		# place field in bytes
+		for bb, msb in zip(bytes, byte_msb):
+			bb.place(self, msb)
+
+		self.bytes = list(bytes)	# shallow copy
+		self._msb = msb
+		return True		# success
+
+
+class CodeGenerator(object):
 	def __init__(self, data_src="data", field_prefix=""):
+		assert(isinstance(data_src, str))
+		assert(isinstance(field_prefix, str))
 		self.data_src = data_src
 		self.field_prefix = field_prefix
-		self.fields = []
-		self.bytes = []
-		self.front_field = None
 
-	def set_front_field(self, name, bits):
-		assert(isinstance(name, str))
-		bits = int(bits)
-		assert(bits > 0)
-		self.front_field = Field(name, bits)
-		self.front_field.place_last = True
+	def _read_and_shift_field(self, field, byte):
+		cpp = "({name} << {lsb})".format(
+			name=self.field_prefix + field.name,
+			lsb=field.lsb_in_byte(byte))
+		return cpp
 
-	def add_field(self, name, bits):
-		assert(isinstance(name, str))
-		bits = int(bits)
-		assert(bits > 0)
-		self.fields.append(Field(name, bits))
+	def marshal(self, byte):
+		assert(isinstance(byte, Byte))
+		cpp = "{data}[{index:2}] = ".format(data=self.data_src, index=byte.index)
+		fields = sorted(byte.fields, key=lambda field: -field.lsb_in_byte(byte))
+		cpp += " | ".join(self._read_and_shift_field(ff, byte) for ff in fields) + ";"
+		return cpp
 
-	def to_dict(self):
-		(fields, bytes) = self._sort_and_place()
-		from_data = "\n".join(
-			ff.cpp_read(self.data_src, self.field_prefix) for ff in fields)
-		if self.front_field:
-			from_data = self.front_field.cpp_read(
-				self.data_src, self.field_prefix) + "\n" + from_data
-		to_data = "\n".join(
-			bb.cpp_write(self.data_src, self.field_prefix) for bb in bytes)
-		byte_count = sum((1 + b.bytes) for b in bytes)
-		return {
-			'unmarshal': from_data,
-			'marshal': to_data,
-			'bytes': byte_count,
-		}
+	def _read_and_shift_byte(self, byte, field):
+		cpp = "(({data}[{index:2}] >> {lsb}) & 0x{mask}) << {offset}".format(
+			data=self.data_src,
+			index=byte.index,
+			lsb=field.lsb_in_byte(byte),
+			mask="{:02x}".format((1 << field.size_in_byte(byte)) - 1),
+			offset=field.lsb - field.lsb_in_byte(byte))
+		return cpp
 
-	def _sort_and_place(self):
-		fields = sorted(self.fields, key=lambda field: -field.bits)
-		bytes = []
-		if self.front_field:
-			self.front_field.place_last = True
-			bytes.append(Byte(self.front_field))
+	def unmarshal(self, field):
+		assert(isinstance(field, Field))
+		cpp = "{name} = ".format(name=field.name)
+		cpp += " | ".join(self._read_and_shift_byte(bb, field) for bb in field.bytes) + ";"
+		return cpp
+
+
+class InOrderPlacement(object):
+	def place(self, fields):
+		if not isinstance(fields, list):
+			fields = [fields]
+		total_size = sum(ff.size for ff in fields)
+		byte_count = int(math.ceil(total_size / 8.0))
+		bytes = [Byte(ii) for ii in range(0, byte_count)]
+		msb = (byte_count * 8) - 1
 		for field in fields:
-			for byte in bytes:
-				if byte.insert(field):
-					field = None
-					break
-			if field:
-				bytes.append(Byte(field))
-		# place
-		pos = 0
-		for bb in bytes:
-			pos = bb.place(pos=pos)
-		# sort by position
-		fields = sorted(fields, key=lambda field: field.pos_byte)
-		return (fields, bytes)
+			field.place(bytes, msb)
+			msb -= field.size
+		return bytes
 
-if __name__ == "__main__":
-	fields = Fields()
-	fields.add_field("a", 4)
-	fields.add_field("c", 7)
-	fields.add_field("b0", 1)
-	fields.add_field("d", 5)
-	fields.add_field("e", 3)
-#	fields.add_field("f", 2)
-#	fields.add_field("b1", 1)
-#	fields.add_field("g", 8)
-#	fields.add_field("h", 5)
-#	fields.add_field("i", 3)
-#	fields.add_field("b2", 1)
-#	fields.add_field("j", 5)
-#	fields.add_field("k", 5)
-#	fields.add_field("l", 2)
-#	fields.add_field("m", 12)
-#	fields.add_field("n", 17)
-	fields.add_field("big", 32)
-	fields.add_field("b3", 1)
-	fields.set_front_field("first_id", 5)
-
-	dd = fields.to_dict()
-	print("\nunmarshal:\n{}".format(dd['unmarshal']))
-	print("\nmarshal:\n{}".format(dd['marshal']))
-	print("\nbytes:\n{}".format(dd['bytes']))
-
-	# TODO: reenable statistics
-	#print("Could fit {} bits ({} bytes) into {} bytes => {}%.".format(
-	#	bits, bits / 8.0, byte_count, int(byte_count / (bits / 8.0) * 100)))
+class ByteBoundarySortPlacement(object):
+	def place(self, fields, front_field=None):
+		if not isinstance(fields, list):
+			fields = [fields]
+		if front_field:
+			assert(front_field in fields)
+		# sort fields, biggest fields first
+		fields = sorted(fields, key=lambda field: -field.size)
+		# allocate bytes for the worst case
+		worst_byte_count = sum(int(math.ceil(ff.size / 8.0)) for ff in fields) + 1
+		bytes = [Byte(ii) for ii in range(0, worst_byte_count)]
+		if front_field:
+			front_field.place(bytes, (worst_byte_count * 8) - 1)
+		return bytes
