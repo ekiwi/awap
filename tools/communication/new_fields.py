@@ -252,7 +252,7 @@ class TestFields(unittest.TestCase):
 		self.assertEqual(len(b.fields), 0)
 
 
-class MarshalCodeGenerator(object):
+class CodeGenerator(object):
 	def __init__(self, data_src="data", field_prefix=""):
 		assert(isinstance(data_src, str))
 		assert(isinstance(field_prefix, str))
@@ -265,7 +265,7 @@ class MarshalCodeGenerator(object):
 		return "({name} << {lsb})".format(
 			name=field.name, lsb=field.lsb_in_byte(byte))
 
-	def generate(self, byte):
+	def marshal(self, byte):
 		assert(isinstance(byte, Byte))
 		cpp = "{data}[{index:2}] = ".format(data=self.data_src, index=byte.index)
 		fields = sorted(byte.fields, key=lambda field: -field.lsb_in_byte(byte))
@@ -274,17 +274,17 @@ class MarshalCodeGenerator(object):
 
 class TestCodeGeneration(unittest.TestCase):
 	def setUp(self):
-		self.cg = MarshalCodeGenerator(data_src="data", field_prefix="pre->")
+		self.cg = CodeGenerator(data_src="data", field_prefix="pre->")
 
-	def test_marshall(self):
+	def test_marshal(self):
 		b = Byte()
 		f = Field("test", 4)
 		self.assertTrue(f.place(b, 3))
-		# for marshalling we need the bytes, not the field
-		self.assertRaises(AssertionError, self.cg.generate, f)
-		self.assertEqual(self.cg.generate(b), "data[ 0] = (test << 0);")
+		# for marshaling we need the bytes, not the field
+		self.assertRaises(AssertionError, self.cg.marshal, f)
+		self.assertEqual(self.cg.marshal(b), "data[ 0] = (test << 0);")
 		self.assertTrue(Field("test2", 2).place(b,5))
-		self.assertEqual(self.cg.generate(b), "data[ 0] = (test2 << 4) | (test << 0);")
+		self.assertEqual(self.cg.marshal(b), "data[ 0] = (test2 << 4) | (test << 0);")
 
 if __name__ == "__main__":
 	unittest.main()
