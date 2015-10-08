@@ -72,6 +72,12 @@ class Field(object):
 			return -1
 		return max(self.lsb - self._bit_offset(byte), 0)
 
+	def size_in_byte(self, byte):
+		assert(isinstance(byte, Byte))
+		if not byte in self.bytes:
+			return -1
+		return self.msb_in_byte(byte) - self.lsb_in_byte(byte) + 1
+
 	def place(self, bytes, msb):
 		if self._msb > -1 or len(self.bytes) > 0:
 			return False	# already placed
@@ -177,9 +183,11 @@ class TestFields(unittest.TestCase):
 		# in bytes[0]: 0FFFFFFF
 		self.assertEqual(f.msb_in_byte(bytes[0]), 6)
 		self.assertEqual(f.lsb_in_byte(bytes[0]), 0)
+		self.assertEqual(f.size_in_byte(bytes[0]), 7)
 		# in bytes[1]: FFFFF000
 		self.assertEqual(f.msb_in_byte(bytes[1]), 7)
 		self.assertEqual(f.lsb_in_byte(bytes[1]), 3)
+		self.assertEqual(f.size_in_byte(bytes[1]), 5)
 
 		# place one field in more bytes than needed
 		bytes2 = [Byte(), Byte(), Byte()]
