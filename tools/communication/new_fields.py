@@ -280,6 +280,20 @@ class CodeGenerator(object):
 		cpp += " | ".join(self._read_and_shift_field(ff, byte) for ff in fields) + ";"
 		return cpp
 
+	def _read_and_shift_byte(self, byte, field):
+		assert(isinstance(byte, Byte))
+		assert(isinstance(field, Field))
+		mask = "{:02x}".format((1 << field.size_in_byte(byte)) - 1)
+		return "(({data}[{index:2}] >> {lsb}) & 0x{mask}) << {offset}".format(
+				data=self.data_src, index=byte.index,
+				lsb=field.lsb_in_byte(byte), mask=mask, offset=0)
+
+	def unmarshal(self, field):
+		assert(isinstance(field, Field))
+		cpp = "{name} = ".format(name=field.name)
+		cpp += " | ".join(self._read_and_shift_byte(bb, field) for bb in field.bytes) + ";"
+		return cpp
+
 class TestCodeGeneration(unittest.TestCase):
 	def setUp(self):
 		self.cg = CodeGenerator(data_src="data", field_prefix="pre->")
@@ -288,11 +302,23 @@ class TestCodeGeneration(unittest.TestCase):
 		b = Byte()
 		f = Field("test", 4)
 		self.assertTrue(f.place(b, 3))
-		# for marshaling we need the bytes, not the field
+		# for marshalling we need the bytes, not the field
 		self.assertRaises(AssertionError, self.cg.marshal, f)
 		self.assertEqual(self.cg.marshal(b), "data[ 0] = (test << 0);")
 		self.assertTrue(Field("test2", 2).place(b,5))
 		self.assertEqual(self.cg.marshal(b), "data[ 0] = (test2 << 4) | (test << 0);")
+
+	def test_unmarshal(self):
+		b0 = Byte(0)
+		b1 = Byte(1)
+		f0 = Field("test", 4)
+		f1 = Field("test2", 8)
+		self.assertTrue(f0.place(b1, 3))
+		# for unmarshalling we need the field, not the byte
+		self.assertRaises(AssertionError, self.cg.unmarshal, b1)
+		self.assertEqual(self.cg.unmarshal(f0), "test = ((data[ 1] >> 0) & 0x0f) << 0;")
+		self.assertTrue(f1.place([b0, b1], 11))
+		self.assertEqual(self.cg.unmarshal(f1), "test2 = ((data[ 0] >> 0) & 0x0f) << 4 | ((data[ 1] >> 4) & 0x0f) << 0;")
 
 if __name__ == "__main__":
 	unittest.main()
