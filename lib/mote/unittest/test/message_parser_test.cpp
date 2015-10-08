@@ -27,7 +27,7 @@ MessageParserTest::testSimpleUInt32Message()
 
 	{
 		// prepare SimpleUInt32Message body
-		uint8_t msg[5] = { 0x80, 0x67, 0x45, 0x23, 0x01 };
+		uint8_t msg[5] = { 0x01, 0x23, 0x45, 0x67, 0x80 };
 
 		// parse to Java Object
 		ref_t obj = Service::createJava_SimpleUInt32Message(slice(msg));
@@ -38,9 +38,9 @@ MessageParserTest::testSimpleUInt32Message()
 		// test that 32bits were read
 		uint8_t out[5] = { 0, 0, 0, 0, 0 };
 		// 32bit payload + 4bit message id
-		TEST_ASSERT_EQUALS(Service::fromJava_SimpleUInt32Message(obj, slice(out)), 36u);
+		TEST_ASSERT_EQUALS(Service::fromJava_SimpleUInt32Message(obj, slice(out)), 5u);
 		// message id is 1 and should be set by the `fromJava` method
-		msg[0] |= 1;
+		msg[0] |= (1 << 4);
 		TEST_ASSERT_EQUALS_ARRAY(msg, out, slice(msg).length);
 	}
 
