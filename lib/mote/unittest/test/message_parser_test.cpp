@@ -154,9 +154,9 @@ MessageParserTest::testMessageParserFactory()
 		TEST_ASSERT_EQUALS(parser.createJava, Service::createJava_SimpleUInt32Message);
 	}
 
-	// test with invalid SimpleUInt32Message
+	// test with invalid message id
 	{
-		uint8_t msg[4] = { 0x01 | (1 << 4), 0x23, 0x45, 0x67 };
+		uint8_t msg[4] = { 0x01 | (0xf << 4), 0x23, 0x45, 0x67 };
 		auto parser = getMessageParser(MessageTestServiceId, slice(msg));
 		TEST_ASSERT_EQUALS(parser.createJava, static_cast<void*>(nullptr));
 	}
