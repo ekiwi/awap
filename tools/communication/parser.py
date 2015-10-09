@@ -185,6 +185,10 @@ class BooleanField(NamedCommunicationElement):
 		return "bool"
 
 	@property
+	def cpp_unsigned_type(self):
+		return "uint8_t"
+
+	@property
 	def java_type(self):
 		return "boolean"
 
@@ -196,7 +200,7 @@ class BooleanField(NamedCommunicationElement):
 		dd = super(BooleanField, self).to_dict()
 		dd['name'] = camelCase(dd['name'])
 		dd['size'] = self.size
-		dd['cpp']  = { 'type': self.cpp_type }
+		dd['cpp'] = { 'type': self.cpp_type, 'unsigned_type': self.cpp_unsigned_type }
 		dd['java'] = { 'type': self.java_type, 'box': "Boolean"}
 		dd['is_enum'] = False
 		dd['is_bool'] = True
@@ -214,6 +218,11 @@ class IntField(NamedCommunicationElement):
 		elif self.size <= 16: tt = "int16_t"
 		elif self.size <= 32: tt = "int32_t"
 		return ("u" + tt) if self.unsigned else tt
+
+	@property
+	def cpp_unsigned_type(self):
+		if self.unsigned: return self.cpp_type
+		else: return "u" + self.cpp_type
 
 	@property
 	def java_type(self):
@@ -234,7 +243,7 @@ class IntField(NamedCommunicationElement):
 		dd['name'] = camelCase(dd['name'])
 		dd['unsigned'] = self.unsigned
 		dd['size'] = self.size
-		dd['cpp']  = { 'type': self.cpp_type }
+		dd['cpp'] = { 'type': self.cpp_type, 'unsigned_type': self.cpp_unsigned_type }
 		java_box = self.java_type
 		java_box = java_box[0].upper() + java_box[1:]
 		dd['java'] = { 'type': self.java_type, 'box': java_box}
@@ -256,6 +265,11 @@ class EnumField(NamedCommunicationElement):
 		return self.enum_class.value.name
 
 	@property
+	def cpp_unsigned_type(self):
+		# enums are always represented by unsigned integers
+		return self.enum_class.value.cpp_unsigned_type
+
+	@property
 	def size(self):
 		return self.enum_class.value.size
 
@@ -263,7 +277,7 @@ class EnumField(NamedCommunicationElement):
 		dd = super(EnumField, self).to_dict()
 		dd['name'] = camelCase(dd['name'])
 		dd['size'] = self.size
-		dd['cpp'] = { 'type': self.cpp_type }
+		dd['cpp'] = { 'type': self.cpp_type, 'unsigned_type': self.cpp_unsigned_type }
 		dd['java'] = { 'type': self.java_type }
 		dd['enum_name'] = self.enum_class.value.name
 		dd['is_enum'] = True
@@ -349,12 +363,16 @@ class EnumType(NamedCommunicationElement):
 		elif self.size <= 16: return "uint16_t"
 		elif self.size <= 32: return "uint32_t"
 
+	@property
+	def cpp_unsigned_type(self):
+		return self.cpp_type
+
 	def to_dict(self):
 		dd = super(EnumType, self).to_dict()
 		dd['elements'] = [element.to_dict() for element in self.elements]
 		dd['size'] = self.size
 		dd['max_id'] = self.max_id
-		dd['cpp'] = { 'type': self.cpp_type }
+		dd['cpp'] = { 'type': self.cpp_type, 'unsigned_type': self.cpp_unsigned_type }
 		dd['java'] = { 'type': self.java_type }
 		return dd
 
