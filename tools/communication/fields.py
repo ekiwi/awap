@@ -126,9 +126,12 @@ class CodeGenerator(object):
 		self.field_prefix = field_prefix
 
 	def _read_and_shift_field(self, field, byte):
-		cpp = "({name} << {lsb})".format(
+		offset  = (len(field.bytes) - field.bytes.index(byte) - 1) * 8
+		offset += - field.lsb
+		cpp = "({name} {shift} {lsb})".format(
 			name=self.field_prefix + field.name,
-			lsb=field.lsb_in_byte(byte))
+			shift = ">>" if offset > 0 else "<<",
+			lsb=abs(offset))
 		return cpp
 
 	def marshal(self, byte):
