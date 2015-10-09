@@ -22,6 +22,13 @@ void setAwapCommonInfusion(ostfriesentee::Infusion& inf) {
 	dj_mem_addSafePointer((void**)&awapCommonInfusion);
 }
 
+template<typename T>
+static inline constexpr T
+cap(const int64_t value, const int64_t min_value, const int64_t max_value)
+{
+	return static_cast<T>(std::min(max_value, std::max(min_value, value)));
+}
+
 %% for service in services
 	%% for msg in service.messages
 		%% if msg.fields|length == 0
@@ -69,8 +76,11 @@ size_t {{service.name}}::fromJava_{{ msg.name }}(ref_t obj, const Slice<uint8_t>
 		%% endif
 		// field aliases
 		const auto id = Message::Id;
+		// cap the data to make sure it can be transmitted and cast to unsigned
+		// type in order for the following shift operations to work as intended
+		// (logic vs. arithmetic shift)
 		%% for field in msg.fields
-		const auto {{ field.name }} = java_data->{{ field.name }};
+		const auto {{ field.name }} = cap<{{ field.cpp.unsigned_type }}>(java_data->{{ field.name }}, {{ field.min_value }}, {{ field.max_value }});
 		%% endfor
 
 		// marshal, this is safe, because we checked the length above
