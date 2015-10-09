@@ -193,6 +193,14 @@ class BooleanField(NamedCommunicationElement):
 		return "boolean"
 
 	@property
+	def max_value(self):
+		return 1
+
+	@property
+	def min_value(self):
+		return 0
+
+	@property
 	def size(self):
 		return 1
 
@@ -200,6 +208,8 @@ class BooleanField(NamedCommunicationElement):
 		dd = super(BooleanField, self).to_dict()
 		dd['name'] = camelCase(dd['name'])
 		dd['size'] = self.size
+		dd['max_value'] = self.max_value
+		dd['min_value'] = self.min_value
 		dd['cpp'] = { 'type': self.cpp_type, 'unsigned_type': self.cpp_unsigned_type }
 		dd['java'] = { 'type': self.java_type, 'box': "Boolean"}
 		dd['is_enum'] = False
@@ -235,6 +245,16 @@ class IntField(NamedCommunicationElement):
 		elif size <= 32: return "int"
 
 	@property
+	def max_value(self):
+		if self.unsigned: return (1 << self._size)       - 1
+		else:             return (1 << (self._size - 1)) - 1
+
+	@property
+	def min_value(self):
+		if self.unsigned: return 0
+		else:             return - (self.max_value + 1)
+
+	@property
 	def size(self):
 		return self._size
 
@@ -243,6 +263,8 @@ class IntField(NamedCommunicationElement):
 		dd['name'] = camelCase(dd['name'])
 		dd['unsigned'] = self.unsigned
 		dd['size'] = self.size
+		dd['max_value'] = self.max_value
+		dd['min_value'] = self.min_value
 		dd['cpp'] = { 'type': self.cpp_type, 'unsigned_type': self.cpp_unsigned_type }
 		java_box = self.java_type
 		java_box = java_box[0].upper() + java_box[1:]
@@ -266,8 +288,15 @@ class EnumField(NamedCommunicationElement):
 
 	@property
 	def cpp_unsigned_type(self):
-		# enums are always represented by unsigned integers
 		return self.enum_class.value.cpp_unsigned_type
+
+	@property
+	def max_value(self):
+		return self.enum_class.value.max_value
+
+	@property
+	def min_value(self):
+		return self.enum_class.value.min_value
 
 	@property
 	def size(self):
@@ -277,6 +306,8 @@ class EnumField(NamedCommunicationElement):
 		dd = super(EnumField, self).to_dict()
 		dd['name'] = camelCase(dd['name'])
 		dd['size'] = self.size
+		dd['max_value'] = self.max_value
+		dd['min_value'] = self.min_value
 		dd['cpp'] = { 'type': self.cpp_type, 'unsigned_type': self.cpp_unsigned_type }
 		dd['java'] = { 'type': self.java_type }
 		dd['enum_name'] = self.enum_class.value.name
@@ -367,10 +398,20 @@ class EnumType(NamedCommunicationElement):
 	def cpp_unsigned_type(self):
 		return self.cpp_type
 
+	@property
+	def max_value(self):
+		return self.max_id
+
+	@property
+	def min_value(self):
+		return 0
+
 	def to_dict(self):
 		dd = super(EnumType, self).to_dict()
 		dd['elements'] = [element.to_dict() for element in self.elements]
 		dd['size'] = self.size
+		dd['max_value'] = self.max_value
+		dd['min_value'] = self.min_value
 		dd['max_id'] = self.max_id
 		dd['cpp'] = { 'type': self.cpp_type, 'unsigned_type': self.cpp_unsigned_type }
 		dd['java'] = { 'type': self.java_type }
