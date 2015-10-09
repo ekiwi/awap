@@ -163,6 +163,16 @@ class TestCodeGeneration(unittest.TestCase):
 		self.assertTrue(Field("test2", 2).place(b,5))
 		self.assertEqual(self.cg.marshal(b), "data[ 0] = (pre->test2 << 4) | (pre->test << 0);")
 
+	def test_multibyte_marshal(self):
+		bytes = [Byte(ii) for ii in range(0,5)]
+		f = Field("big", 32)
+		self.assertTrue(f.place(bytes, (len(bytes) * 8) - 1 - 4))
+		self.assertEqual(self.cg.marshal(bytes[0]), "data[ 0] = (pre->big >> 28);")
+		self.assertEqual(self.cg.marshal(bytes[1]), "data[ 1] = (pre->big >> 20);")
+		self.assertEqual(self.cg.marshal(bytes[2]), "data[ 2] = (pre->big >> 12);")
+		self.assertEqual(self.cg.marshal(bytes[3]), "data[ 3] = (pre->big >> 4);")
+		self.assertEqual(self.cg.marshal(bytes[4]), "data[ 4] = (pre->big << 4);")
+
 	def test_unmarshal(self):
 		b0 = Byte(0)
 		b1 = Byte(1)
