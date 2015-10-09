@@ -49,7 +49,7 @@ MessageParserTest::testSimpleUInt32Message()
 		using JavaClass = ::de::rwth_aachen::awap::messages::MessageTestService::SimpleUInt32Message;
 		JavaClass obj(debug::getAwapCommonInfusion());
 		auto raw = obj.getUnderlying();
-		raw->uint_value = -57343298;
+		raw->uint_value = 57343298;
 
 		// to message...
 		uint8_t msg[5];
@@ -60,7 +60,7 @@ MessageParserTest::testSimpleUInt32Message()
 		TEST_ASSERT_FALSE(out == 0);
 
 		auto out_raw = *static_cast<int32_t*>(REF_TO_VOIDP(out));;
-		TEST_ASSERT_EQUALS(out_raw, -57343298);
+		TEST_ASSERT_EQUALS(out_raw, 57343298);
 	}
 
 }
@@ -92,7 +92,7 @@ MessageParserTest::testSimpleUInt12Message()
 		using JavaClass = ::de::rwth_aachen::awap::messages::MessageTestService::SimpleUInt12Message;
 		JavaClass obj(debug::getAwapCommonInfusion());
 		auto raw = obj.getUnderlying();
-		raw->uint_value = -1234;
+		raw->uint_value = 1234;
 
 		// to message...
 		uint8_t msg[2];
@@ -103,7 +103,7 @@ MessageParserTest::testSimpleUInt12Message()
 		TEST_ASSERT_FALSE(out == 0);
 
 		auto out_raw = static_cast<JavaClass::UnderlyingType*>(REF_TO_VOIDP(out));
-		TEST_ASSERT_EQUALS(out_raw->uint_value, -1234);
+		TEST_ASSERT_EQUALS(out_raw->uint_value, 1234);
 	}
 
 }
