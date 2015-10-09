@@ -149,7 +149,7 @@ class Message(NamedCommunicationElement):
 
 	def generate_field_placement(self):
 		id_field = fields.Field("id", self.parent.message_id_size)
-		field_list = [fields.Field(ff.name, ff.size) for ff in self.fields]
+		field_list = [fields.Field(camelCase(ff.name), ff.size) for ff in self.fields]
 		byte_list = fields.InOrderPlacement().place([id_field] + field_list)
 		gc_unmarshal = fields.CodeGenerator(data_src="data", field_prefix="java_struct->")
 		gc_marshal   = fields.CodeGenerator(data_src="data")
