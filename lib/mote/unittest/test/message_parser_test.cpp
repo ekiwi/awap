@@ -102,8 +102,40 @@ MessageParserTest::testSimpleUInt12Message()
 		ref_t out = Service::createJava_SimpleUInt12Message(slice(msg));
 		TEST_ASSERT_FALSE(out == 0);
 
-		auto out_raw = *static_cast<int16_t*>(REF_TO_VOIDP(out));
-		TEST_ASSERT_EQUALS(out_raw, -1234);
+		auto out_raw = static_cast<JavaClass::UnderlyingType*>(REF_TO_VOIDP(out));
+		TEST_ASSERT_EQUALS(out_raw->uint_value, -1234);
+	}
+
+}
+
+void
+MessageParserTest::testBoolMessage()
+{
+	// test service
+	using Service = generated::MessageParserFactory::MessageTestService;
+
+	{
+		// create Java message object
+		using JavaClass = ::de::rwth_aachen::awap::messages::MessageTestService::BoolMessage;
+		JavaClass obj(debug::getAwapCommonInfusion());
+		auto raw = obj.getUnderlying();
+		raw->b0 = true;
+		raw->b1 = false;
+		raw->b2 = true;
+
+		// to message...
+		uint8_t msg[1];
+		// 3 x 1bit bool + 4bit message id
+		TEST_ASSERT_EQUALS(Service::fromJava_BoolMessage(obj.getRef(), slice(msg)), 1u);
+		TEST_ASSERT_EQUALS(msg[0], (4 << 4) | (0b1010));
+		// ...and back
+		ref_t out = Service::createJava_BoolMessage(slice(msg));
+		TEST_ASSERT_FALSE(out == 0);
+
+		auto out_raw = static_cast<JavaClass::UnderlyingType*>(REF_TO_VOIDP(out));
+		TEST_ASSERT_EQUALS(out_raw->b0, true);
+		TEST_ASSERT_EQUALS(out_raw->b1, false);
+		TEST_ASSERT_EQUALS(out_raw->b2, true);
 	}
 
 }

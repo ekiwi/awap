@@ -21,6 +21,11 @@ This file is part of awap.
 		<message name="EnumMessage" direction="rx" performative="INFORM" id="3" >
 			<enum name="enum_value" class="Building" />
 		</message>
+		<message name="BoolMessage" direction="rx" performative="INFORM" id="4" >
+			<bool name="b0" />
+			<bool name="b1" />
+			<bool name="b2" />
+		</message>
 	</messages>
 </service>
 </awap-communication>
