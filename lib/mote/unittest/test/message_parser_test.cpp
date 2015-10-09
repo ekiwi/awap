@@ -54,7 +54,7 @@ MessageParserTest::testSimpleUInt32Message()
 		// to message...
 		uint8_t msg[5];
 		// 32bit payload + 4bit message id
-		TEST_ASSERT_EQUALS(Service::fromJava_SimpleUInt32Message(obj.getRef(), slice(msg)), 36u);
+		TEST_ASSERT_EQUALS(Service::fromJava_SimpleUInt32Message(obj.getRef(), slice(msg)), 5u);
 		// ...and back
 		ref_t out = Service::createJava_SimpleUInt32Message(slice(msg));
 		TEST_ASSERT_FALSE(out == 0);
@@ -73,7 +73,7 @@ MessageParserTest::testSimpleUInt12Message()
 
 	{
 		// prepare SimpleUInt12Message body
-		uint8_t msg[2] = { 0x80, 0x076 };
+		uint8_t msg[2] = { 0x06, 0x078 };
 
 		// parse to Java Object
 		ref_t obj = Service::createJava_SimpleUInt12Message(slice(msg));
@@ -81,9 +81,9 @@ MessageParserTest::testSimpleUInt12Message()
 
 		uint8_t out[2] = { 0, 0 };
 		// 12bit payload + 4bit message id
-		TEST_ASSERT_EQUALS(Service::fromJava_SimpleUInt12Message(obj, slice(out)), 16u);
+		TEST_ASSERT_EQUALS(Service::fromJava_SimpleUInt12Message(obj, slice(out)), 2u);
 		// message id is 2 and should be set by the `fromJava` method
-		msg[0] |= 2;
+		msg[0] |= (2 << 4);
 		TEST_ASSERT_EQUALS_ARRAY(msg, out, slice(msg).length);
 	}
 
@@ -97,7 +97,7 @@ MessageParserTest::testSimpleUInt12Message()
 		// to message...
 		uint8_t msg[2];
 		// 12bit payload + 4bit message id
-		TEST_ASSERT_EQUALS(Service::fromJava_SimpleUInt12Message(obj.getRef(), slice(msg)), 16u);
+		TEST_ASSERT_EQUALS(Service::fromJava_SimpleUInt12Message(obj.getRef(), slice(msg)), 2u);
 		// ...and back
 		ref_t out = Service::createJava_SimpleUInt12Message(slice(msg));
 		TEST_ASSERT_FALSE(out == 0);
@@ -117,14 +117,14 @@ MessageParserTest::testMessageParserFactory()
 
 	// test with valid SimpleUInt32Message
 	{
-		uint8_t msg[5] = { 0x81, 0x67, 0x45, 0x23, 0x01 };
+		uint8_t msg[5] = { 0x01, 0x23, 0x45, 0x67, 0x80 };
 		auto parser = getMessageParser(MessageTestServiceId, slice(msg));
 		TEST_ASSERT_EQUALS(parser.createJava, Service::createJava_SimpleUInt32Message);
 	}
 
 	// test with invalid SimpleUInt32Message
 	{
-		uint8_t msg[4] = { 0x81, 0x67, 0x45, 0x23 };
+		uint8_t msg[4] = { 0x01, 0x23, 0x45, 0x67 };
 		auto parser = getMessageParser(MessageTestServiceId, slice(msg));
 		TEST_ASSERT_EQUALS(parser.createJava, static_cast<void*>(nullptr));
 	}
