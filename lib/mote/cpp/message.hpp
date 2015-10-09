@@ -9,7 +9,8 @@
 #ifndef MESSAGE_HPP
 #define MESSAGE_HPP
 
-#include<common.hpp>
+#include <common.hpp>
+#include <util.hpp>
 
 namespace awap {
 
@@ -22,6 +23,15 @@ struct CommonMessageHeader {
 } __attribute__((packed));
 
 static_assert(sizeof(CommonMessageHeader) == 2, "sizeof(CommonMessageHeader) needs to be 2 bytes!");
+
+struct MessageParser {
+	using CreateJavaObjectFunctionPtr = ref_t (*)(Slice<const uint8_t>);
+	size_t bytes = 0;
+	CreateJavaObjectFunctionPtr createJava = nullptr;
+
+	MessageParser(const size_t bytes, const CreateJavaObjectFunctionPtr createJava)
+		: bytes(bytes), createJava(createJava) {}
+};
 
 //struct ReceiveEnvelope {
 //	AgentId localAgent;

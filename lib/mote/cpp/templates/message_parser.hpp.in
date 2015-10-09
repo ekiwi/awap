@@ -13,17 +13,6 @@
 #include <util.hpp>
 
 namespace awap {
-
-struct MessageParser {
-	using CreateJavaObjectFunctionPtr = ref_t (*)(Slice<const uint8_t>);
-	size_t bytes = 0;
-	CreateJavaObjectFunctionPtr createJava = nullptr;
-
-	MessageParser(const size_t bytes, const CreateJavaObjectFunctionPtr createJava)
-		: bytes(bytes), createJava(createJava) {}
-};
-
-
 namespace generated {
 namespace MessageParserFactory {
 

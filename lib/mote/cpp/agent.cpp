@@ -105,6 +105,12 @@ Agent::setup()
 	agent.setup();
 }
 
+bool
+Agent::receive(const CommonMessageHeader& header, const MessageParser& parser)
+{
+	return false;
+}
+
 Agent::~Agent()
 {
 	delete this->infusionData;

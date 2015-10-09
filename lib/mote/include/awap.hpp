@@ -40,6 +40,8 @@ enum class Warning {
 	MessageParserTooShort,
 	MessageParserOutputTooSmall,
 	NodeReceiveMessageTooShort,
+	NodeReceiveInvalidMessage,
+	NodeReceiveUnknownAgent,
 };
 
 //----------------------------------------------------------------------------

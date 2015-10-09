@@ -12,6 +12,7 @@
 #include <hpp/ostfriesentee.hpp>
 #include <jlib_awap-common.hpp>
 #include <common.hpp>
+#include <message.hpp>
 
 namespace awap { class Agent; }
 #include <node.hpp>
@@ -29,6 +30,8 @@ public:
 	void timeoutExpired(uint16_t obj) {
 		agent.wakeUp(static_cast<int8_t>(obj));
 	}
+
+	bool receive(const CommonMessageHeader& header, const MessageParser& parser);
 
 private:
 	Agent(Node& node, uint8_t localAgentId, ostfriesentee::Infusion& inf, uint8_t agentClassId, uint8_t* infusionData);

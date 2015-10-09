@@ -35,7 +35,7 @@ def load_awap_confguration_method(env, configuration):
 		full_name = "{}.{}".format(service.module.name, service.name)
 		env['AWAP_SERVICE_NAMES'].append(full_name)
 	# TODO: enums
-	if root.find("agents"):
+	if len(root.find("agents")) > 0:
 		agents = [env.LoadAgent(agent.get("name")) for agent in root.find("agents")]
 	else:
 		agents = []

@@ -43,18 +43,32 @@ Node::loadAgent(const uint8_t* content, const size_t length)
 	}
 }
 
-void
+bool
 Node::receive(const NodeAddress sender, Slice<const uint8_t> content)
 {
 	if(content.length < 2) {
 		Runtime::warn(Warning::NodeReceiveMessageTooShort);
-		return;
+		return false;
 	}
 
 	// parse message header
 	auto header = reinterpret_cast<const CommonMessageHeader*>(content.data);
 	auto body = content.sub(2);
 	auto parser = generated::MessageParserFactory::getMessageParser(header->serviceType, body);
+	if(parser.bytes == 0 || parser.createJava == nullptr) {
+		Runtime::warn(Warning::NodeReceiveInvalidMessage);
+		return false;
+	}
+
+	if(header->isBroadcast) {
+		// TODO
+	} else {
+		if(!validAgent(header->destAgent)) {
+			Runtime::warn(Warning::NodeReceiveUnknownAgent);
+			return false;
+		}
+		return agents[header->destAgent]->receive(*header, parser);
+	}
 }
 
 void

@@ -57,6 +57,10 @@ static inline const char* getWarningDescription(Warning warn)
 		return "MessageParser: The output buffer is too small";
 	case Warning::NodeReceiveMessageTooShort:
 		return "Node::receive: The message is too short. At least 2 bytes for the header are required.";
+	case Warning::NodeReceiveInvalidMessage:
+		return "Node::receive: invalid message, probably an unknown message id.";
+	case Warning::NodeReceiveUnknownAgent:
+		return "Node::receive: the destination agent could not be found on this node.";
 	default:
 		return "Unknown Warning";
 	}
