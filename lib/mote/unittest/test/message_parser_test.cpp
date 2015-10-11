@@ -24,6 +24,7 @@ MessageParserTest::testSimpleUInt32Message()
 {
 	// test service
 	using Service = generated::MessageParserFactory::MessageTestService;
+	using JavaClass = ::de::rwth_aachen::awap::messages::MessageTestService::SimpleUInt32Message;
 
 	{
 		// prepare SimpleUInt32Message body
@@ -32,8 +33,8 @@ MessageParserTest::testSimpleUInt32Message()
 		// parse to Java Object
 		ref_t obj = Service::createJava_SimpleUInt32Message(slice(msg));
 		TEST_ASSERT_FALSE(obj == 0);
-		auto obj_uint_raw = *static_cast<uint32_t*>(REF_TO_VOIDP(obj));
-		TEST_ASSERT_EQUALS(obj_uint_raw, 0x12345678u);
+		auto obj_struct = static_cast<JavaClass::UnderlyingType*>(REF_TO_VOIDP(obj));
+		TEST_ASSERT_EQUALS(obj_struct->uint_value, 0x12345678);
 
 		// test that 32bits were read
 		uint8_t out[5] = { 0, 0, 0, 0, 0 };
@@ -46,7 +47,6 @@ MessageParserTest::testSimpleUInt32Message()
 
 	{
 		// create Java message object
-		using JavaClass = ::de::rwth_aachen::awap::messages::MessageTestService::SimpleUInt32Message;
 		JavaClass obj(debug::getAwapCommonInfusion());
 		auto raw = obj.getUnderlying();
 		raw->uint_value = 57343298;
@@ -59,8 +59,8 @@ MessageParserTest::testSimpleUInt32Message()
 		ref_t out = Service::createJava_SimpleUInt32Message(slice(msg));
 		TEST_ASSERT_FALSE(out == 0);
 
-		auto out_raw = *static_cast<int32_t*>(REF_TO_VOIDP(out));;
-		TEST_ASSERT_EQUALS(out_raw, 57343298);
+		auto obj_struct = static_cast<JavaClass::UnderlyingType*>(REF_TO_VOIDP(out));
+		TEST_ASSERT_EQUALS(obj_struct->uint_value, 57343298);
 	}
 
 }
