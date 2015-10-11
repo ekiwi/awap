@@ -31,7 +31,7 @@ public:
 		agent.wakeUp(static_cast<int8_t>(obj));
 	}
 
-	bool receive(const CommonMessageHeader& header, const MessageParser& parser);
+	bool receive(const CommonMessageHeader& header, const MessageParser& parser, Slice<const uint8_t> body);
 
 private:
 	Agent(Node& node, uint8_t localAgentId, ostfriesentee::Infusion& inf, uint8_t agentClassId, uint8_t* infusionData);

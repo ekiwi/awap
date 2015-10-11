@@ -67,7 +67,7 @@ Node::receive(const NodeAddress sender, Slice<const uint8_t> content)
 			Runtime::warn(Warning::NodeReceiveUnknownAgent);
 			return false;
 		}
-		return agents[header->destAgent]->receive(*header, parser);
+		return agents[header->destAgent]->receive(*header, parser, body);
 	}
 }
 

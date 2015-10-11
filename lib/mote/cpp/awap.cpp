@@ -131,6 +131,7 @@ extern "C"
 void de_rwth_aachen_awap_mote_NodeAdapter_void_send_de_rwth_aachen_awap_Message()
 {
 	assert(node != nullptr, Panic::NotInitialized);
+	debug_printf("NodeAdapter.send()\n");
 	ref_t message = dj_exec_stackPopRef();
 	node->send(retriveAgentId(), message);
 }
@@ -140,6 +141,7 @@ extern "C"
 void de_rwth_aachen_awap_mote_NodeAdapter_void_send_de_rwth_aachen_awap_BroadcastMessage()
 {
 	assert(node != nullptr, Panic::NotInitialized);
+	debug_printf("NodeAdapter.sendBroadcast()\n");
 	ref_t message = dj_exec_stackPopRef();
 	node->sendBroadcast(retriveAgentId(), message);
 }
@@ -149,6 +151,7 @@ extern "C"
 void de_rwth_aachen_awap_mote_NodeAdapter_void_requestWakeUp_int_byte()
 {
 	assert(node != nullptr, Panic::NotInitialized);
+	debug_printf("NodeAdapter.requestWakeUp()\n");
 	uint16_t obj = dj_exec_stackPopShort();
 	uint32_t milliseconds = dj_exec_stackPopInt();
 	node->requestWakeUp(retriveAgentId(), milliseconds, obj);
@@ -159,6 +162,7 @@ extern "C"
 void de_rwth_aachen_awap_mote_NodeAdapter_boolean_registerService_de_rwth_aachen_awap_LocalService()
 {
 	assert(node != nullptr, Panic::NotInitialized);
+	debug_printf("NodeAdapter.registerService()\n");
 	ref_t service = dj_exec_stackPopRef();
 	bool ret = node->registerService(retriveAgentId(), service);
 	dj_exec_stackPushShort(static_cast<uint16_t>(ret));
@@ -169,6 +173,7 @@ extern "C"
 void de_rwth_aachen_awap_mote_NodeAdapter_boolean_deregisterService_de_rwth_aachen_awap_LocalService()
 {
 	assert(node != nullptr, Panic::NotInitialized);
+	debug_printf("NodeAdapter.deregisterService()\n");
 	ref_t service = dj_exec_stackPopRef();
 	bool ret = node->deregisterService(retriveAgentId(), service);
 	dj_exec_stackPushShort(static_cast<uint16_t>(ret));
