@@ -42,7 +42,12 @@ size_t TxMessage::loadFromJavaObject(ref_t msg) {
 	this->remoteNode    =  static_cast<uint32_t>(common->remoteAgentId) & 0xffff;
 
 	// load specific fields
-	return this->loadFromSpecificJavaObject(msg) + 2;
+	size_t ret = this->loadFromSpecificJavaObject(msg);
+	if(ret > 0) {
+		return ret + 2;
+	} else {
+		return 0; // error
+	}
 }
 
 } // namespace awap
