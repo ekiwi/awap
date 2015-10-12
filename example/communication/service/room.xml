@@ -12,11 +12,11 @@ This file is part of awap.
 <import module="common" as="" />
 
 <enum name="TemperatureChangeRefuseReason" max-id="7">
-	<element name="NotOwnerOfRoom" id="1" />
+	<element name="NotOwnerOfRoom" id="0" />
 </enum>
 
 <enum name="TemperatureChangeFailedReason" max-id="7">
-	<element name="NotOwnerOfRoom" id="1" />
+	<element name="NotOwnerOfRoom" id="0" />
 </enum>
 
 

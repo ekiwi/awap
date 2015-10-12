@@ -207,9 +207,9 @@ This file is part of awap.
 	<xs:maxInclusive value="32"/>
 </xs:restriction>
 </xs:simpleType>
-<xs:simpleType name="EnumId">
+<xs:simpleType name="EnumMaxId">
 <xs:restriction base="xs:integer">
-	<xs:minInclusive value="1"/>
+	<xs:minInclusive value="0"/>
 	<xs:maxInclusive value="4294967295"/>
 </xs:restriction>
 </xs:simpleType>
@@ -223,7 +223,7 @@ This file is part of awap.
 	<!-- actually, a enum can provide size, max-id or both
 	     unfortunately we haven't found a reliable way to express that in
 	     XSD, thus it will need to be checked in python -->
-	<xs:attribute name="max-id" use="optional" type="EnumId"/>
+	<xs:attribute name="max-id" use="optional" type="EnumMaxId"/>
 	<xs:attribute name="size" use="optional" type="EnumSize"/>
 </xs:complexType>
 <!-- Make sure there are no duplicate ids or names. see:
@@ -241,7 +241,7 @@ This file is part of awap.
 <xs:element name="element">
 <xs:complexType>
 	<xs:attribute name="name" use="required" type="xs:NCName"/>
-	<xs:attribute name="id" use="required" type="EnumId"/>
+	<xs:attribute name="id" use="required" type="xs:integer"/>
 </xs:complexType>
 </xs:element>
 
