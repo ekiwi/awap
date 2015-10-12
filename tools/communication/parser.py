@@ -409,8 +409,6 @@ class EnumType(NamedCommunicationElement):
 	def to_dict(self):
 		dd = super(EnumType, self).to_dict()
 		dd['elements'] = [element.to_dict() for element in self.elements]
-		# id 0 is reserved for the `DoNotCare` element
-		dd['elements'].append({ 'name': 'DoNotCare', 'id': 0 })
 		dd['size'] = self.size
 		dd['max_value'] = self.max_value
 		dd['min_value'] = self.min_value
