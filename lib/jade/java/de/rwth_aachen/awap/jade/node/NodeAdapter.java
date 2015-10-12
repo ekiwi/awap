@@ -12,9 +12,7 @@ package de.rwth_aachen.awap.jade.node;
 
 import de.rwth_aachen.awap.AbstractNode;
 import de.rwth_aachen.awap.BroadcastMessage;
-import de.rwth_aachen.awap.LocalService;
 import de.rwth_aachen.awap.Message;
-import de.rwth_aachen.awap.ServiceProperty;
 import de.rwth_aachen.awap.jade.AgentRegistry;
 import de.rwth_aachen.awap.jade.WrapperAgent;
 import de.rwth_aachen.awap.jade.generated.Communication;
@@ -34,11 +32,9 @@ import jade.lang.acl.ACLMessage;
  */
 public class NodeAdapter extends AbstractNode {
 
-	private Node node;
 	private WrapperAgent wrapper;
 
 	public NodeAdapter(Node node, WrapperAgent wrapper){
-		this.node = node;
 		this.wrapper = wrapper;
 	}
 
@@ -60,11 +56,13 @@ public class NodeAdapter extends AbstractNode {
 		try {
 			// 1.) find services that match description
 			DFAgentDescription dfd = new DFAgentDescription();
-			ServiceDescription sd = new ServiceDescription();
-			sd.setType(Service.typeIdToString(msg.recipients.serviceId));
-			for(ServiceProperty prop : msg.recipients.properties) {
-				sd.addProperties(Service.toJadeProperty(msg.recipients.serviceId, prop));
-			}
+		//	ServiceDescription sd = new ServiceDescription();
+		//	sd.setType(Service.typeIdToString(msg.recipients.serviceId));
+		//	for(ServiceProperty prop : msg.recipients.properties) {
+		//		sd.addProperties(Service.toJadeProperty(msg.recipients.serviceId, prop));
+		//	}
+		//	dfd.addServices(sd);
+			ServiceDescription sd = Service.awapToJadeDescription(msg.recipients);
 			dfd.addServices(sd);
 			DFAgentDescription[] services = DFService.search(this.wrapper, this.wrapper.getDefaultDF(), dfd);
 
@@ -81,13 +79,17 @@ public class NodeAdapter extends AbstractNode {
 	}
 
 	@Override
-	public boolean registerService(LocalService service) {
+	public boolean registerService(int localServiceId, de.rwth_aachen.awap.ServiceDescription description) {
 		//System.out.println("NodeAdapter: Agent " + this.wrapper.getName() + " called registerService.");
 
+		// FIXME: this registers the agent, but we might just have to
+		//        update the 
 		DFAgentDescription dfd = new DFAgentDescription();
 		dfd.setName(this.wrapper.getAID());
 		try {
-			dfd.addServices(Service.serviceToDescription(service));
+			ServiceDescription sd = Service.awapToJadeDescription(description);
+			sd.setName(Integer.toString(localServiceId));
+			dfd.addServices(Service.awapToJadeDescription(description));
 		} catch(Exception e) {
 			e.printStackTrace();
 			return false;
@@ -103,8 +105,10 @@ public class NodeAdapter extends AbstractNode {
 	}
 
 	@Override
-	public boolean deregisterService(LocalService service) {
+	public boolean deregisterService(int localServiceId) {
 		//System.out.println("NodeAdapter: Agent " + this.wrapper.getName() + " called deregisterService.");
+		// FIXME: right now we are deregistering the whole agent,
+		//        it would be better to just update the agent description instead
 		try {
 			DFService.deregister(this.wrapper);
 			return true;
