@@ -192,23 +192,19 @@ MessagesTest::testBoolMessage()
 void
 MessagesTest::testMessageFactory()
 {
-/*
-	auto getMessages = generated::MessagesFactory::getMessages;
-	using Service = generated::MessagesFactory::MessageTestService;
-	const uint8_t MessageTestServiceId = 0;
-
 	// test with valid SimpleUInt32Message
 	{
-		uint8_t msg[5] = { 0x01 | (1 << 4), 0x23, 0x45, 0x67, 0x80 };
-		auto parser = getMessages(MessageTestServiceId, slice(msg));
-		TEST_ASSERT_EQUALS(parser.createJava, Service::createJava_SimpleUInt32Message);
+		uint8_t msg[7] = { 0, 0, 0x01 | (1 << 4), 0x23, 0x45, 0x67, 0x80 };
+		auto rx = generated::MessageFactory::makeRxMessage(0x45, slice(msg));
+		TEST_ASSERT_TRUE(rx != nullptr);
+		TEST_ASSERT_EQUALS(rx->getSize(), 7u);
 	}
 
 	// test with invalid message id
 	{
-		uint8_t msg[4] = { 0x01 | (0xf << 4), 0x23, 0x45, 0x67 };
-		auto parser = getMessages(MessageTestServiceId, slice(msg));
-		TEST_ASSERT_EQUALS(parser.createJava, static_cast<void*>(nullptr));
+		uint8_t msg[7] = { 0, 0, 0x01 | (0xf << 4), 0x23, 0x45, 0x67, 0x80};
+		TEST_ASSERT_TRUE(
+			generated::MessageFactory::makeRxMessage(0x45, slice(msg))
+			== nullptr);
 	}
-	*/
 }

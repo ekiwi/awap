@@ -59,7 +59,7 @@ public:
 	inline ostfriesentee::Infusion& getAwapCommon() { return this->awapCommon; }
 	inline ostfriesentee::Infusion& getAwapMote()   { return this->awapMote; }
 
-  	inline bool validAgent(AgentId id) {
+	inline bool validAgent(AgentId id) {
 		return (id < MaxAgents) && (agents[id] != nullptr);
 	}
 private:
