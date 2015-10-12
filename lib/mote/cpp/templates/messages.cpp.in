@@ -42,7 +42,7 @@ ref_t ::awap::generated::{{ service.name }}::Rx{{ msg.name }}::createSpecificJav
 		JavaClass obj(awapCommonInfusion);
 		// this is safe, because we checked the length above
 		auto java_struct = obj.getUnderlying();
-		const auto data = this->content.data;
+		const auto data = &this->content.data[2];
 
 		// unmarshal
 		{{ msg.cpp.unmarshal | indent(2) }}
@@ -72,7 +72,7 @@ size_t ::awap::generated::{{ service.name }}::Tx{{ msg.name }}::loadFromSpecific
 		%% endfor
 
 		// marshal, this is safe, because we checked the length above
-		auto data = this->content.data;
+		auto data = &this->content.data[2];
 		{{ msg.cpp.marshal | indent(2) }}
 
 		return this->getDataSize();
