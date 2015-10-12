@@ -23,6 +23,8 @@ public abstract class {{service.name}} extends LocalService {
 %% for prop in service.properties
 		this.{{ prop.name | camelCase }} = {{ prop.name | camelCase }};
 %% endfor
+		// all properties are set, now we can register this service
+		this.registerService();
 	}
 	// message handlers
 %% for msg in service.messages

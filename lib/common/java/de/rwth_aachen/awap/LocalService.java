@@ -14,6 +14,9 @@ public abstract class LocalService {
 	public LocalService(Agent parent, int serviceId) {
 		this.parent = parent;
 		this.serviceId = serviceId;
+	}
+
+	protected void registerService() {
 		this.parent.registerService(this);
 	}
 
