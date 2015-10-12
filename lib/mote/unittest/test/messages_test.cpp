@@ -21,6 +21,47 @@ MessagesTest::setUp()
 }
 
 void
+MessagesTest::testCommonHeaderParsing()
+{
+	uint8_t msg[3] = { 0, 0, 0 };
+	RxEmptyMessage rx(0, slice(msg));
+
+	// test is broadcast
+	TEST_ASSERT_FALSE(rx.isBroadcast());
+	msg[0] = (1<<7);
+	TEST_ASSERT_TRUE(rx.isBroadcast());
+
+	// test isFromRemoteService
+	TEST_ASSERT_FALSE(rx.isFromRemoteService());
+	msg[0] = (1<<6);
+	TEST_ASSERT_TRUE(rx.isFromRemoteService());
+
+	// test getDestinationAgent
+	msg[0] = (0 << 3);
+	TEST_ASSERT_EQUALS(rx.getDestinationAgent(), 0);
+	msg[0] = (7 << 3);
+	TEST_ASSERT_EQUALS(rx.getDestinationAgent(), 7);
+	msg[0] = (3 << 3);
+	TEST_ASSERT_EQUALS(rx.getDestinationAgent(), 3);
+	msg[0] = (6 << 3);
+	TEST_ASSERT_EQUALS(rx.getDestinationAgent(), 6);
+
+	// test getSourceAgent
+	msg[0] = (0 << 0);
+	TEST_ASSERT_EQUALS(rx.getSourceAgent(), 0);
+	msg[0] = (7 << 0);
+	TEST_ASSERT_EQUALS(rx.getSourceAgent(), 7);
+	msg[0] = (3 << 0);
+	TEST_ASSERT_EQUALS(rx.getSourceAgent(), 3);
+	msg[0] = (6 << 0);
+	TEST_ASSERT_EQUALS(rx.getSourceAgent(), 6);
+
+	// test getServiceType
+	msg[1] = 0xff;
+	TEST_ASSERT_EQUALS(rx.getServiceType(), 0xff);
+}
+
+void
 MessagesTest::testSimpleUInt32Message()
 {
 	// test service

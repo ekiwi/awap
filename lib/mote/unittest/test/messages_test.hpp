@@ -13,6 +13,7 @@ class MessagesTest : public unittest::TestSuite
 {
 public:
 	void setUp();
+	void testCommonHeaderParsing();
 	void testSimpleUInt32Message();
 	void testSimpleUInt12Message();
 	void testBoolMessage();
