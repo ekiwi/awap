@@ -17,5 +17,6 @@ public:
 	void testSimpleUInt32Message();
 	void testSimpleUInt12Message();
 	void testBoolMessage();
-	void testMessageFactory();
+	void testMakeRxMessage();
+	void testMakeTxMessage();
 };
