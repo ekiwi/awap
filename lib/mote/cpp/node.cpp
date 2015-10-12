@@ -99,13 +99,13 @@ Node::requestWakeUp(AgentId agent, uint32_t milliseconds, uint16_t obj)
 }
 
 bool
-Node::registerService(AgentId agent, ref_t service)
+Node::registerService(AgentId agent, int localServiceId, ref_t description)
 {
 	// TODO!
 }
 
 bool
-Node::deregisterService(AgentId agent, ref_t service)
+Node::deregisterService(AgentId agent, int localServiceId)
 {
 	// TODO!
 }

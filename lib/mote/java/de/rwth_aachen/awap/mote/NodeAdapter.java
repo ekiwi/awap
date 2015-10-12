@@ -9,8 +9,8 @@
 package de.rwth_aachen.awap.mote;
 
 import de.rwth_aachen.awap.BroadcastMessage;
-import de.rwth_aachen.awap.LocalService;
 import de.rwth_aachen.awap.Message;
+import de.rwth_aachen.awap.ServiceDescription;
 import de.rwth_aachen.awap.AbstractNode;
 import de.rwth_aachen.awap.Agent;
 
@@ -25,6 +25,6 @@ public class NodeAdapter extends AbstractNode {
 	public native void send(Message msg);
 	public native void send(BroadcastMessage msg);
 	public native void requestWakeUp(int milliseconds, byte index);
-	public native boolean deregisterService(LocalService service);
-	public native boolean registerService(LocalService service);
+	public native boolean deregisterService(int localServiceId);
+	public native boolean registerService(int localServiceId, ServiceDescription description);
 }

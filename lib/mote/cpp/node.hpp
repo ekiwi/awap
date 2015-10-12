@@ -39,8 +39,8 @@ public:
 	void sendBroadcast(AgentId agent, ref_t broadcastMessage);
 	// TODO: keep obj in java and only hand index to c++
 	void requestWakeUp(AgentId agent, uint32_t milliseconds, uint16_t obj);
-	bool registerService(AgentId agent, ref_t service);
-	bool deregisterService(AgentId agent, ref_t service);
+	bool registerService(AgentId agent, int localServiceId, ref_t description);
+	bool deregisterService(AgentId agent, int localServiceId);
 
 //	bool receiveRemoteServiceMessage(const uint8_t agentId, , ref_t messageObject)
 
