@@ -13,4 +13,8 @@ public class RemoteAgent {
 	 * Contains node address and the id of the agent on the remote node.
 	 */
 	public int id;
+
+	public RemoteAgent(int id) {
+		this.id = id;
+	}
 }

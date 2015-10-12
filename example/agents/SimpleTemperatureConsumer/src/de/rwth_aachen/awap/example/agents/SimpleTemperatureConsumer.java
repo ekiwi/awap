@@ -28,7 +28,7 @@ public class SimpleTemperatureConsumer extends Agent implements ITemperatureServ
 
 	public void onReceive(Temperature msg) {
 		System.out.println("Received Temperature: " + msg.value);
-		System.out.println("From: " + msg.remoteAgent.id);
+		System.out.println("From: " + msg.getRemoteAgent().id);
 	}
 
 	public void onWakeUp(Object obj) {

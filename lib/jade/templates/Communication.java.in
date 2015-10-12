@@ -99,8 +99,7 @@ public class Communication {
 		}
 
 		ret.msg.serviceTypeId = serviceTypeId;
-		ret.msg.remoteAgent = new RemoteAgent();
-		ret.msg.remoteAgent.id = AgentRegistry.getId(msg.getSender());
+		ret.msg.setRemoteAgent(new RemoteAgent(AgentRegistry.getId(msg.getSender())));
 
 		return ret;
 	}

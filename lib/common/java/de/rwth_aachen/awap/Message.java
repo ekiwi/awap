@@ -9,6 +9,12 @@
 package de.rwth_aachen.awap;
 
 public class Message {
-	public RemoteAgent remoteAgent;
+	private int remoteAgentId;
 	public int serviceTypeId;
+	public RemoteAgent getRemoteAgent() {
+		return new RemoteAgent(remoteAgentId);
+	}
+	public void setRemoteAgent(RemoteAgent agent) {
+		this.remoteAgentId = agent.id;
+	}
 }

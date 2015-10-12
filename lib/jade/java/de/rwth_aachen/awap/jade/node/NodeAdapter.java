@@ -48,7 +48,7 @@ public class NodeAdapter extends AbstractNode {
 		try {
 			ACLMessage msg = Communication.awapToJade(tx_msg);
 			msg.setSender(this.wrapper.getAID());
-			msg.addReceiver(AgentRegistry.getId(tx_msg.remoteAgent.id));
+			msg.addReceiver(AgentRegistry.getId(tx_msg.getRemoteAgent().id));
 			this.wrapper.send(msg);
 		} catch (Exception e) {
 			e.printStackTrace();
