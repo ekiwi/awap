@@ -24,8 +24,7 @@ ref_t RxMessage::createJavaObject() const {
 	// fill in common fields
 	auto common = reinterpret_cast<MessageStruct*>(REF_TO_VOIDP(msg));
 	common->serviceTypeId = this->getServiceType();
-	auto remoteAgent = reinterpret_cast<RemoteAgentStruct*>(REF_TO_VOIDP(common->remoteAgent));
-	remoteAgent->id =
+	common->remoteAgentId =
 		static_cast<uint32_t>(this->getSourceAgent()) << 16 |
 		static_cast<uint32_t>(this->remoteNode);
 	return msg;
@@ -39,9 +38,8 @@ size_t TxMessage::loadFromJavaObject(ref_t msg) {
 	// load common fields
 	auto common = reinterpret_cast<MessageStruct*>(REF_TO_VOIDP(msg));
 	this->content.data[1] = static_cast<uint8_t>(common->serviceTypeId);
-	auto remoteAgent = reinterpret_cast<RemoteAgentStruct*>(REF_TO_VOIDP(common->remoteAgent));
-	this->content.data[0] |= (static_cast<uint32_t>(remoteAgent->id) >> 16) & 0x7;
-	this->remoteNode    =  static_cast<uint32_t>(remoteAgent->id) & 0xffff;
+	this->content.data[0] |= (static_cast<uint32_t>(common->remoteAgentId) >> 16) & 0x7;
+	this->remoteNode    =  static_cast<uint32_t>(common->remoteAgentId) & 0xffff;
 
 	// load specific fields
 	return this->loadFromSpecificJavaObject(msg) + 2;
