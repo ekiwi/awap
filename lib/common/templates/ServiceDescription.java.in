@@ -15,13 +15,15 @@ public class {{ service.name }}Description extends ServiceDescription {
 	public {{ prop.java.type }} {{ prop.name | camelCase }};
 	public boolean {{ prop.name | camelCase }}DoNotCare = true;;
 %% endfor
+%% if service.properties | length > 0
 	public {{ service.name }}Description(int serviceTypeId {{ service.java.initializer_list }}) {
 		this.serviceTypeId = serviceTypeId;
-%% for prop in service.properties
+	%% for prop in service.properties
 		this.{{ prop.name | camelCase }} = {{ prop.name | camelCase }};
 		this.{{ prop.name | camelCase }}DoNotCare = false;
-%% endfor
+	%% endfor
 	}
+%% endif
 
 	public {{ service.name }}Description(int serviceTypeId) {
 		this.serviceTypeId = serviceTypeId;
