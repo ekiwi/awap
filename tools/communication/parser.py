@@ -124,6 +124,7 @@ class Service(NamedCommunicationElement):
 		dd['cpp'] = {}
 		dd['java'] = {}
 		if len(self.properties) > 0:
+			dd['java']['arg_names'] = [camelCase(prop.name) for prop in self.properties]
 			dd['java']['args'] = ["{} {}".format(prop.java_type, camelCase(prop.name)) for prop in self.properties]
 			dd['cpp']['args']  = ["{} {}".format(prop.cpp_type,  camelCase(prop.name)) for prop in self.properties]
 			dd['java']['initializer_list'] = ", " + ", ".join(dd['java']['args'])
