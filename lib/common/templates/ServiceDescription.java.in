@@ -1,0 +1,30 @@
+/**
+ * {{ service.name }}Description.java
+ *
+ * Copyright (c) 2015 Kevin Laeufer <kevin.laeufer@rwth-aachen.de>
+ *
+ * This file is part of awap.
+ */
+
+package de.rwth_aachen.awap.service;
+
+import de.rwth_aachen.awap.ServiceDescription;
+
+public class {{ service.name }}Description extends ServiceDescription {
+%% for prop in service.properties
+	public {{ prop.java.type }} {{ prop.name | camelCase }};
+%% endfor
+	public {{ service.name }}Description(int serviceTypeId {{ service.java.initializer_list }}) {
+		this.doNotCare = new boolean[{{ service.properties | length }}];
+		this.serviceTypeId = serviceTypeId;
+%% for prop in service.properties
+		this.{{ prop.name | camelCase }} = {{ prop.name | camelCase }};
+%% endfor
+	}
+
+	public {{ service.name }}Description(int serviceTypeId) {
+		// no properties were initialize => right now all are do not care
+		this.doNotCare = new boolean[] { {{ 'true, ' * (service.properties | length)}} };
+		this.serviceTypeId = serviceTypeId;
+	}
+}

@@ -13,18 +13,11 @@ import de.rwth_aachen.awap.LocalService;
 import de.rwth_aachen.awap.Message;
 import de.rwth_aachen.awap.RemoteAgent;
 import de.rwth_aachen.awap.messages.{{ service.name }}.*;
+import de.rwth_aachen.awap.service.{{ service.name }}Description;
 
 public abstract class {{service.name}} extends LocalService {
-%% for prop in service.properties
-	public {{ prop.java.type }} {{ prop.name | camelCase }};
-%% endfor
 	public {{service.name}}(Agent parent{{ service.java.initializer_list }}) {
-		super(parent, {{ service.id }});
-%% for prop in service.properties
-		this.{{ prop.name | camelCase }} = {{ prop.name | camelCase }};
-%% endfor
-		// all properties are set, now we can register this service
-		this.registerService();
+		super(parent, {{ service.id }}, new {{ service.name }}Description({{ service.id }}, {{ service.java.arg_names | join(", ") }}));
 	}
 	// message handlers
 %% for msg in service.messages

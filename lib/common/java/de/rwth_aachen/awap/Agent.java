@@ -28,17 +28,18 @@ public abstract class Agent {
 		return id;
 	}
 
-	protected byte registerService(LocalService service) {
+	protected byte registerService(LocalService service, ServiceDescription description) {
 		for(LocalService serv : this.services) {
 			if(serv.serviceId == service.serviceId) {
 				// ERROR: can only have one service of a kind per agent
 				return -1;
 			}
 		}
-		if(this.node.registerService(service)) {
-			// FIXME: this is not thread save
+		// WARN: this is not thread save
+		int localId = this.services.size();
+		if(this.node.registerService(localId, description)) {
 			this.services.add(service);
-			return (byte)(this.services.size() - 1);
+			return (byte)(localId);
 		} else {
 			return -1;
 		}
@@ -93,8 +94,8 @@ public abstract class Agent {
 	 * This method is called when the platform is about to shut down.
 	 */
 	public void tearDown() {
-		for(LocalService service : this.services) {
-			this.node.deregisterService(service);
+		for(int ii = 0; ii < this.services.size(); ++ii) {
+			this.node.deregisterService(ii);
 		}
 	}
 

@@ -11,13 +11,10 @@ package de.rwth_aachen.awap;
 public abstract class LocalService {
 	protected Agent parent;
 	protected int serviceId;
-	public LocalService(Agent parent, int serviceId) {
+	public LocalService(Agent parent, int serviceId, ServiceDescription description) {
 		this.parent = parent;
 		this.serviceId = serviceId;
-	}
-
-	protected void registerService() {
-		this.parent.registerService(this);
+		this.parent.registerService(this, description);
 	}
 
 	public abstract boolean handleMessage(Message msg);

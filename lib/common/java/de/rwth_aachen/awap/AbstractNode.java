@@ -14,17 +14,16 @@ public abstract class AbstractNode {
 
 	/**
 	 * Register a service with the "Domain Facilitator"
-	 * @param service service instance
 	 * @return        `true` if registration was successful
 	 */
-	public abstract boolean registerService(LocalService service);
+	public abstract boolean registerService(int localServiceId, ServiceDescription description);
 
 	/**
 	 * Deregister a service, that was registered with the `registerService` method.
 	 * @param service service instance
 	 * @return        `true` if remove was successful
 	 */
-	public abstract boolean deregisterService(LocalService service);
+	public abstract boolean deregisterService(int localServiceId);
 
 	public abstract void requestWakeUp(int milliseconds, byte index);
 }

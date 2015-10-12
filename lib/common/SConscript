@@ -18,6 +18,7 @@ communication = env.GetCommunicationDict()
 service_path = os.path.join(generated_path, *("de.rwth_aachen.awap.service".split('.')))
 local_service_template = os.path.join('templates', 'AbstractLocalService.java.in')
 remote_service_template = os.path.join('templates', 'RemoteService.java.in')
+service_description_template = os.path.join('templates', 'ServiceDescription.java.in')
 client_interface_template = os.path.join('templates', 'IServiceClient.java.in')
 for service in communication['services']:
 	local_service = os.path.join(service_path, 'local', "{name}.java".format(**service))
@@ -29,6 +30,11 @@ for service in communication['services']:
 	generated_files += env.Template(
 		target=remote_service,
 		source=remote_service_template,
+		substitutions={'service': service})
+	service_description = os.path.join(service_path, "{name}Description.java".format(**service))
+	generated_files += env.Template(
+		target=service_description,
+		source=service_description_template,
 		substitutions={'service': service})
 	client_interface = os.path.join(service_path, 'remote', "I{name}Client.java".format(**service))
 	generated_files += env.Template(

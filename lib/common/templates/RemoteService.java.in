@@ -12,9 +12,8 @@ import de.rwth_aachen.awap.Agent;
 import de.rwth_aachen.awap.BroadcastMessage;
 import de.rwth_aachen.awap.RemoteAgent;
 import de.rwth_aachen.awap.RemoteService;
-import de.rwth_aachen.awap.ServiceFilter;
-import de.rwth_aachen.awap.ServiceProperty;
 import de.rwth_aachen.awap.messages.{{ service.name }}.*;
+import de.rwth_aachen.awap.service.{{ service.name }}Description;
 
 public final class {{service.name}} extends RemoteService {
 	public {{service.name}}(Agent parent, RemoteAgent remoteAgent, byte remoteServiceId) {
@@ -24,17 +23,16 @@ public final class {{service.name}} extends RemoteService {
 	public static class Type
 	{
 		Agent parent;
-		ServiceFilter filter = new ServiceFilter({{ service.id }});
+		{{ service.name }}Description description = new {{ service.name }}Description({{ service.id }});
 		public Type(Agent parent) {
 			this.parent = parent;
 		}
 
 		// add properties to describe type
 %% for prop in service.properties
-		public Type {{ prop.name | camelCase}}({{ prop.java.type }}... values) {
-			for({{ prop.java.type }} value : values) {
-				this.filter.properties.add(new ServiceProperty({{ prop.id }}, value));
-			}
+		public Type {{ prop.name | camelCase}}({{ prop.java.type }} value) {
+			this.description.doNotCare[{{ prop.id }}] = false;
+			this.description.{{ prop.name | camelCase }} = value;
 			return this;
 		}
 %% endfor
@@ -43,7 +41,7 @@ public final class {{service.name}} extends RemoteService {
 %% for msg in service.messages
 	%% if msg.rx
 		public void send({{ msg.name }} msg) {
-			this.parent.node.send(new BroadcastMessage(msg, this.filter));
+			this.parent.node.send(new BroadcastMessage(msg, this.description));
 		}
 	%% endif
 %% endfor
