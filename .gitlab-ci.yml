@@ -1,0 +1,4 @@
+check:
+  script:
+    - env
+    - ./check.py
