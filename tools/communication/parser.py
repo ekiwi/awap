@@ -369,10 +369,10 @@ class EnumType(NamedCommunicationElement):
 			self.elements.append(EnumElement(self, el_ee))
 		self.elements.sort(key=lambda ee: ee.id)
 		# make sure ids are consecutive
-		id_offset = ((index - ee.id) for index, ee in enumerate(self.elements))
+		id_offset = ((index + 1 - ee.id) for index, ee in enumerate(self.elements))
 		consecutive = all(offset == 0 for offset in id_offset)
 		self.mod.passert(node, consecutive,
-			'Ids ({}) must be consecutive!'.format([ee.id for ee in self.elements]))
+			'Ids ({}) must be consecutive and start at `1`!'.format([ee.id for ee in self.elements]))
 		max_id_found = self.elements[-1].id
 		self.max_id = determine_max_id(self.mod, node, max_id_found)
 		self.mod.passert(node, self.max_id >= max_id_found,

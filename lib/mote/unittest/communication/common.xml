@@ -9,47 +9,47 @@ This file is part of awap.
 <awap-communication version="0.1" module="common">
 
 <enum name="Building" size="4"  max-id="15">
-	<element name="Build1"     id="0" />
-	<element name="HK1Toaster" id="1" />
-	<element name="SemiTemp"   id="2" />
+	<element name="Build1"     id="1" />
+	<element name="HK1Toaster" id="2" />
+	<element name="SemiTemp"   id="3" />
 </enum>
 
 <enum name="Room" size="8" max-id="255">
-	<element name="R1" id="0" />
-	<element name="R2" id="1" />
+	<element name="R1" id="1" />
+	<element name="R2" id="2" />
 </enum>
 
 <enum name="SupplyCircuit" size="8" max-id="255">
-	<element name="SC1" id="0" />
-	<element name="SC2" id="1" />
-	<element name="SC3" id="2" />
+	<element name="SC1" id="1" />
+	<element name="SC2" id="2" />
+	<element name="SC3" id="3" />
 </enum>
 
 <enum name="TemperatureSensorType" size="4" max-id="15">
-	<element name="NotSet"   id="0" />
-	<element name="Tflow"    id="1" />
-	<element name="Treturn"  id="2" />
-	<element name="Toutside" id="3" />
-	<element name="Troom"    id="4" />
+	<element name="NotSet"   id="1" />
+	<element name="Tflow"    id="2" />
+	<element name="Treturn"  id="3" />
+	<element name="Toutside" id="4" />
+	<element name="Troom"    id="5" />
 </enum>
 
 <enum name="ServiceType" size="4" max-id="15">
-	<element name="ActorValveAgent"   id="0" />
-	<element name="ComfortAgent"      id="1" />
-	<element name="RoomAgent"         id="2" />
-	<element name="SensorTempAgent"   id="3" />
-	<element name="EnergySupplyAgent" id="4" />
+	<element name="ActorValveAgent"   id="1" />
+	<element name="ComfortAgent"      id="2" />
+	<element name="RoomAgent"         id="3" />
+	<element name="SensorTempAgent"   id="4" />
+	<element name="EnergySupplyAgent" id="5" />
 </enum>
 
 <enum name="UserType" max-id="4">
-	<element name="Owner" id="0" />
-	<element name="Guest" id="1" />
+	<element name="Owner" id="1" />
+	<element name="Guest" id="2" />
 </enum>
 
 <enum name="TemperatureAction" max-id="4">
-	<element name="Decrease"  id="0" />
-	<element name="DoNothing" id="1" />
-	<element name="Increase"  id="2" />
+	<element name="Decrease"  id="1" />
+	<element name="DoNothing" id="2" />
+	<element name="Increase"  id="3" />
 </enum>
 
 </awap-communication>
