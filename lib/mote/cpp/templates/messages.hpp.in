@@ -15,7 +15,8 @@
 
 namespace awap {
 namespace generated {
-namespace message {
+
+
 // "enums"
 %% for enum in enums
 using {{ enum.name }} = {{ enum.cpp.type }};
@@ -25,18 +26,72 @@ using {{ enum.name }} = {{ enum.cpp.type }};
 %% for service in services
 namespace {{ service.name }} {
 	%% for msg in service.messages
-struct {{ msg.name }} {
+struct 	{{ msg.name }} {
 	using JavaClass = ::de::rwth_aachen::awap::messages::{{ service.name }}::{{ msg.name }};
 	using JavaStruct = JavaClass::UnderlyingType;
-	static constexpr size_t Bytes = {{ msg.bytes }};
+	static constexpr size_t DataBytes = {{ msg.bytes }};
 	static constexpr uint32_t Id = {{ msg.id }};
-};	// struct {{msg.name}}
+};	// struct {{ msg.name }}
+
+class Rx{{ msg.name }} : public RxMessage, public {{ msg.name }} {
+public:
+	using RxMessage::RxMessage;
+protected:
+	ref_t createSpecificJavaObject() const override;
+	size_t getDataSize() const override { return DataBytes; };
+};	// class Rx{{ msg.name }}
+
+class Tx{{ msg.name }} : public TxMessage, public {{ msg.name }} {
+public:
+	using TxMessage::TxMessage;
+protected:
+	size_t loadFromSpecificJavaObject(ref_t msg) override;
+	size_t getDataSize() const override { return DataBytes; };
+};	// class Tx{{ msg.name }}
 
 	%% endfor
 } // namespace {{ service.name }}
 %% endfor
-} // namespace message
+
+
+struct MessageFactory {
+	static void setAwapCommonInfusion(ostfriesentee::Infusion& inf);
+
+	static inline RxMessage* makeRxMessage(const NodeAddress sender, Slice<const uint8_t> content) {
+		if(content.length < 3) {
+			return nullptr;
+		}
+
+		const ServiceTypeId serviceType = content.data[1];
+		switch(serviceType) {
+%% for service in services
+		case {{ service.id }}: // {{ service.name }}
+			return make{{ service.name }}RxMessage(sender, content);
+%% endfor
+		default:
+			return nullptr;
+		}
+	}
+
+private:
+%% for service in services
+	static inline RxMessage* make{{ service.name }}RxMessage(const NodeAddress sender, Slice<const uint8_t> content) {
+		static constexpr uint8_t MessageIdBits = {{ service.message_id_size }};
+		const uint8_t messageId = content.data[2] >> (8 - MessageIdBits);
+
+		switch(messageId) {
+	%% for msg in service.messages
+		case {{ msg.id }}:	// {{ msg.name }}
+			return new {{ service.name }}::Rx{{ msg.name }}(sender, content);
+	%% endfor
+		default:
+			return nullptr;
+		}
+	}
+%% endfor
+
+};	// MessageFactory
 } // namespace generated
 } // namespace awap
 
-#endif // GENERATED_MESSAGE_PARSER_HPP
+#endif // GENERATED_MESSAGES_HPP

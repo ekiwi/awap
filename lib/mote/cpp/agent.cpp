@@ -106,19 +106,20 @@ Agent::setup()
 }
 
 bool
-Agent::receive(const CommonMessageHeader& header, const MessageParser& parser, Slice<const uint8_t> body)
+Agent::receive(const RxMessage* const msg)
 {
-	if(header.isFromRemoteService) {
-		auto msg = parser.createJava(body);
-		if(msg == 0) {
+	if(msg->isFromRemoteService()) {
+		// TODO: call callback of correct type
+		//debug_printf("agent.cpp: TODO: find out correct method to call for message from remote service!\n");
+		return false;
+	} else {
+		auto java_msg = msg->createJavaObject();
+		if(java_msg == 0) {
 			return false;
 		} else {
-			agent.handleLocalServiceMessage(msg);
+			agent.handleLocalServiceMessage(java_msg);
 			return true;
 		}
-	} else {
-		debug_printf("agent.cpp: TODO: find out correct method to call for message from remote service!\n");
-		return false;
 	}
 }
 

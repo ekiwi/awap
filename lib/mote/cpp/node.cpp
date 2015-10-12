@@ -8,14 +8,14 @@
 
 #include "node.hpp"
 #include <util.hpp>
-#include <generated/message_parser.hpp>
+#include <generated/messages.hpp>
 
 namespace awap {
 
 Node::Node(ostfriesentee::Vm& vm, ostfriesentee::Infusion& awapCommon, ostfriesentee::Infusion& awapMote, const NodeAddress nodeAddress)
 	: vm(vm), awapCommon(awapCommon), awapMote(awapMote), address(nodeAddress)
 {
-	awap::generated::MessageParserFactory::setAwapCommonInfusion(awapCommon);
+	awap::generated::MessageFactory::setAwapCommonInfusion(awapCommon);
 }
 
 Node::~Node()
@@ -51,23 +51,21 @@ Node::receive(const NodeAddress sender, Slice<const uint8_t> content)
 		return false;
 	}
 
-	// parse message header
-	auto header = reinterpret_cast<const CommonMessageHeader*>(content.data);
-	auto body = content.sub(2);
-	auto parser = generated::MessageParserFactory::getMessageParser(header->serviceType, body);
-	if(parser.bytes == 0 || parser.createJava == nullptr) {
+	auto msg = generated::MessageFactory::makeRxMessage(sender, content);
+	if(msg == nullptr) {
 		Runtime::warn(Warning::NodeReceiveInvalidMessage);
 		return false;
 	}
 
-	if(header->isBroadcast) {
+	if(msg->isBroadcast()) {
 		// TODO
 	} else {
-		if(!validAgent(header->destAgent)) {
+		auto destAgent = msg->getDestinationAgent();
+		if(!validAgent(destAgent)) {
 			Runtime::warn(Warning::NodeReceiveUnknownAgent);
 			return false;
 		}
-		return agents[header->destAgent]->receive(*header, parser, body);
+		return agents[destAgent]->receive(msg);
 	}
 }
 

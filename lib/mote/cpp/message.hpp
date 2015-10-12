@@ -14,31 +14,54 @@
 
 namespace awap {
 
-struct CommonMessageHeader {
-	bool isBroadcast          : 1;
-	bool isFromRemoteService  : 1;
-	AgentId destAgent         : 3;
-	AgentId srcAgent          : 3;
-	ServiceTypeId serviceType : 8;
-} __attribute__((packed));
+class RxMessage
+{
+public:
+	bool isBroadcast()         const { return content.data[0] & (1<<7); }
+	bool isFromRemoteService() const { return content.data[0] & (1<<6); }
+	AgentId getDestinationAgent() const { return (content.data[0] >> 3) & 0x7; }
+	AgentId getSourceAgent()      const { return (content.data[0] >> 0) & 0x7; }
+	ServiceTypeId getServiceType() const { return content.data[1]; }
 
-static_assert(sizeof(CommonMessageHeader) == 2, "sizeof(CommonMessageHeader) needs to be 2 bytes!");
+	ref_t createJavaObject() const;
+	// 2 byte for the common header + data
+	size_t inline getSize() const { return 2 + this->getDataSize(); }
 
-struct MessageParser {
-	using CreateJavaObjectFunctionPtr = ref_t (*)(Slice<const uint8_t>);
-	size_t bytes = 0;
-	CreateJavaObjectFunctionPtr createJava = nullptr;
+protected:
+	/// creates the correct java object for this type and fills in all data fields
+	virtual ref_t createSpecificJavaObject() const = 0;
+	virtual size_t getDataSize() const = 0;
 
-	MessageParser(const size_t bytes, const CreateJavaObjectFunctionPtr createJava)
-		: bytes(bytes), createJava(createJava) {}
+public:
+	RxMessage(const NodeAddress remoteNode, Slice<const uint8_t> content) :
+		remoteNode(remoteNode), content(content) {}
+
+protected:
+	const NodeAddress remoteNode;
+	Slice<const uint8_t> content;
 };
 
-//struct ReceiveEnvelope {
-//	AgentId localAgent;
-//	ServiceId localService;
-//	Message msg;
-//	
-//};
+class TxMessage
+{
+public:
+	// returns number of bytes written
+	size_t loadFromJavaObject(ref_t msg);
+	// 2 byte for the common header + data
+	size_t inline getSize() const { return 2 + this->getDataSize(); }
+
+protected:
+	/// reads from the correct java object type for this message type
+	virtual size_t loadFromSpecificJavaObject(ref_t msg) = 0;
+	virtual size_t getDataSize() const = 0;
+
+public:
+	TxMessage(const NodeAddress remoteNode, Slice<uint8_t> content) :
+		remoteNode(remoteNode), content(content) {}
+
+protected:
+	NodeAddress remoteNode;
+	Slice<uint8_t> content;
+};
 
 } // namespace awap
 

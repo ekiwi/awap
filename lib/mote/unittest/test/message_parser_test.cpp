@@ -9,7 +9,7 @@
 #include "message_parser_test.hpp"
 #include <awap.hpp>
 #include <debug.hpp>
-#include <generated/message_parser.hpp>
+#include <generated/messages.hpp>
 #include <jlib_awap-common.hpp>
 using namespace awap;
 

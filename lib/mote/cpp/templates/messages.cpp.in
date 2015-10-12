@@ -1,5 +1,5 @@
 /**
- * message_parser.cpp
+ * messages.cpp
  *
  * Copyright (c) 2015 Kevin Laeufer <kevin.laeufer@rwth-aachen.de>
  *
@@ -7,17 +7,15 @@
  */
 
 
-#include "message_parser.hpp"
 #include <hpp/ostfriesentee.hpp>
 #include <jlib_awap-common.hpp>
-#include "messages.hpp"
+#include <generated/messages.hpp>
 
 namespace awap {
 namespace generated {
-namespace MessageParserFactory {
 
 static ostfriesentee::Infusion awapCommonInfusion{nullptr};
-void setAwapCommonInfusion(ostfriesentee::Infusion& inf) {
+void MessageFactory::setAwapCommonInfusion(ostfriesentee::Infusion& inf) {
 	awapCommonInfusion = inf;
 	dj_mem_addSafePointer((void**)&awapCommonInfusion);
 }
@@ -31,25 +29,20 @@ cap(const int64_t value, const int64_t min_value, const int64_t max_value)
 
 %% for service in services
 	%% for msg in service.messages
+
+ref_t ::awap::generated::{{ service.name }}::Rx{{ msg.name }}::createSpecificJavaObject() const {
 		%% if msg.fields|length == 0
-ref_t {{service.name}}::createJava_{{ msg.name }}(const Slice<const uint8_t> /*input*/)
-		%% else
-ref_t {{service.name}}::createJava_{{ msg.name }}(const Slice<const uint8_t> input)
-		%% endif
-{
-	using Message = ::awap::generated::message::{{ service.name }}::{{ msg.name }};
-		%% if msg.fields|length == 0
-	Message::JavaClass obj(awapCommonInfusion);
+	JavaClass obj(awapCommonInfusion);
 	// WARN: needs to be handed to java code before any java memory is allocated
 	//       or else it will be garbage collected!
 	return obj.getRef();
 		%% else
-	if(check(Message::Bytes <= input.length, Warning::MessageParserTooShort)) {
+	if(check(this->getSize() <= this->content.length, Warning::MessageParserTooShort)) {
 		// create java object
-		Message::JavaClass obj(awapCommonInfusion);
+		JavaClass obj(awapCommonInfusion);
 		// this is safe, because we checked the length above
 		auto java_struct = obj.getUnderlying();
-		const auto data = input.data;
+		const auto data = this->content.data;
 
 		// unmarshal
 		{{ msg.cpp.unmarshal | indent(2) }}
@@ -63,19 +56,14 @@ ref_t {{service.name}}::createJava_{{ msg.name }}(const Slice<const uint8_t> inp
 		%% endif
 }
 
-		%% if msg.fields|length == 0
-size_t {{service.name}}::fromJava_{{ msg.name }}(ref_t /*obj*/, const Slice<uint8_t> output)
-		%% else
-size_t {{service.name}}::fromJava_{{ msg.name }}(ref_t obj, const Slice<uint8_t> output)
-		%% endif
-{
-	using Message = ::awap::generated::message::{{ service.name }}::{{ msg.name }};
-	if(check(Message::Bytes <= output.length, Warning::MessageParserOutputTooSmall)) {
+
+size_t ::awap::generated::{{ service.name }}::Tx{{ msg.name }}::loadFromSpecificJavaObject(ref_t msg) {
+	if(check(this->getSize() <= this->content.length, Warning::MessageParserOutputTooSmall)) {
 		%% if msg.fields|length > 0
-		auto java_data = static_cast<const Message::JavaClass::UnderlyingType*>(REF_TO_VOIDP(obj));
+		auto java_data = static_cast<const JavaClass::UnderlyingType*>(REF_TO_VOIDP(msg));
 		%% endif
 		// field aliases
-		const auto id = Message::Id;
+		const auto id = Id;
 		// cap the data to make sure it can be transmitted and cast to unsigned
 		// type in order for the following shift operations to work as intended
 		// (logic vs. arithmetic shift)
@@ -84,10 +72,10 @@ size_t {{service.name}}::fromJava_{{ msg.name }}(ref_t obj, const Slice<uint8_t>
 		%% endfor
 
 		// marshal, this is safe, because we checked the length above
-		auto data = output.data;
+		auto data = this->content.data;
 		{{ msg.cpp.marshal | indent(2) }}
 
-		return Message::Bytes;
+		return this->getDataSize();
 	} else {
 		return 0;	// error, zero bytes written
 	}
@@ -96,6 +84,5 @@ size_t {{service.name}}::fromJava_{{ msg.name }}(ref_t obj, const Slice<uint8_t>
 	%% endfor
 %% endfor
 
-} // namespace MessageParser
 } // namespace generated
 } // namespace awap
