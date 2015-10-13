@@ -45,7 +45,7 @@ class Tx{{ msg.name }} : public TxMessage, public {{ msg.name }} {
 public:
 	using TxMessage::TxMessage;
 protected:
-	size_t loadFromSpecificJavaObject(ref_t msg) override;
+	size_t marshalFromSpecificJavaObject(ref_t java_msg, Slice<uint8_t> output) override;
 	size_t getDataSize() const override { return DataBytes; };
 };	// class Tx{{ msg.name }}
 
@@ -89,6 +89,9 @@ private:
 		}
 	}
 %% endfor
+
+public:
+	static TxMessage* makeTxMessage(ref_t java_msg);
 
 };	// MessageFactory
 } // namespace generated

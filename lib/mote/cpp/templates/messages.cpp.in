@@ -57,10 +57,10 @@ ref_t ::awap::generated::{{ service.name }}::Rx{{ msg.name }}::createSpecificJav
 }
 
 
-size_t ::awap::generated::{{ service.name }}::Tx{{ msg.name }}::loadFromSpecificJavaObject(ref_t msg) {
-	if(check(this->getSize() <= this->content.length, Warning::MessageParserOutputTooSmall)) {
+size_t ::awap::generated::{{ service.name }}::Tx{{ msg.name }}::marshalFromSpecificJavaObject(ref_t java_msg, Slice<uint8_t> output) {
+	if(check(this->getSize() <= output.length, Warning::MessageParserOutputTooSmall)) {
 		%% if msg.fields|length > 0
-		auto java_data = static_cast<const JavaClass::UnderlyingType*>(REF_TO_VOIDP(msg));
+		auto java_data = static_cast<const JavaClass::UnderlyingType*>(REF_TO_VOIDP(java_msg));
 		%% endif
 		// field aliases
 		const auto id = Id;
@@ -72,7 +72,7 @@ size_t ::awap::generated::{{ service.name }}::Tx{{ msg.name }}::loadFromSpecific
 		%% endfor
 
 		// marshal, this is safe, because we checked the length above
-		auto data = &this->content.data[2];
+		auto data = &output.data[2];
 		{{ msg.cpp.marshal | indent(2) }}
 
 		return this->getDataSize();
@@ -83,6 +83,26 @@ size_t ::awap::generated::{{ service.name }}::Tx{{ msg.name }}::loadFromSpecific
 
 	%% endfor
 %% endfor
+
+TxMessage* MessageFactory::makeTxMessage(ref_t java_msg) {
+	// get global id, of java_msg
+	auto messageClassId = dj_vm_getRuntimeClass(dj_exec_getVM(), dj_mem_getChunkId(REF_TO_VOIDP(java_msg)));
+	if(messageClassId.infusion != awapCommonInfusion.getUnderlying()) {
+		return nullptr;	// class is not from the awap-common infusion
+	}
+
+	switch(messageClassId.entity_id) {
+%% for service in services
+	%% for msg in service.messages
+	case AWAP_COMMON_CDEF_de_rwth_aachen_awap_messages_{{ service.name }}_{{ msg.name }}:
+		// TODO: make class
+		return nullptr;
+	%% endfor
+%% endfor
+	default:
+		return nullptr;
+	}
+}
 
 } // namespace generated
 } // namespace awap

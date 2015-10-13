@@ -31,18 +31,18 @@ ref_t RxMessage::createJavaObject() const {
 }
 
 
-size_t TxMessage::loadFromJavaObject(ref_t msg) {
-	if(this->content.length < 2) {
+size_t TxMessage::marshal(ref_t java_msg, Slice<uint8_t> output) {
+	if(output.length < 3) {
 		return 0;
 	}
 	// load common fields
-	auto common = reinterpret_cast<MessageStruct*>(REF_TO_VOIDP(msg));
-	this->content.data[1] = static_cast<uint8_t>(common->serviceTypeId);
-	this->content.data[0] |= (static_cast<uint32_t>(common->remoteAgentId) >> 16) & 0x7;
-	this->remoteNode    =  static_cast<uint32_t>(common->remoteAgentId) & 0xffff;
+	auto common = reinterpret_cast<MessageStruct*>(REF_TO_VOIDP(java_msg));
+	output.data[1] = static_cast<uint8_t>(common->serviceTypeId);
+	output.data[0]  |= (static_cast<uint32_t>(common->remoteAgentId) >> 16) & 0x7;
+	this->remoteNode =  static_cast<uint32_t>(common->remoteAgentId) & 0xffff;
 
 	// load specific fields
-	size_t ret = this->loadFromSpecificJavaObject(msg);
+	size_t ret = this->marshalFromSpecificJavaObject(java_msg, output);
 	if(ret > 0) {
 		return ret + 2;
 	} else {

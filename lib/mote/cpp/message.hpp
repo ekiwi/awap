@@ -45,22 +45,17 @@ class TxMessage
 {
 public:
 	// returns number of bytes written
-	size_t loadFromJavaObject(ref_t msg);
+	size_t marshal(ref_t java_msg, Slice<uint8_t> output);
 	// 2 byte for the common header + data
 	size_t inline getSize() const { return 2 + this->getDataSize(); }
 
 protected:
 	/// reads from the correct java object type for this message type
-	virtual size_t loadFromSpecificJavaObject(ref_t msg) = 0;
+	virtual size_t marshalFromSpecificJavaObject(ref_t java_msg, Slice<uint8_t> output) = 0;
 	virtual size_t getDataSize() const = 0;
-
-public:
-	TxMessage(const NodeAddress remoteNode, Slice<uint8_t> content) :
-		remoteNode(remoteNode), content(content) {}
 
 protected:
 	NodeAddress remoteNode;
-	Slice<uint8_t> content;
 };
 
 } // namespace awap
