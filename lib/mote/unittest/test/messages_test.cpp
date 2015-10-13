@@ -218,10 +218,9 @@ MessagesTest::testMakeTxMessage()
 		SimpleUInt32Message::JavaClass obj(debug::getAwapCommonInfusion());
 		uint8_t msg[7] = { 0, 0, 0, 0, 0, 0, 0 };
 		auto tx = generated::MessageFactory::makeTxMessage(obj.getRef());
-	//	TEST_ASSERT_TRUE(rx != nullptr);
-	//	TEST_ASSERT_EQUALS(rx->getSize(), 7u);
-	//	TEST_ASSERT_EQUALS(tx.loadFromJavaObject(obj.getRef()), 7u);
-	//	TEST_ASSERT_EQUALS(msg[1], 0x45);
-	//	TEST_ASSERT_EQUALS(msg[2] >> 4, 1);
+		TEST_ASSERT_TRUE(tx != nullptr);
+		TEST_ASSERT_EQUALS(tx->getSize(), 7u);
+		TEST_ASSERT_EQUALS(tx->marshal(obj.getRef(), slice(msg)), 7u);
+		TEST_ASSERT_EQUALS(msg[2] >> 4, 1);
 	}
 }

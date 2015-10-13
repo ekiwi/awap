@@ -95,8 +95,7 @@ TxMessage* MessageFactory::makeTxMessage(ref_t java_msg) {
 %% for service in services
 	%% for msg in service.messages
 	case AWAP_COMMON_CDEF_de_rwth_aachen_awap_messages_{{ service.name }}_{{ msg.name }}:
-		// TODO: make class
-		return nullptr;
+		return new {{ service.name }}::Tx{{ msg.name }}();
 	%% endfor
 %% endfor
 	default:
