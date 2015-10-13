@@ -21,10 +21,12 @@ struct ServiceDescription {
 
 static constexpr size_t MaxPropBytes =
 		divideCeil(generated::Configuration::MaxPropertyBitCount, 8u);
+static constexpr size_t PropertyCount =
+		divideCeil(MaxPropBytes, sizeof(uint32_t));
 
-static inline bool toMask(ref_t java_desc, Slice<uint8_t> output) {
+static inline bool toMask(ref_t java_desc, Slice<uint32_t> output) {
 	// make sure output is large enough
-	if(output.length < MaxPropBytes) {
+	if(output.length < PropertyCount) {
 		return false;
 	}
 
@@ -32,6 +34,11 @@ static inline bool toMask(ref_t java_desc, Slice<uint8_t> output) {
 	auto descClassId = dj_vm_getRuntimeClass(dj_exec_getVM(), dj_mem_getChunkId(REF_TO_VOIDP(java_desc)));
 	if(descClassId.infusion != ::awap::getAwapCommonInfusion().getUnderlying()) {
 		return false;	// class is not from the awap-common infusion
+	}
+
+	// fill mask with zero
+	for(size_t ii = 0; ii < PropertyCount; ++ii) {
+		output.data[ii] = 0;
 	}
 
 	switch(descClassId.entity_id) {

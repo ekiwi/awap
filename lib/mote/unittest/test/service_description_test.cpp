@@ -26,13 +26,10 @@ ServiceDescriptionTest::testMessageTestService()
 
 	// currently the largest service description needs 20 bit
 	// this will be rounded up to 32bit => 4 byte
-	uint8_t out[4] = { 0xaa, 0xaa, 0xaa, 0xaa };
+	uint32_t out[1];
 
 	ServiceDescription obj(getAwapCommonInfusion(), 0);
 	TEST_ASSERT_TRUE(awap::generated::ServiceDescription::toMask(obj.getRef(), slice(out)));
 	// mask should be all zero, because the TestMessageService does not contain any properties
-	TEST_ASSERT_EQUALS(out[0], 0x00);
-	TEST_ASSERT_EQUALS(out[1], 0x00);
-	TEST_ASSERT_EQUALS(out[2], 0x00);
-	TEST_ASSERT_EQUALS(out[3], 0x00);
+	TEST_ASSERT_EQUALS(out[0], 0x00000000u);
 }
