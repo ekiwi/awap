@@ -32,16 +32,17 @@ template<size_t PropDataSize>
 struct DirectoryQuery
 {
 	using Entry = DirectoryEntry<PropDataSize>;
+	static constexpr size_t PropertyCount = Entry::PropertyCount;
 	// properties as first member and 32bit wide for alignment reasons
-	uint32_t propertiesMask[PropDataSize];
-	uint32_t properties[PropDataSize];
+	uint32_t propertiesMask[PropertyCount];
+	uint32_t properties[PropertyCount];
 	ServiceId serviceType;
 
 	bool inline match(const Entry& entry) const {
 		if(entry.serviceType != serviceType) {
 			return false;
 		}
-		for(size_t ii = 0; ii < PropDataSize; ++ii) {
+		for(size_t ii = 0; ii < PropertyCount; ++ii) {
 			const uint32_t mask = propertiesMask[ii];
 			const uint32_t masked0 = entry.properties[ii] & mask;
 			// TODO: only mask once
