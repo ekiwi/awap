@@ -104,12 +104,10 @@ void Awap::timeoutExpired(uint32_t id)
 }
 
 //----------------------------------------------------------------------------
-// debug/unittest functions
-namespace debug {
+// internal interface
 ostfriesentee::Infusion& getAwapCommonInfusion() {
 	assert(node != nullptr, Panic::NotInitialized);
 	return node->getAwapCommon();
-}
 }
 //----------------------------------------------------------------------------
 // awap-mote infusion native functions

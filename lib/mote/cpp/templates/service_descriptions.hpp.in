@@ -1,0 +1,51 @@
+/**
+ * service_descriptions.hpp
+ *
+ * Copyright (c) 2015 Kevin Laeufer <kevin.laeufer@rwth-aachen.de>
+ *
+ * This file is part of awap.
+ */
+
+#ifndef GENERATED_SERVICE_DESCRIPTIONS_HPP
+#define GENERATED_SERVICE_DESCRIPTIONS_HPP
+
+#include <util.hpp>
+#include <common.hpp>
+#include <generated/configuration.hpp>
+#include <jlib_awap-common.hpp>
+
+namespace awap {
+namespace generated {
+
+struct ServiceDescription {
+
+static constexpr size_t MaxPropBytes =
+		divideCeil(generated::Configuration::MaxPropertyBitCount, 8u);
+
+static inline bool toMask(ref_t java_desc, Slice<uint8_t> output) {
+	// make sure output is large enough
+	if(output.length < MaxPropBytes) {
+		return false;
+	}
+
+	// check Java class type
+	auto descClassId = dj_vm_getRuntimeClass(dj_exec_getVM(), dj_mem_getChunkId(REF_TO_VOIDP(java_desc)));
+	if(descClassId.infusion != ::awap::getAwapCommonInfusion().getUnderlying()) {
+		return false;	// class is not from the awap-common infusion
+	}
+
+	switch(descClassId.entity_id) {
+%% for service in services
+	case AWAP_COMMON_CDEF_de_rwth_aachen_awap_service_{{ service.name }}Description:
+		return true;
+%% endfor
+	default:
+		return false;
+	}
+}
+
+}; // struct ServiceDescription
+} // namespace generated
+} // namespace awap
+
+#endif // GENERATED_SERVICE_DESCRIPTIONS_HPP

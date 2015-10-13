@@ -7,8 +7,7 @@
  */
 
 #include "messages_test.hpp"
-#include <awap.hpp>
-#include <debug.hpp>
+#include <common.hpp>
 #include <generated/messages.hpp>
 #include <jlib_awap-common.hpp>
 using namespace awap;
@@ -90,7 +89,7 @@ MessagesTest::testSimpleUInt32Message()
 
 	{
 		// create Java message object
-		JavaClass obj(debug::getAwapCommonInfusion());
+		JavaClass obj(getAwapCommonInfusion());
 		auto raw = obj.getUnderlying();
 		raw->uint_value = 57343298;
 
@@ -136,7 +135,7 @@ MessagesTest::testSimpleUInt12Message()
 
 	{
 		// create Java message object
-		JavaClass obj(debug::getAwapCommonInfusion());
+		JavaClass obj(getAwapCommonInfusion());
 		auto raw = obj.getUnderlying();
 		raw->uint_value = 1234;
 
@@ -164,7 +163,7 @@ MessagesTest::testBoolMessage()
 
 	{
 		// create Java message object
-		JavaClass obj(debug::getAwapCommonInfusion());
+		JavaClass obj(getAwapCommonInfusion());
 		auto raw = obj.getUnderlying();
 		raw->b0 = true;
 		raw->b1 = false;
@@ -215,7 +214,7 @@ MessagesTest::testMakeTxMessage()
 {
 	// test with SimpleUInt32Message object
 	{
-		SimpleUInt32Message::JavaClass obj(debug::getAwapCommonInfusion());
+		SimpleUInt32Message::JavaClass obj(getAwapCommonInfusion());
 		uint8_t msg[7] = { 0, 0, 0, 0, 0, 0, 0 };
 		auto tx = generated::MessageFactory::makeTxMessage(obj.getRef());
 		TEST_ASSERT_TRUE(tx != nullptr);

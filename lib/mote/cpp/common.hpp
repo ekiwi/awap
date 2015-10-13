@@ -10,6 +10,7 @@
 #define COMMON_HPP
 
 #include <awap.hpp>
+#include <hpp/ostfriesentee.hpp>
 
 namespace awap {
 
@@ -27,6 +28,8 @@ struct LocalService {
 	AgentId agent;
 	ServiceId service;
 };
+
+ostfriesentee::Infusion& getAwapCommonInfusion();
 
 } // namespace awap
 
