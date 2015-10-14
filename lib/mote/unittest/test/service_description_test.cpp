@@ -20,6 +20,29 @@ ServiceDescriptionTest::setUp()
 }
 
 void
+ServiceDescriptionTest::testToBroadcastHeader()
+{
+	using SD = awap::generated::ServiceDescription;
+
+	EnergySupplyServiceDescription obj(getAwapCommonInfusion(), 0);
+	auto data = obj.getUnderlying();
+	TEST_ASSERT_EQUALS(SD::toBroadcastHeader(obj.getRef()), 0b00000000);
+
+	data->buildingDoNotCare = 0;
+	TEST_ASSERT_EQUALS(SD::toBroadcastHeader(obj.getRef()), 0b10000000);
+
+	data->buildingDoNotCare = 1;
+	data->supplyCircuitDoNotCare = 0;
+	TEST_ASSERT_EQUALS(SD::toBroadcastHeader(obj.getRef()), 0b01000000);
+
+	data->buildingDoNotCare = 0;
+	data->supplyCircuitDoNotCare = 0;
+	data->roomDoNotCare = 0;
+	TEST_ASSERT_EQUALS(SD::toBroadcastHeader(obj.getRef()), 0b11100000);
+
+}
+
+void
 ServiceDescriptionTest::testGetServiceTypeId()
 {
 	MessageTestServiceDescription testDesc(getAwapCommonInfusion(), 0);

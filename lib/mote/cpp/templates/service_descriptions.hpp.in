@@ -46,6 +46,32 @@ static inline ServiceTypeId getServiceTypeId(ref_t java_desc) {
 	}
 }
 
+static inline uint8_t toBroadcastHeader(ref_t java_desc) {
+	// check Java class type
+	auto descClassId = dj_vm_getRuntimeClass(dj_exec_getVM(), dj_mem_getChunkId(REF_TO_VOIDP(java_desc)));
+	if(descClassId.infusion != ::awap::getAwapCommonInfusion().getUnderlying()) {
+		return 0;	// class is not from the awap-common infusion
+	}
+
+	switch(descClassId.entity_id) {
+%% for service in services
+	case AWAP_COMMON_CDEF_de_rwth_aachen_awap_service_{{ service.name }}Description:
+	{
+	%% if service.properties | length > 0
+		auto java_data = static_cast<const {{ service.name }}DescriptionStruct*>(REF_TO_VOIDP(java_desc));
+	%% endif
+	return 0
+	%% for prop in service.properties
+		| (((java_data->{{ prop.name }}DoNotCare)? 0 : 1) << (7 - {{ prop.id }}))
+	%% endfor
+		;
+	}
+%% endfor
+	default:
+		return 0;
+	}
+}
+
 static inline bool toQueryMask(ref_t java_desc, Slice<uint32_t> mask) {
 	// make sure output is large enough
 	if(mask.length < PropertyCount) {

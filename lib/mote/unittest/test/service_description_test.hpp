@@ -13,6 +13,7 @@ class ServiceDescriptionTest : public unittest::TestSuite
 {
 public:
 	void setUp() override;
-	void testGetServiceTypeId();
 	void testToQueryMask();
+	void testToBroadcastHeader();
+	void testGetServiceTypeId();
 };
