@@ -13,5 +13,5 @@ class ServiceDescriptionTest : public unittest::TestSuite
 {
 public:
 	void setUp() override;
-	void testMessageTestService();
+	void testToMask();
 };
