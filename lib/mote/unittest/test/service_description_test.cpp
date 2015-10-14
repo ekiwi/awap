@@ -104,6 +104,8 @@ ServiceDescriptionTest::testToQueryMaskWithServiceIdAndBroadcastHeader()
 void
 ServiceDescriptionTest::testToQueryMask()
 {
+	using SD = awap::generated::ServiceDescription;
+
 	// currently the largest service description needs 20 bit
 	// this will be rounded up to 32bit => 4 byte
 	uint32_t out[1];
@@ -121,8 +123,7 @@ ServiceDescriptionTest::testToQueryMask()
 		out[0] = 0xaaaaaaaau;
 		// test with TestMessageService which does not have any properties
 		MessageTestServiceDescription obj(getAwapCommonInfusion(), 0);
-		TEST_ASSERT_TRUE(awap::generated::ServiceDescription::toQueryMask(
-			obj.getRef(), slice(out)));
+		TEST_ASSERT_TRUE(SD::toQueryMask(obj.getRef(), slice(out)));
 		// mask should be all zero, because the TestMessageService does not
 		// contain any properties
 		TEST_ASSERT_EQUALS(out[0], 0x00000000u);
@@ -132,23 +133,21 @@ ServiceDescriptionTest::testToQueryMask()
 		out[0] = 0xaaaaaaaau;
 		EnergySupplyServiceDescription obj(getAwapCommonInfusion(), 0);
 		auto data = obj.getUnderlying();
-		TEST_ASSERT_TRUE(awap::generated::ServiceDescription::toQueryMask(
+		TEST_ASSERT_TRUE(SD::toQueryMask(
 			obj.getRef(), slice(out)));
 		// no properties selected
 		TEST_ASSERT_EQUALS(out[0], 0x00000000u);
 
 		out[0] = 0xaaaaaaaau;
 		data->buildingDoNotCare = 0;
-		TEST_ASSERT_TRUE(awap::generated::ServiceDescription::toQueryMask(
-			obj.getRef(), slice(out)));
+		TEST_ASSERT_TRUE(SD::toQueryMask(obj.getRef(), slice(out)));
 		// Building property (4bit) selected
 		TEST_ASSERT_EQUALS(out_bytes[0], 0xf0u);
 
 		out[0] = 0xaaaaaaaau;
 		data->buildingDoNotCare = 1;
 		data->supplyCircuitDoNotCare = 0;
-		TEST_ASSERT_TRUE(awap::generated::ServiceDescription::toQueryMask(
-			obj.getRef(), slice(out)));
+		TEST_ASSERT_TRUE(SD::toQueryMask(obj.getRef(), slice(out)));
 		// SupplyCircuit property (8bit) selected
 		TEST_ASSERT_EQUALS(out_bytes[0], 0x0fu);
 		TEST_ASSERT_EQUALS(out_bytes[1], 0xf0u);
@@ -157,8 +156,7 @@ ServiceDescriptionTest::testToQueryMask()
 		data->buildingDoNotCare = 0;
 		data->supplyCircuitDoNotCare = 0;
 		data->roomDoNotCare = 0;
-		TEST_ASSERT_TRUE(awap::generated::ServiceDescription::toQueryMask(
-			obj.getRef(), slice(out)));
+		TEST_ASSERT_TRUE(SD::toQueryMask(obj.getRef(), slice(out)));
 		// all properties selected
 		TEST_ASSERT_EQUALS(out_bytes[0], 0xffu);
 		TEST_ASSERT_EQUALS(out_bytes[1], 0xffu);
