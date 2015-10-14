@@ -26,6 +26,15 @@ ServiceDescriptionTest::testToMask()
 	// currently the largest service description needs 20 bit
 	// this will be rounded up to 32bit => 4 byte
 	uint32_t out[1];
+	// while the service directory works with 32bit integer values
+	// we use 8bit integers to generate the mask and service descriptions
+	// this makes the position of the mask bytes in the uint32_t
+	// depended on endianness
+	// this does not matter for our application, as it all stays on the
+	// same platform
+	// however, it makes it harder to test, thus we use byte access
+	// for this
+	auto out_bytes = reinterpret_cast<const uint8_t*>(out);
 
 	{
 		out[0] = 0xaaaaaaaau;
@@ -49,6 +58,6 @@ ServiceDescriptionTest::testToMask()
 		data->buildingDoNotCare = 0;
 		TEST_ASSERT_TRUE(awap::generated::ServiceDescription::toMask(obj.getRef(), slice(out)));
 		// Building property (4bit) selected
-		TEST_ASSERT_EQUALS(out[0], 0x00000000u);
+		TEST_ASSERT_EQUALS(out_bytes[0], 0xf0u);
 	}
 }
