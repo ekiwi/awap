@@ -72,16 +72,14 @@ static inline uint8_t toBroadcastHeader(ref_t java_desc) {
 	}
 }
 
-static inline bool toQueryMask(ref_t java_desc, Slice<uint32_t> mask) {
+static inline bool toQueryMask(
+	ServiceTypeId serviceTypeId,
+	uint8_t broadcastHeader,
+	Slice<uint32_t> mask) {
+
 	// make sure output is large enough
 	if(mask.length < PropertyCount) {
 		return false;
-	}
-
-	// check Java class type
-	auto descClassId = dj_vm_getRuntimeClass(dj_exec_getVM(), dj_mem_getChunkId(REF_TO_VOIDP(java_desc)));
-	if(descClassId.infusion != ::awap::getAwapCommonInfusion().getUnderlying()) {
-		return false;	// class is not from the awap-common infusion
 	}
 
 	// fill mask with zero
@@ -93,16 +91,13 @@ static inline bool toQueryMask(ref_t java_desc, Slice<uint32_t> mask) {
 	// messages
 	auto data = reinterpret_cast<uint8_t*>(mask.data);
 
-	switch(descClassId.entity_id) {
+	switch(serviceTypeId) {
 %% for service in services
-	case AWAP_COMMON_CDEF_de_rwth_aachen_awap_service_{{ service.name }}Description:
+	case {{ service.id }}:	// {{ service.name }}
 	{
-	%% if service.properties | length > 0
-		auto java_data = static_cast<const {{ service.name }}DescriptionStruct*>(REF_TO_VOIDP(java_desc));
-	%% endif
 	%% for prop in service.properties
 		const {{ prop.cpp.unsigned_type }} {{ prop.name }} =
-			(java_data->{{ prop.name }}DoNotCare)? 0 : (1<<{{ prop.size }}) - 1;
+			(broadcastHeader & (1 << (7 - {{ prop.id }})))? (1<<{{ prop.size }}) - 1 : 0;
 	%% endfor
 		{{ service.cpp.marshal | indent(2) }}
 		return true;
@@ -111,6 +106,13 @@ static inline bool toQueryMask(ref_t java_desc, Slice<uint32_t> mask) {
 	default:
 		return false;
 	}
+}
+
+static inline bool toQueryMask(ref_t java_desc, Slice<uint32_t> mask) {
+	return toQueryMask(
+		getServiceTypeId(java_desc),
+		toBroadcastHeader(java_desc),
+		mask);
 }
 
 }; // struct ServiceDescription

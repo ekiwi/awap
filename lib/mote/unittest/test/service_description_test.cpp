@@ -45,17 +45,60 @@ ServiceDescriptionTest::testToBroadcastHeader()
 void
 ServiceDescriptionTest::testGetServiceTypeId()
 {
+	using SD = awap::generated::ServiceDescription;
+
 	MessageTestServiceDescription testDesc(getAwapCommonInfusion(), 0);
-	TEST_ASSERT_EQUALS(awap::generated::ServiceDescription::getServiceTypeId(
-		testDesc.getRef()), 0);
+	TEST_ASSERT_EQUALS(SD::getServiceTypeId(testDesc.getRef()), 0);
 
 	EnergySupplyServiceDescription energySupplyDesc(getAwapCommonInfusion(), 0);
-	TEST_ASSERT_EQUALS(awap::generated::ServiceDescription::getServiceTypeId(
-		energySupplyDesc.getRef()), 7);
+	TEST_ASSERT_EQUALS(SD::getServiceTypeId(energySupplyDesc.getRef()), 7);
 
 	RoomServiceDescription roomDesc(getAwapCommonInfusion(), 0);
-	TEST_ASSERT_EQUALS(awap::generated::ServiceDescription::getServiceTypeId(
-		roomDesc.getRef()), 3);
+	TEST_ASSERT_EQUALS(SD::getServiceTypeId(roomDesc.getRef()), 3);
+}
+
+void
+ServiceDescriptionTest::testToQueryMaskWithServiceIdAndBroadcastHeader()
+{
+	using SD = awap::generated::ServiceDescription;
+
+	uint32_t out[1];
+	auto out_bytes = reinterpret_cast<const uint8_t*>(out);
+
+	{
+		out[0] = 0xaaaaaaaau;
+		TEST_ASSERT_TRUE(SD::toQueryMask(0, 0b00000000, slice(out)));
+		// mask should be all zero, because the TestMessageService does not
+		// contain any properties
+		TEST_ASSERT_EQUALS(out[0], 0x00000000u);
+	}
+
+	{
+		// EnergySupplyService: id: 7
+		out[0] = 0xaaaaaaaau;
+		TEST_ASSERT_TRUE(SD::toQueryMask(7, 0b00000000, slice(out)));
+		// no properties selected
+		TEST_ASSERT_EQUALS(out[0], 0x00000000u);
+
+		out[0] = 0xaaaaaaaau;
+		TEST_ASSERT_TRUE(SD::toQueryMask(7, 0b10000000, slice(out)));
+		// Building property (4bit) selected
+		TEST_ASSERT_EQUALS(out_bytes[0], 0xf0u);
+
+		out[0] = 0xaaaaaaaau;
+		TEST_ASSERT_TRUE(SD::toQueryMask(7, 0b01000000, slice(out)));
+		// SupplyCircuit property (8bit) selected
+		TEST_ASSERT_EQUALS(out_bytes[0], 0x0fu);
+		TEST_ASSERT_EQUALS(out_bytes[1], 0xf0u);
+
+		out[0] = 0xaaaaaaaau;
+		TEST_ASSERT_TRUE(SD::toQueryMask(7, 0b11100000, slice(out)));
+		// all properties selected
+		TEST_ASSERT_EQUALS(out_bytes[0], 0xffu);
+		TEST_ASSERT_EQUALS(out_bytes[1], 0xffu);
+		TEST_ASSERT_EQUALS(out_bytes[2], 0xf0u);
+		TEST_ASSERT_EQUALS(out_bytes[3], 0x00u);
+	}
 }
 
 void

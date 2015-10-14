@@ -15,5 +15,6 @@ public:
 	void setUp() override;
 	void testToQueryMask();
 	void testToBroadcastHeader();
+	void testToQueryMaskWithServiceIdAndBroadcastHeader();
 	void testGetServiceTypeId();
 };
