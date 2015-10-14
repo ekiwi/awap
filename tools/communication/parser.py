@@ -109,6 +109,18 @@ class Service(NamedCommunicationElement):
 
 		self.mod.passert(node, self.max_property_id >= max_id_found,
 			'Found id "{}", but the maximum property id is "{}"!'.format(max_id_found, self.max_property_id))
+		self.property_id_size = number_of_bits_from_maxid(self.max_property_id)
+
+	def generate_property_field_placement(self):
+		field_list = [fields.Field(camelCase(ff.name), ff.size) for ff in self.properties]
+		byte_list = fields.InOrderPlacement().place(field_list)
+		gc_unmarshal = fields.CodeGenerator(data_src="data", field_prefix="java_struct->")
+		gc_marshal   = fields.CodeGenerator(data_src="data")
+		dd = { 'unmarshal': "\n".join(gc_unmarshal.unmarshal(ff) for ff in field_list),
+			'marshal': "\n".join(gc_marshal.marshal(bb) for bb in byte_list),
+			'bytes': len(byte_list) }
+		return dd
+
 
 	def to_dict(self):
 		dd = super(Service, self).to_dict()
@@ -119,9 +131,9 @@ class Service(NamedCommunicationElement):
 		dd['message_id_size'] = self.message_id_size
 		dd['properties'] = [prop.to_dict() for prop in self.properties]
 		dd['max_property_id']  = self.max_property_id
-		dd['property_id_size'] = number_of_bits_from_maxid(self.max_property_id)
+		dd['property_id_size'] = self.property_id_size
 		dd['property_bit_count'] = sum(pp.size for pp in self.properties)
-		dd['cpp'] = {}
+		dd['cpp'] = self.generate_property_field_placement()
 		dd['java'] = {}
 		if len(self.properties) > 0:
 			dd['java']['arg_names'] = [camelCase(prop.name) for prop in self.properties]
