@@ -89,7 +89,7 @@ public class NodeAdapter extends AbstractNode {
 		try {
 			ServiceDescription sd = Service.awapToJadeDescription(description);
 			sd.setName(Integer.toString(localServiceId));
-			dfd.addServices(Service.awapToJadeDescription(description));
+			dfd.addServices(sd);
 		} catch(Exception e) {
 			e.printStackTrace();
 			return false;
