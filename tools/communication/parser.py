@@ -392,6 +392,22 @@ class EnumType(NamedCommunicationElement):
 		self.mod.passert(node, self.max_id >= max_id_found,
 			'Found id "{}", but the maximum id is "{}"!'.format(max_id_found, self.max_id))
 
+	def _underlying_type_size(self):
+		if self.size <= 8:    return  8
+		elif self.size <= 16: return 16
+		elif self.size <= 32: return 32
+
+	def to_signed_id(self, id_value):
+		""" in java all integers are unsigned, thus we need to convert
+		    ids that would fit into the unsigned type, but do not fit into the
+		    signed type
+		"""
+		max_id_value = (1 << (self._underlying_type_size() - 1)) - 1
+		if id_value > max_id_value:
+			return max_id_value - id_value
+		else:
+			return id_value
+
 	@property
 	def size(self):
 		return int(math.log(self.max_id,2) + 1)
@@ -414,11 +430,17 @@ class EnumType(NamedCommunicationElement):
 
 	@property
 	def max_value(self):
-		return self.max_id
+		if self.to_signed_id(self.max_id) < 0:
+			return (1 << (self._underlying_type_size() - 1)) - 1
+		else:
+			return self.max_id
 
 	@property
 	def min_value(self):
-		return 0
+		if self.to_signed_id(self.max_id) < 0:
+			return self.to_signed_id(self.max_id)
+		else:
+			return 0
 
 	def to_dict(self):
 		dd = super(EnumType, self).to_dict()
@@ -438,7 +460,7 @@ class EnumElement(NamedCommunicationElement):
 
 	def to_dict(self):
 		dd = super(EnumElement, self).to_dict()
-		dd['id'] = self.id
+		dd['id'] = self.parent.to_signed_id(self.id)
 		return dd
 
 class Import(object):
