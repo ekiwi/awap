@@ -59,5 +59,24 @@ ServiceDescriptionTest::testToMask()
 		TEST_ASSERT_TRUE(awap::generated::ServiceDescription::toMask(obj.getRef(), slice(out)));
 		// Building property (4bit) selected
 		TEST_ASSERT_EQUALS(out_bytes[0], 0xf0u);
+
+		out[0] = 0xaaaaaaaau;
+		data->buildingDoNotCare = 1;
+		data->supplyCircuitDoNotCare = 0;
+		TEST_ASSERT_TRUE(awap::generated::ServiceDescription::toMask(obj.getRef(), slice(out)));
+		// SupplyCircuit property (8bit) selected
+		TEST_ASSERT_EQUALS(out_bytes[0], 0x0fu);
+		TEST_ASSERT_EQUALS(out_bytes[1], 0xf0u);
+
+		out[0] = 0xaaaaaaaau;
+		data->buildingDoNotCare = 0;
+		data->supplyCircuitDoNotCare = 0;
+		data->roomDoNotCare = 0;
+		TEST_ASSERT_TRUE(awap::generated::ServiceDescription::toMask(obj.getRef(), slice(out)));
+		// all properties selected
+		TEST_ASSERT_EQUALS(out_bytes[0], 0xffu);
+		TEST_ASSERT_EQUALS(out_bytes[1], 0xffu);
+		TEST_ASSERT_EQUALS(out_bytes[2], 0xf0u);
+		TEST_ASSERT_EQUALS(out_bytes[3], 0x00u);
 	}
 }
