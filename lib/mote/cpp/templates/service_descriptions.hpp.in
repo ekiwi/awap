@@ -29,7 +29,7 @@ using {{ service.name }}DescriptionStruct =
 	::de::rwth_aachen::awap::service::{{ service.name }}Description::UnderlyingType;
 %% endfor
 
-static inline bool toMask(ref_t java_desc, Slice<uint32_t> mask) {
+static inline bool toQueryMask(ref_t java_desc, Slice<uint32_t> mask) {
 	// make sure output is large enough
 	if(mask.length < PropertyCount) {
 		return false;
