@@ -19,6 +19,21 @@ ServiceDescriptionTest::setUp()
 	Awap::init(0x4321);
 }
 
+void
+ServiceDescriptionTest::testGetServiceTypeId()
+{
+	MessageTestServiceDescription testDesc(getAwapCommonInfusion(), 0);
+	TEST_ASSERT_EQUALS(awap::generated::ServiceDescription::getServiceTypeId(
+		testDesc.getRef()), 0);
+
+	EnergySupplyServiceDescription energySupplyDesc(getAwapCommonInfusion(), 0);
+	TEST_ASSERT_EQUALS(awap::generated::ServiceDescription::getServiceTypeId(
+		energySupplyDesc.getRef()), 7);
+
+	RoomServiceDescription roomDesc(getAwapCommonInfusion(), 0);
+	TEST_ASSERT_EQUALS(awap::generated::ServiceDescription::getServiceTypeId(
+		roomDesc.getRef()), 3);
+}
 
 void
 ServiceDescriptionTest::testToQueryMask()

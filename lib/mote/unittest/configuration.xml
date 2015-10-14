@@ -10,7 +10,7 @@ This file is part of awap.
 	<!-- max-id is needed for domain facilitator table field size -->
 	<services max-id="7">
 		<service module="service.message_test"   name="MessageTestService"  id="0" />
-		<service module="service.room"           name="RoomService"         id="1" />
-		<service module="service.energy-supply"  name="EnergySupplyService" id="2" />
+		<service module="service.room"           name="RoomService"         id="3" />
+		<service module="service.energy-supply"  name="EnergySupplyService" id="7" />
 	</services>
 </awap-configuration>
