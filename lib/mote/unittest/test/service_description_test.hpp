@@ -17,4 +17,5 @@ public:
 	void testGetServiceTypeId();
 	void testToQueryMaskWithServiceIdAndBroadcastHeader();
 	void testToQueryMask();
+	void testMarshalServiceDescription();
 };

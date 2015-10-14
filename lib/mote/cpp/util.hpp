@@ -32,6 +32,13 @@ divideCeil(const T0& dividend, const T1& divisor)
 	return (dividend + divisor - 1) / divisor;
 }
 
+template<typename T>
+static inline constexpr T
+cap(const int64_t value, const int64_t min_value, const int64_t max_value)
+{
+	return static_cast<T>(std::min(max_value, std::max(min_value, value)));
+}
+
 class String : public ostfriesentee::String
 {
 public:

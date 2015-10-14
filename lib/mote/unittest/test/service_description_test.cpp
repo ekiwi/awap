@@ -164,3 +164,58 @@ ServiceDescriptionTest::testToQueryMask()
 		TEST_ASSERT_EQUALS(out_bytes[3], 0x00u);
 	}
 }
+
+void
+ServiceDescriptionTest::testMarshalServiceDescription()
+{
+	using SD = awap::generated::ServiceDescription;
+
+	uint32_t out[1];
+	auto out_bytes = reinterpret_cast<uint8_t*>(out);
+
+	{
+		// test with TestMessageService which does not have any properties
+		MessageTestServiceDescription obj(getAwapCommonInfusion(), 0);
+		TEST_ASSERT_EQUALS(SD::marshal(obj.getRef(), slice(out)), 0u);
+		TEST_ASSERT_EQUALS(SD::marshal(obj.getRef(), slice(out_bytes, 4)), 0u);
+		TEST_ASSERT_EQUALS(SD::marshal(obj.getRef(), slice(out_bytes, 0)), 0u);
+	}
+
+	{
+		out[0] = 0;
+		EnergySupplyServiceDescription obj(getAwapCommonInfusion(), 0);
+		auto data = obj.getUnderlying();
+		data->building = 0xf;
+		// marshal always writes the maximum number of bytes needed for the service
+		TEST_ASSERT_EQUALS(SD::marshal(obj.getRef(), slice(out)), 3u);
+		TEST_ASSERT_EQUALS(out_bytes[0], 0xf0);
+		TEST_ASSERT_EQUALS(out_bytes[1], 0x00);
+		TEST_ASSERT_EQUALS(out_bytes[2], 0x00);
+
+
+		out[0] = 0xaaaaaaaau;
+		data->building = 0;
+		TEST_ASSERT_EQUALS(SD::marshal(obj.getRef(), slice(out)), 3u);
+		// Building property (4bit) selected
+		TEST_ASSERT_EQUALS(out_bytes[0], 0x00);
+		TEST_ASSERT_EQUALS(out_bytes[1], 0x00);
+		TEST_ASSERT_EQUALS(out_bytes[2] >> 4, 0x0);
+
+		out[0] = 0;
+		data->supplyCircuit = 0xaa;
+		TEST_ASSERT_EQUALS(SD::marshal(obj.getRef(), slice(out)), 3u);
+		// SupplyCircuit property (8bit) selected
+		TEST_ASSERT_EQUALS(out_bytes[0], 0x0au);
+		TEST_ASSERT_EQUALS(out_bytes[1], 0xa0u);
+
+		out[0] = 0x11111111u;
+		data->building = 0xa;
+		data->supplyCircuit = 0xbb;
+		data->room = 0xcc;
+		TEST_ASSERT_EQUALS(SD::marshal(obj.getRef(), slice(out)), 3u);
+		// all properties selected
+		TEST_ASSERT_EQUALS(out_bytes[0], 0xabu);
+		TEST_ASSERT_EQUALS(out_bytes[1], 0xbcu);
+		TEST_ASSERT_EQUALS(out_bytes[2] >> 4, 0xcu);
+	}
+}
