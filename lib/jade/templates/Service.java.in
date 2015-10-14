@@ -25,7 +25,6 @@ public class Service {
 		} else if(description instanceof {{ type }}) {
 	%% endif
 			sd.setType("{{ service.name }}");
-			sd.setName("{{ service.name }}");
 	%% if service.properties|length > 0
 			{{ type }} pp = ({{ type }})description;
 	%% endif
