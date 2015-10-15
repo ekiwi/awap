@@ -42,6 +42,8 @@ enum class Warning {
 	NodeReceiveMessageTooShort,
 	NodeReceiveInvalidMessage,
 	NodeReceiveUnknownAgent,
+	NodeReceiveBroadcastMessageTooShort,
+	NodeReceiveBroadcastUnknownAgentFromDB,
 };
 
 //----------------------------------------------------------------------------

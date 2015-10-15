@@ -42,19 +42,10 @@ public:
 	bool registerService(AgentId agent, ServiceId localServiceId, ref_t description);
 	bool deregisterService(AgentId agent, ServiceId localServiceId);
 
-//	bool receiveRemoteServiceMessage(const uint8_t agentId, , ref_t messageObject)
+private:
+	bool receiveBroadcast(RxMessage* msg, Slice<const uint8_t> broadcast_content);
 
-
-
-//	bool receivePacket(const uint8_t agentId, const bool remoteService, ref_t messageObject)
-//	{
-//		if(agentId >= MaxAgents || agents[agentId] == nullptr) {
-//			return false;
-//		} else {
-//			return agents[agentId]->receivePacket(remoteService, messageObject);
-//		}
-//	}
-
+public:
 	inline ostfriesentee::Vm& getVm() { return this->vm; }
 	inline ostfriesentee::Infusion& getAwapCommon() { return this->awapCommon; }
 	inline ostfriesentee::Infusion& getAwapMote()   { return this->awapMote; }

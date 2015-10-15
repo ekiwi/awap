@@ -61,6 +61,10 @@ static inline const char* getWarningDescription(Warning warn)
 		return "Node::receive: invalid message, probably an unknown message id.";
 	case Warning::NodeReceiveUnknownAgent:
 		return "Node::receive: the destination agent could not be found on this node.";
+	case Warning::NodeReceiveBroadcastMessageTooShort:
+		return "Node::receive: the broadcast message is too short for CommonMessageHeader + Message + BroadcastHeader + PropertyBytes.";
+	case Warning::NodeReceiveBroadcastUnknownAgentFromDB:
+		return "Node::receive: the agent retrived from the ServiceDirectory for the broadcast message is not valid.";
 	default:
 		return "Unknown Warning";
 	}
