@@ -30,11 +30,6 @@ MessagesTest::testCommonHeaderParsing()
 	msg[0] = (1<<7);
 	TEST_ASSERT_TRUE(rx.isBroadcast());
 
-	// test isFromRemoteService
-	TEST_ASSERT_FALSE(rx.isFromRemoteService());
-	msg[0] = (1<<6);
-	TEST_ASSERT_TRUE(rx.isFromRemoteService());
-
 	// test getDestinationAgent
 	msg[0] = (0 << 3);
 	TEST_ASSERT_EQUALS(rx.getDestinationAgent(), 0);
@@ -81,7 +76,7 @@ MessagesTest::testSimpleUInt32Message()
 		uint8_t out[7] = { 0, 0, 0, 0, 0, 0, 0 };
 		// 32bit payload + 4bit message id + 2 byte common header
 		TxSimpleUInt32Message tx;
-		TEST_ASSERT_EQUALS(tx.marshal(obj, slice(out)), 7u);
+		TEST_ASSERT_EQUALS(tx.marshal(obj, 0, false, slice(out)), 7u);
 		// message id is 1 and should be set by the `fromJava` method
 		msg[2] |= (1 << 4);
 		TEST_ASSERT_EQUALS_ARRAY(msg, out, slice(msg).length);
@@ -97,7 +92,7 @@ MessagesTest::testSimpleUInt32Message()
 		uint8_t msg[7];
 		// 32bit payload + 4bit message id + 2 byte common header
 		TxSimpleUInt32Message tx;
-		TEST_ASSERT_EQUALS(tx.marshal(obj.getRef(), slice(msg)), 7u);
+		TEST_ASSERT_EQUALS(tx.marshal(obj.getRef(), 0, false, slice(msg)), 7u);
 		// ...and back
 		RxSimpleUInt32Message rx(0, slice(msg));
 		ref_t out = rx.createJavaObject();
@@ -127,7 +122,7 @@ MessagesTest::testSimpleUInt12Message()
 		uint8_t out[4] = { 0, 0, 0, 0 };
 		// 12bit payload + 4bit message id + 2 byte common header
 		TxSimpleUInt12Message tx;
-		TEST_ASSERT_EQUALS(tx.marshal(obj, slice(out)), 4u);
+		TEST_ASSERT_EQUALS(tx.marshal(obj, 0, false, slice(out)), 4u);
 		// message id is 2 and should be set by the `fromJava` method
 		msg[2] |= (2 << 4);
 		TEST_ASSERT_EQUALS_ARRAY(msg, out, slice(msg).length);
@@ -143,7 +138,7 @@ MessagesTest::testSimpleUInt12Message()
 		uint8_t msg[4];
 		// 12bit payload + 4bit message id + 2 byte common header
 		TxSimpleUInt12Message tx;
-		TEST_ASSERT_EQUALS(tx.marshal(obj.getRef(), slice(msg)), 4u);
+		TEST_ASSERT_EQUALS(tx.marshal(obj.getRef(), 0, false, slice(msg)), 4u);
 		// ...and back
 		RxSimpleUInt12Message rx(0, slice(msg));
 		ref_t out = rx.createJavaObject();
@@ -173,7 +168,7 @@ MessagesTest::testBoolMessage()
 		uint8_t msg[3];
 		// 3 x 1bit bool + 4bit message id + 2 byte common header
 		TxBoolMessage tx;
-		TEST_ASSERT_EQUALS(tx.marshal(obj.getRef(), slice(msg)), 3u);
+		TEST_ASSERT_EQUALS(tx.marshal(obj.getRef(), 0, false, slice(msg)), 3u);
 		TEST_ASSERT_EQUALS(msg[2], (4 << 4) | (0b1010));
 		// ...and back
 		RxBoolMessage rx(0, slice(msg));
@@ -219,7 +214,7 @@ MessagesTest::testMakeTxMessage()
 		auto tx = generated::MessageFactory::makeTxMessage(obj.getRef());
 		TEST_ASSERT_TRUE(tx != nullptr);
 		TEST_ASSERT_EQUALS(tx->getSize(), 7u);
-		TEST_ASSERT_EQUALS(tx->marshal(obj.getRef(), slice(msg)), 7u);
+		TEST_ASSERT_EQUALS(tx->marshal(obj.getRef(), 0, false, slice(msg)), 7u);
 		TEST_ASSERT_EQUALS(msg[2] >> 4, 1);
 	}
 }

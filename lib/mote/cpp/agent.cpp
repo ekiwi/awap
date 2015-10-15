@@ -108,7 +108,8 @@ Agent::setup()
 bool
 Agent::receive(const RxMessage* const msg)
 {
-	if(msg->isFromRemoteService()) {
+	// if message was transmitted from a remote service
+	if(msg->isServiceTxMessage()) {
 		// TODO: call callback of correct type
 		//debug_printf("agent.cpp: TODO: find out correct method to call for message from remote service!\n");
 		return false;

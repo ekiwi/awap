@@ -30,16 +30,21 @@ ref_t RxMessage::createJavaObject() const {
 	return msg;
 }
 
-
-size_t TxMessage::marshal(ref_t java_msg, Slice<uint8_t> output) {
+size_t TxMessage::marshal(ref_t java_msg, AgentId sourceAgent,
+	bool isBroadcast, Slice<uint8_t> output)
+{
 	if(output.length < 3) {
 		return 0;
 	}
 	// load common fields
 	auto common = reinterpret_cast<MessageStruct*>(REF_TO_VOIDP(java_msg));
+	output.data[0] =
+		((isBroadcast)? (1<<7) : 0) |
+		((static_cast<uint32_t>(common->remoteAgentId) >> 16) & 0x7) << 3 |
+		sourceAgent & 0x7;
 	output.data[1] = static_cast<uint8_t>(common->serviceTypeId);
-	output.data[0]  |= (static_cast<uint32_t>(common->remoteAgentId) >> 16) & 0x7;
 	this->remoteNode =  static_cast<uint32_t>(common->remoteAgentId) & 0xffff;
+	// TODO: set isFromRemoteService
 
 	// load specific fields
 	size_t ret = this->marshalFromSpecificJavaObject(java_msg, output);

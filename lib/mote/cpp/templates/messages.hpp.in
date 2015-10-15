@@ -36,6 +36,11 @@ struct 	{{ msg.name }} {
 class Rx{{ msg.name }} : public RxMessage, public {{ msg.name }} {
 public:
 	using RxMessage::RxMessage;
+		%% if msg.tx
+	bool isServiceTxMessage() const override { return true; }
+		%% else
+	bool isServiceTxMessage() const override { return false; }
+		%% endif
 protected:
 	ref_t createSpecificJavaObject() const override;
 	size_t getDataSize() const override { return DataBytes; };
