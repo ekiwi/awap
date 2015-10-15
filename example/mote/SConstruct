@@ -58,7 +58,9 @@ env.XpccLibrary()
 # create a file called 'defines.hpp' with all preprocessor defines if necessary
 env.Defines()
 
-# run alias
-env.Alias('mote.run', env.Command('run_mote', mote, '{} {}'.format(mote[0].abspath, "")))
+env.Alias('mote', mote)
 
-env.Default('mote.run')
+# run alias
+env.Alias('run', env.Command('run_mote', mote, '{} {}'.format(mote[0].abspath, "")))
+
+env.Default('mote')
