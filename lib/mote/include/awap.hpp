@@ -75,6 +75,11 @@ public:
 	static void send(const NodeAddress receiver,
 			const uint8_t* content, const size_t length);
 
+	/// called by awap to dispatch a broadcast packet
+	/// `content` points to an internal memory buffer that remains valid,
+	/// until the function returns
+	static void sendBroadcast(const uint8_t* content, const size_t length);
+
 	/// called by awap to a timestamp in milliseconds
 	/// this does not have to be the current time, just deltas have to be correct
 	static uint32_t getMilliseconds();

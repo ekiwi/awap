@@ -23,6 +23,11 @@ void Runtime::send(const NodeAddress receiver,
 	XPCC_LOG_DEBUG << XPCC_FILE_INFO << "trying to send out packet" << xpcc::endl;
 }
 
+void Runtime::sendBroadcast(const uint8_t* content, const size_t length)
+{
+	XPCC_LOG_DEBUG << XPCC_FILE_INFO << "trying to send out broadcast packet" << xpcc::endl;
+}
+
 uint32_t Runtime::getMilliseconds()
 {
 	return xpcc::Clock::now().getTime();
