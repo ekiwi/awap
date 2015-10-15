@@ -15,6 +15,7 @@ public:
 	void setUp() override;
 	void testToBroadcastHeader();
 	void testGetServiceTypeId();
+	void testGetPropertySize();
 	void testToQueryMaskWithServiceIdAndBroadcastHeader();
 	void testToQueryMask();
 	void testMarshalServiceDescription();

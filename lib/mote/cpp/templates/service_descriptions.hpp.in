@@ -46,6 +46,17 @@ static inline ServiceTypeId getServiceTypeId(ref_t java_desc) {
 	}
 }
 
+static inline size_t getPropertySize(ServiceTypeId serviceType) {
+	switch(serviceType) {
+%% for service in services
+	case {{ service.id }}:	// {{ service.name }}
+		return {{ ((service.property_bit_count / 8.0) | round(0, 'ceil')) | int }};
+%% endfor
+	default:
+		return 0;
+	}
+}
+
 static inline uint8_t toBroadcastHeader(ref_t java_desc) {
 	// check Java class type
 	auto descClassId = dj_vm_getRuntimeClass(dj_exec_getVM(), dj_mem_getChunkId(REF_TO_VOIDP(java_desc)));

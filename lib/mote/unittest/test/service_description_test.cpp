@@ -58,6 +58,21 @@ ServiceDescriptionTest::testGetServiceTypeId()
 }
 
 void
+ServiceDescriptionTest::testGetPropertySize()
+{
+	using SD = awap::generated::ServiceDescription;
+
+	// MessageTestService: id: 0
+	TEST_ASSERT_EQUALS(SD::getPropertySize(0), 0);
+
+	// EnergySupplyService: id: 7
+	TEST_ASSERT_EQUALS(SD::getPropertySize(7), 3);
+
+	// RoomService: id: 3
+	TEST_ASSERT_EQUALS(SD::getPropertySize(3), 3);
+}
+
+void
 ServiceDescriptionTest::testToQueryMaskWithServiceIdAndBroadcastHeader()
 {
 	using SD = awap::generated::ServiceDescription;
