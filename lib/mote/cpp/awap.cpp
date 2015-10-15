@@ -120,7 +120,9 @@ static inline uint8_t retriveAgentId()
 {
 	// we assume,.that all reference arguments have been poped and
 	// thus the next item on the reference stack is the "this" reference
-	auto adapter = static_cast<_AWAP_MOTE_STRUCT_de_rwth_aachen_awap_mote_NodeAdapter*>(REF_TO_VOIDP(dj_exec_stackPeekRef()));
+	const auto adapter_ptr = REF_TO_VOIDP(dj_exec_stackPeekRef());
+	const auto adapter =
+		static_cast<_AWAP_MOTE_STRUCT_de_rwth_aachen_awap_mote_NodeAdapter*>(adapter_ptr);
 	return static_cast<uint8_t>(adapter->agentId);
 }
 
