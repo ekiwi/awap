@@ -39,8 +39,8 @@ public:
 	void sendBroadcast(AgentId agent, ref_t broadcastMessage);
 	// TODO: keep obj in java and only hand index to c++
 	void requestWakeUp(AgentId agent, uint32_t milliseconds, uint16_t obj);
-	bool registerService(AgentId agent, int localServiceId, ref_t description);
-	bool deregisterService(AgentId agent, int localServiceId);
+	bool registerService(AgentId agent, ServiceId localServiceId, ref_t description);
+	bool deregisterService(AgentId agent, ServiceId localServiceId);
 
 //	bool receiveRemoteServiceMessage(const uint8_t agentId, , ref_t messageObject)
 
@@ -70,7 +70,8 @@ private:
 	const NodeAddress address;
 	static constexpr size_t MaxPropBytes =
 		divideCeil(generated::Configuration::MaxPropertyBitCount, 8u);
-	ServiceDirectory<MaxPropBytes, MaxServices> services;
+	using Services = ServiceDirectory<MaxPropBytes, MaxServices>;
+	Services services;
 };
 
 }

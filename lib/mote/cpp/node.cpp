@@ -9,6 +9,7 @@
 #include "node.hpp"
 #include <util.hpp>
 #include <generated/messages.hpp>
+#include <generated/service_descriptions.hpp>
 
 namespace awap {
 
@@ -99,15 +100,27 @@ Node::requestWakeUp(AgentId agent, uint32_t milliseconds, uint16_t obj)
 }
 
 bool
-Node::registerService(AgentId agent, int localServiceId, ref_t description)
+Node::registerService(AgentId agent, ServiceId localServiceId, ref_t description)
 {
-	// TODO!
+	using SD = awap::generated::ServiceDescription;
+
+	Services::Entry entry;
+	entry.service.agent = agent;
+	entry.service.service = localServiceId;
+	entry.serviceType = SD::getServiceTypeId(description);
+	SD::marshal(description, slice(entry.properties));
+
+	this->services.insert(entry);
 }
 
 bool
-Node::deregisterService(AgentId agent, int localServiceId)
+Node::deregisterService(AgentId agent, ServiceId localServiceId)
 {
-	// TODO!
+	LocalService service;
+	service.agent = agent;
+	service.service = localServiceId;
+
+	this->services.remove(service);
 }
 
 } // namespace awap

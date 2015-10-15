@@ -61,7 +61,10 @@ struct DirectoryRemoveQuery
 	using Entry = DirectoryEntry<PropDataSize>;
 	LocalService service;
 	DirectoryRemoveQuery(LocalService service) : service(service) {}
-	bool inline match(Entry& e) const { return e.service == service; }
+	bool inline match(Entry& e) const {
+		return (e.service.agent == service.agent) and
+		       (e.service.service == service.service);
+	}
 };
 
 
