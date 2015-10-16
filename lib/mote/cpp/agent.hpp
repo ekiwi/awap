@@ -13,6 +13,7 @@
 #include <jlib_awap-common.hpp>
 #include <common.hpp>
 #include <message.hpp>
+#include "agent_interface.hpp"
 
 namespace awap { class Agent; }
 #include <node.hpp>
@@ -39,7 +40,7 @@ private:
 private:
 	Node& node;
 	uint8_t localAgentId;
-	::de::rwth_aachen::awap::Agent agent;
+	JavaAgentInterface agent;
 	ostfriesentee::Infusion infusion;
 	uint8_t* infusionData;
 	const String name;

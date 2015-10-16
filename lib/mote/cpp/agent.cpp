@@ -110,9 +110,7 @@ Agent::receive(const RxMessage* const msg)
 {
 	// if message was transmitted from a remote service
 	if(msg->isServiceTxMessage()) {
-		// TODO: call callback of correct type
-		std::cout << "agent.cpp: TODO: find out correct method to call for message from remote service!" << std::endl;
-		return false;
+		return agent.handleRemoteServiceMessage(node.getAwapCommon(), msg);
 	} else {
 		auto java_msg = msg->createJavaObject();
 		if(java_msg == 0) {
