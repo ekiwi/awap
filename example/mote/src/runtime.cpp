@@ -38,7 +38,7 @@ static inline void addPacket(const NodeAddress sender,
 void Runtime::send(const NodeAddress receiver,
 		const uint8_t* content, const size_t length)
 {
-	XPCC_LOG_DEBUG << XPCC_FILE_INFO << "trying to send out packet" << xpcc::endl;
+	// XPCC_LOG_DEBUG << XPCC_FILE_INFO << "trying to send out packet" << xpcc::endl;
 	if(receiver == 0) {
 		XPCC_LOG_WARNING << XPCC_FILE_INFO << "echoing packet back to node, TODO: remove" << xpcc::endl;
 		addPacket(0, content, length);
@@ -47,7 +47,7 @@ void Runtime::send(const NodeAddress receiver,
 
 void Runtime::sendBroadcast(const uint8_t* content, const size_t length)
 {
-	XPCC_LOG_DEBUG   << XPCC_FILE_INFO << "trying to send out broadcast packet" << xpcc::endl;
+	// XPCC_LOG_DEBUG   << XPCC_FILE_INFO << "trying to send out broadcast packet" << xpcc::endl;
 	XPCC_LOG_WARNING << XPCC_FILE_INFO << "echoing broadcast back to node, TODO: remove" << xpcc::endl;
 	addPacket(0, content, length);
 }
@@ -93,8 +93,8 @@ static TimeoutTouple timeouts[100];
 
 void Runtime::registerTimeout(uint32_t milliseconds, uint32_t id)
 {
-	XPCC_LOG_DEBUG << XPCC_FILE_INFO << "New timeout will expire in "
-		<< milliseconds << "ms" << xpcc::endl;
+	// XPCC_LOG_DEBUG << XPCC_FILE_INFO << "New timeout will expire in "
+	//	<< milliseconds << "ms" << xpcc::endl;
 	for(auto& timeout : timeouts) {
 		if(!timeout.used) {
 			timeout.used = true;
@@ -110,7 +110,7 @@ void updateRuntime() {
 	// check timeouts
 	for(auto& timeout : timeouts) {
 		if(timeout.used && timeout.timeout.execute()) {
-			XPCC_LOG_DEBUG << XPCC_FILE_INFO << "A timeout expired..." << xpcc::endl;
+			// XPCC_LOG_DEBUG << XPCC_FILE_INFO << "A timeout expired..." << xpcc::endl;
 			Awap::timeoutExpired(timeout.data);
 			timeout.used = false;
 		}
