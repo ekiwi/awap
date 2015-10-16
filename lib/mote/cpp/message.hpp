@@ -24,8 +24,13 @@ public:
 	virtual bool isServiceTxMessage() const = 0;
 
 	ref_t createJavaObject() const;
+
 	// 2 byte for the common header + data
 	size_t inline getSize() const { return 2 + this->getDataSize(); }
+
+	/// returns the entity id of the correct OnReceive method defined in
+	/// the awap-common infusion
+	virtual uint8_t getOnReceiveMethodDefinitionId() const = 0;
 
 protected:
 	/// creates the correct java object for this type and fills in all data fields

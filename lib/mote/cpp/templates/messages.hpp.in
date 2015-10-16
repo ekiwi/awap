@@ -41,6 +41,9 @@ public:
 		%% else
 	bool isServiceTxMessage() const override { return false; }
 		%% endif
+	uint8_t getOnReceiveMethodDefinitionId() const override {
+		return AWAP_COMMON_MDEF_void_onReceive_de_rwth_aachen_awap_messages_{{ service.name }}_{{ msg.name }};
+	}
 protected:
 	ref_t createSpecificJavaObject() const override;
 	size_t getDataSize() const override { return DataBytes; };
