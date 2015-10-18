@@ -13,29 +13,10 @@
 #include <jlib_awap-mote.hpp>
 #include <cstring>		// for std::memcpy
 
-// TODO: remove when debuging is done
-#include<iostream>
-
 using namespace ostfriesentee;
 
-std::ostream &operator<<(std::ostream &os, dj_local_id const &id) {
-	os << "(" << static_cast<uint32_t>(id.infusion_id)
-	   << ", " << static_cast<uint32_t>(id.entity_id) << ")";
-	return os;
-}
-
-std::ostream &operator<<(std::ostream &os, String const &str) {
-	os.write(str.data, str.length);
-	return os;
-}
-
-std::ostream &operator<<(std::ostream &os, awap::String const &str) {
-	os.write(str.data, str.length);
-	return os;
-}
 
 namespace awap {
-
 
 Agent*
 Agent::fromPacket(Node& node, uint8_t localId, const uint8_t* content, const size_t length)
@@ -70,10 +51,11 @@ Agent::fromPacket(Node& node, uint8_t localId, const uint8_t* content, const siz
 			}
 		}
 	}
-	if(agentClassIndex == -1) return nullptr;
 
+	if(agentClassIndex == -1) {
+		return nullptr;
+	}
 
-	//de::rwth_aachen::awap::Agent agent(node.getAwapCommon(), inf, agentClassIndex);
 
 	return new Agent(node, localId, inf, agentClassIndex, infusion);
 }
@@ -86,8 +68,6 @@ Agent::Agent(Node& node, uint8_t localAgentId, ostfriesentee::Infusion& inf, uin
 	infusionData(infusionData),
 	name(infusion.getName())
 {
-	std::cout << "New Agent of Type: " << name << std::endl;
-
 	// construct node adapter by calling
 	// de.rwth_aachen.awap.mote.NodeAdapter.initializeAgent
 	int16_t intParams[2];
