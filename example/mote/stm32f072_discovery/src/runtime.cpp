@@ -121,7 +121,7 @@ void updateRuntime() {
 		const auto packet = packets.get();
 		packets.pop();
 		Awap::receive(packet.sender, packet.content, packet.length);
-		delete packet.content;
+		delete [] packet.content;
 	}
 }
 

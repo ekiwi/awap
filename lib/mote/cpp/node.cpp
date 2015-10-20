@@ -120,13 +120,13 @@ Node::send(AgentId agent, ref_t message)
 	const size_t msgSize = txMessage->getSize();
 	auto output = slice(new uint8_t[msgSize], msgSize);
 	if(txMessage->marshal(message, agent, false, output) != msgSize) {
-		delete output.data;
+		delete [] output.data;
 		return; // error!!
 	}
 
 	Runtime::send(txMessage->getReceiver(), output.data, msgSize);
 
-	delete output.data;
+	delete [] output.data;
 }
 
 void
@@ -148,17 +148,22 @@ Node::sendBroadcast(AgentId agent, ref_t broadcastMessage)
 	auto output = slice(new uint8_t[maxPacketSize], maxPacketSize);
 
 	if(txMessage->marshal(broadcast_data->msg, agent, true, output) != msgSize) {
-		delete output.data;
+		delete [] output.data;
 		return; // error!!
 	}
 	output.data[msgSize] = SD::toBroadcastHeader(broadcast_data->recipients);
 	const size_t descriptionSize =
 		SD::marshal(broadcast_data->recipients, output.sub(msgSize + 1));
 
+	//if(descriptionSize != SD::getPropertySize(serviceType)) {
+	//	delete output.data;
+	//	return; // error!!
+	//}
+
 	const size_t packetSize = msgSize + 1 + descriptionSize;
 	Runtime::sendBroadcast(output.data, packetSize);
 
-	delete output.data;
+	delete [] output.data;
 }
 
 void
