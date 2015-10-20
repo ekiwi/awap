@@ -14,6 +14,7 @@
 #include <service_directory.hpp>
 #include <util.hpp>
 #include <generated/configuration.hpp>
+#include <memory>
 
 namespace awap { class Node; }
 #include <agent.hpp>
@@ -43,7 +44,7 @@ public:
 	bool deregisterService(AgentId agent, ServiceId localServiceId);
 
 private:
-	bool receiveBroadcast(RxMessage* msg, Slice<const uint8_t> broadcast_content);
+	bool receiveBroadcast(std::unique_ptr<const RxMessage> msg, Slice<const uint8_t> broadcast_content);
 
 public:
 	inline ostfriesentee::Vm& getVm() { return this->vm; }

@@ -14,6 +14,7 @@
 #include <common.hpp>
 #include <message.hpp>
 #include "agent_interface.hpp"
+#include <memory>
 
 namespace awap { class Agent; }
 #include <node.hpp>
@@ -32,7 +33,7 @@ public:
 		agent.wakeUp(static_cast<int8_t>(obj));
 	}
 
-	bool receive(const RxMessage* const msg);
+	bool receive(std::unique_ptr<const RxMessage> msg);
 
 private:
 	Agent(Node& node, uint8_t localAgentId, ostfriesentee::Infusion& inf, uint8_t agentClassId, uint8_t* infusionData);

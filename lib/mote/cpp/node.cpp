@@ -10,6 +10,7 @@
 #include <util.hpp>
 #include <generated/messages.hpp>
 #include <generated/service_descriptions.hpp>
+#include <memory>
 
 namespace awap {
 
@@ -52,26 +53,28 @@ Node::receive(const NodeAddress sender, Slice<const uint8_t> content)
 		return false;
 	}
 
-	const auto msg = generated::MessageFactory::makeRxMessage(sender, content);
+	std::unique_ptr<const RxMessage>
+	msg (generated::MessageFactory::makeRxMessage(sender, content));
 	if(msg == nullptr) {
 		Runtime::warn(Warning::NodeReceiveInvalidMessage);
 		return false;
 	}
 
 	if(msg->isBroadcast()) {
-		return receiveBroadcast(msg, content.sub(msg->getSize()));
+		const Slice<const uint8_t> broadcast_content = content.sub(msg->getSize());
+		return receiveBroadcast(std::move(msg), broadcast_content);
 	} else {
 		const auto destAgent = msg->getDestinationAgent();
 		if(!validAgent(destAgent)) {
 			Runtime::warn(Warning::NodeReceiveUnknownAgent);
 			return false;
 		}
-		return agents[destAgent]->receive(msg);
+		return agents[destAgent]->receive(std::move(msg));
 	}
 }
 
 bool
-Node::receiveBroadcast(RxMessage* msg, Slice<const uint8_t> broadcast_content)
+Node::receiveBroadcast(std::unique_ptr<const RxMessage> msg, Slice<const uint8_t> broadcast_content)
 {
 	using SD = awap::generated::ServiceDescription;
 
@@ -97,7 +100,7 @@ Node::receiveBroadcast(RxMessage* msg, Slice<const uint8_t> broadcast_content)
 			Runtime::warn(Warning::NodeReceiveBroadcastUnknownAgentFromDB);
 			return false;
 		}
-		success = success and agents[destAgent]->receive(msg);
+		success = success and agents[destAgent]->receive(std::move(msg));
 	}
 	return success;
 }
@@ -115,7 +118,8 @@ Node::timeoutExpired(uint32_t id)
 void
 Node::send(AgentId agent, ref_t message)
 {
-	auto txMessage = generated::MessageFactory::makeTxMessage(message);
+	std::unique_ptr<TxMessage>
+		txMessage(generated::MessageFactory::makeTxMessage(message));
 
 	const size_t msgSize = txMessage->getSize();
 	auto output = slice(new uint8_t[msgSize], msgSize);
@@ -139,7 +143,8 @@ Node::sendBroadcast(AgentId agent, ref_t broadcastMessage)
 
 	auto broadcast_data =
 		reinterpret_cast<BroadcastMessage*>(REF_TO_VOIDP(broadcastMessage));
-	auto txMessage = generated::MessageFactory::makeTxMessage(broadcast_data->msg);
+	std::unique_ptr<TxMessage>
+		txMessage(generated::MessageFactory::makeTxMessage(broadcast_data->msg));
 
 	const size_t msgSize = txMessage->getSize();
 	// 1 byte for broadcast header

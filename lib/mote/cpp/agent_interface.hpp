@@ -11,6 +11,7 @@
 
 #include <hpp/ostfriesentee.hpp>
 #include <jlib_awap-common.hpp>
+#include <memory>
 
 namespace awap {
 
@@ -21,7 +22,7 @@ public:
 
 	// uses the onReceive methods defined by the IServiceNameListener
 	// to dispatch a message from a remote servie to this agent
-	bool inline handleRemoteServiceMessage(ostfriesentee::Infusion& awapCommon, const RxMessage* const msg) {
+	bool inline handleRemoteServiceMessage(ostfriesentee::Infusion& awapCommon, std::unique_ptr<const RxMessage> msg) {
 		auto java_msg = msg->createJavaObject();
 		if(java_msg == 0) {
 			return false;

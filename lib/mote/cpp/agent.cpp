@@ -86,11 +86,11 @@ Agent::setup()
 }
 
 bool
-Agent::receive(const RxMessage* const msg)
+Agent::receive(std::unique_ptr<const RxMessage> msg)
 {
 	// if message was transmitted from a remote service
 	if(msg->isServiceTxMessage()) {
-		return agent.handleRemoteServiceMessage(node.getAwapCommon(), msg);
+		return agent.handleRemoteServiceMessage(node.getAwapCommon(), std::move(msg));
 	} else {
 		auto java_msg = msg->createJavaObject();
 		if(java_msg == 0) {
