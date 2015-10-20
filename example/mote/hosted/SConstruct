@@ -47,6 +47,8 @@ env.Append(CPPPATH = libmote_include)
 # debug build
 env['CXXFLAGS'].append("-O0")
 env['CXXFLAGS'].append("-g")
+env['CCFLAGS'].append("-fsanitize=address")
+env['LINKFLAGS'].append("-fsanitize=address")
 
 # build the program
 print(env['XPCC_CONFIG']['general']['name'])
