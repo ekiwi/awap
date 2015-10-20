@@ -14,6 +14,7 @@ env = Environment(toolpath = [os.path.join(awap_root, 'scons')], tools = ['awap'
 env.Architecture('amd64')
 env['CCFLAGS'].append("-fsanitize=address")
 env['LINKFLAGS'].append("-fsanitize=address")
+env['CFLAGS'].append("-DALIGN_32")
 
 # use unittest configuration to build lib
 env.AppendUnique(AWAP_AGENT_PATH = os.path.join('unittest', 'agents'))
