@@ -27,6 +27,7 @@ xpcc::log::Logger xpcc::log::error(loggerDevice);
 
 // Dummy Clock
 struct DummyClock {
+	static constexpr int Frequency = 8 * 1000 * 1000;
 	static constexpr int Usart1 = 8 * 1000 * 1000;
 };
 
@@ -43,6 +44,10 @@ void updateRuntime();
 }
 
 int main() {
+
+	// enable systick timer
+	xpcc::cortex::SysTickTimer::initialize<DummyClock>();
+
 	// initialize Uart1 for XPCC_LOG_
 	GpioOutputA9::connect(Usart1::Tx);
 	GpioInputA10::connect(Usart1::Rx, Gpio::InputType::PullUp);
