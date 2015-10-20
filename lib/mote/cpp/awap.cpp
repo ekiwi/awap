@@ -85,6 +85,12 @@ void Awap::init(const NodeAddress nodeAddress)
 	node = new Node(vm, awapCommonInf, awapMoteInf, nodeAddress);
 }
 
+void Awap::deinit()
+{
+	assert(node != nullptr, Panic::NotInitialized);
+	delete node;
+}
+
 void  Awap::receive(const NodeAddress sender, const uint8_t* content, const size_t length)
 {
 	assert(node != nullptr, Panic::NotInitialized);

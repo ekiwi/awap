@@ -54,6 +54,9 @@ public:
 	/// first method that needs to be called to initialize the library
 	static void init(const NodeAddress nodeAddress);
 
+	/// releases all dynamic resources
+	static void deinit();
+
 	/// needs to be called, when a new packet was received
 	static void receive(const NodeAddress sender,
 			const uint8_t* content, const size_t length);
