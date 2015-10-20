@@ -46,7 +46,7 @@ int main() {
 	// initialize Uart1 for XPCC_LOG_
 	GpioOutputA9::connect(Usart1::Tx);
 	GpioInputA10::connect(Usart1::Rx, Gpio::InputType::PullUp);
-	Usart1::initialize<DummyClock, 115200>(12);
+	Usart1::initialize<DummyClock, 115200>();
 
 	XPCC_LOG_INFO << XPCC_FILE_INFO << "Awap Mote Runtime" << xpcc::endl;
 
