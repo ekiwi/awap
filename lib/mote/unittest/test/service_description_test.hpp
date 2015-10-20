@@ -13,6 +13,7 @@ class ServiceDescriptionTest : public unittest::TestSuite
 {
 public:
 	void setUp() override;
+	void tearDown() override;
 	void testToBroadcastHeader();
 	void testGetServiceTypeId();
 	void testGetPropertySize();

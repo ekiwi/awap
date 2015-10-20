@@ -20,6 +20,12 @@ MessagesTest::setUp()
 }
 
 void
+MessagesTest::tearDown()
+{
+	Awap::deinit();
+}
+
+void
 MessagesTest::testCommonHeaderParsing()
 {
 	uint8_t msg[3] = { 0, 0, 0 };
@@ -192,6 +198,7 @@ MessagesTest::testMakeRxMessage()
 		auto rx = generated::MessageFactory::makeRxMessage(0x45, slice(msg));
 		TEST_ASSERT_TRUE(rx != nullptr);
 		TEST_ASSERT_EQUALS(rx->getSize(), 7u);
+		delete rx;
 	}
 
 	// test with invalid message id
@@ -216,5 +223,6 @@ MessagesTest::testMakeTxMessage()
 		TEST_ASSERT_EQUALS(tx->getSize(), 7u);
 		TEST_ASSERT_EQUALS(tx->marshal(obj.getRef(), 0, false, slice(msg)), 7u);
 		TEST_ASSERT_EQUALS(msg[2] >> 4, 1);
+		delete tx;
 	}
 }

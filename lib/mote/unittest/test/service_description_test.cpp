@@ -20,6 +20,12 @@ ServiceDescriptionTest::setUp()
 }
 
 void
+ServiceDescriptionTest::tearDown()
+{
+	Awap::deinit();
+}
+
+void
 ServiceDescriptionTest::testToBroadcastHeader()
 {
 	using SD = awap::generated::ServiceDescription;
