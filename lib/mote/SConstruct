@@ -14,7 +14,7 @@ env = Environment(toolpath = [os.path.join(awap_root, 'scons')], tools = ['awap'
 env.Architecture('amd64')
 env['CCFLAGS'].append("-fsanitize=address")
 env['LINKFLAGS'].append("-fsanitize=address")
-env['CFLAGS'].append("-DALIGN_32")
+env['CCFLAGS'].append("-DALIGN_32")
 
 # use unittest configuration to build lib
 env.AppendUnique(AWAP_AGENT_PATH = os.path.join('unittest', 'agents'))
@@ -29,6 +29,7 @@ env.Alias('libmote', libmote)
 xpcc_env = Environment(toolpath = [xpcc_tools], tools = ['xpcc'], configfile = 'unittest/unittest_hosted.cfg')
 xpcc_env['CCFLAGS'].append("-fsanitize=address")
 xpcc_env['LINKFLAGS'].append("-fsanitize=address")
+xpcc_env['CCFLAGS'].append("-DALIGN_32")
 xpcc_env.XpccLibrary()
 files = xpcc_env.FindFiles(path=['unittest'], unittest=True)
 # declare a file which later runs all the tests
