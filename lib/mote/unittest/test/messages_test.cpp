@@ -16,7 +16,7 @@ using namespace generated::MessageTestService;
 void
 MessagesTest::setUp()
 {
-	Awap::init(0x1234);
+	Awap::init();
 }
 
 void

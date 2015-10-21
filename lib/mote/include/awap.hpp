@@ -52,7 +52,7 @@ enum class Warning {
 class Awap {
 public:
 	/// first method that needs to be called to initialize the library
-	static void init(const NodeAddress nodeAddress);
+	static void init();
 
 	/// releases all dynamic resources
 	static void deinit();

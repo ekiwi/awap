@@ -16,7 +16,7 @@ using namespace de::rwth_aachen::awap::service;
 void
 ServiceDescriptionTest::setUp()
 {
-	Awap::init(0x4321);
+	Awap::init();
 }
 
 void

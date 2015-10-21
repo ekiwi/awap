@@ -28,7 +28,7 @@ public:
 	static constexpr size_t MaxServices = 16;
 
 public:
-	Node(ostfriesentee::Vm& vm, ostfriesentee::Infusion& awapCommon, ostfriesentee::Infusion& awapMote, const NodeAddress nodeAddress);
+	Node(ostfriesentee::Vm& vm, ostfriesentee::Infusion& awapCommon, ostfriesentee::Infusion& awapMote);
 	~Node();
 
 	void loadAgent(const uint8_t* content, const size_t length);
@@ -59,7 +59,6 @@ private:
 	ostfriesentee::Vm& vm;
 	ostfriesentee::Infusion awapCommon;
 	ostfriesentee::Infusion awapMote;
-	const NodeAddress address;
 	static constexpr size_t MaxPropBytes =
 		divideCeil(generated::Configuration::MaxPropertyBitCount, 8u);
 	using Services = ServiceDirectory<MaxPropBytes, MaxServices>;

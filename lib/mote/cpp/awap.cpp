@@ -38,7 +38,7 @@ static const char* AwapMoteInfusionName = "awap-mote";
 
 namespace awap {
 
-void Awap::init(const NodeAddress nodeAddress)
+void Awap::init()
 {
 	// initialize a new VM
 	vm.initialize(mem);
@@ -82,7 +82,7 @@ void Awap::init(const NodeAddress nodeAddress)
 	if(!awapMoteInf.isValid()) Runtime::panic(Panic::AwapMoteInfusionNotFound);
 
 	// create node instance
-	node = new Node(vm, awapCommonInf, awapMoteInf, nodeAddress);
+	node = new Node(vm, awapCommonInf, awapMoteInf);
 }
 
 void Awap::deinit()

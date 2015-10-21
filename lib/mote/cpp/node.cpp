@@ -14,8 +14,8 @@
 
 namespace awap {
 
-Node::Node(ostfriesentee::Vm& vm, ostfriesentee::Infusion& awapCommon, ostfriesentee::Infusion& awapMote, const NodeAddress nodeAddress)
-	: vm(vm), awapCommon(awapCommon), awapMote(awapMote), address(nodeAddress)
+Node::Node(ostfriesentee::Vm& vm, ostfriesentee::Infusion& awapCommon, ostfriesentee::Infusion& awapMote)
+	: vm(vm), awapCommon(awapCommon), awapMote(awapMote)
 {
 	awap::generated::MessageFactory::setAwapCommonInfusion(awapCommon);
 }
