@@ -57,6 +57,7 @@ def awap_method(env, configuration):
 	env.Alias('awap-common', env.SConscript(env['AWAP_LIB_COMMON'], exports = 'env'))
 	env.Alias('awap-jade', env.SConscript(env['AWAP_LIB_JADE'], exports = 'env'))
 	env.Alias('awap-mote', env.SConscript(env['AWAP_LIB_MOTE'], exports = 'env'))
+	env.Alias('awap-parser', env.SConscript(env['AWAP_LIB_PARSER'], exports = 'env'))
 	# build agents
 	env['AWAP_AGENTS_JAR'] = []
 	env['AWAP_AGENTS_DI']  = {}
@@ -72,6 +73,7 @@ def generate(env):
 	env['AWAP_LIB_COMMON'] = os.path.join(env['AWAP_ROOT'], 'lib', 'common', 'SConscript')
 	env['AWAP_LIB_JADE'] = os.path.join(env['AWAP_ROOT'], 'lib', 'jade', 'SConscript')
 	env['AWAP_LIB_MOTE'] = os.path.join(env['AWAP_ROOT'], 'lib', 'mote', 'SConscript')
+	env['AWAP_LIB_PARSER'] = os.path.join(env['AWAP_ROOT'], 'lib', 'parser', 'SConscript')
 
 	# lists that need to be filled by the user
 	env['AWAP_AGENT_PATH'] = []
