@@ -1,0 +1,27 @@
+# SConstruct
+#
+# Copyright (c) 2015 Kevin Laeufer <kevin.laeufer@rwth-aachen.de>
+
+
+import os
+
+awap_root = os.path.join('..', '..')
+
+
+env = Environment(toolpath = [os.path.join(awap_root, 'scons')], tools = ['awap'])
+
+env.Architecture('amd64')
+env['CCFLAGS'].append("-fsanitize=address")
+env['LINKFLAGS'].append("-fsanitize=address")
+
+# use unittest configuration from libmote to build lib
+com_path = os.path.join('..', 'mote', 'unittest')
+env.AppendUnique(AWAP_AGENT_PATH = os.path.join(com_path, 'agents'))
+env.AppendUnique(AWAP_COMMUNICATION_PATH = os.path.join(com_path, 'communication'))
+env.LoadAwapConfiguration(os.path.join(com_path, 'configuration.xml'))
+env.Alias('awap-common', env.SConscript(env['AWAP_LIB_COMMON'], exports = 'env'))
+
+libparser = env.SConscript(env['AWAP_LIB_PARSER'], exports = 'env')
+env.Alias('libparser', libparser)
+
+env.Default('libparser')

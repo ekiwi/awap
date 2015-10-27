@@ -25,24 +25,27 @@ enum class FieldType {
 };
 
 class Message {
-	bool isBroadcast() const;
-	uint8_t getDestinationAgentId() const;
-	uint8_t getSourceAgentId() const;
-	uint8_t getServiceTypeId() const;
-	std::string&& getServiceType() const;
-	bool isServiceTxMessage() const;
+public:
+	/// returns emptr unique_ptr on error, check for nullptr!
+	static std::unique_ptr<Message> fromPacket(const uint8_t* data, size_t length);
 
-	size_t getNumberOfFields() const;
-	std::string&& getFieldName(size_t fieldId) const;
-	FieldType getFieldType(size_t fieldId) const;
-	std::string&& getEnumFieldStringValue(size_t fieldId) const;
-	uint64_t getEnumFieldIntegerValue(size_t fieldId) const;
-	int64_t getIntegerFieldValue(size_t fieldId) const;
-	bool getBooleanFieldValue(size_t fieldId) const;
+public:
+	virtual bool isBroadcast() const = 0;
+	virtual uint8_t getDestinationAgentId() const = 0;
+	virtual uint8_t getSourceAgentId() const = 0;
+	virtual uint8_t getServiceTypeId() const = 0;
+	virtual bool isServiceTxMessage() const = 0;
+	virtual const std::string getServiceType() const = 0;
+
+	virtual size_t getNumberOfFields() const = 0;
+	virtual const std::string getFieldName(size_t fieldId) const = 0;
+	virtual FieldType getFieldType(size_t fieldId) const = 0;
+	virtual const std::string getEnumFieldStringValue(size_t fieldId) const = 0;
+	virtual uint64_t getEnumFieldIntegerValue(size_t fieldId) const = 0;
+	virtual int64_t getIntegerFieldValue(size_t fieldId) const = 0;
+	virtual bool getBooleanFieldValue(size_t fieldId) const = 0;
 };
 
-/// returns emptr unique_ptr on error, check for nullptr!
-std::unique_ptr<Message> parseMessage(uint8_t* data, size_t bytes);
 
 } // namesapce awap
 
