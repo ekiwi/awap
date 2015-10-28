@@ -27,8 +27,16 @@ typedef enum {
 } fieldtype_t;
 
 
+// returns negative number on error
+int get_service_type_id(const char* service_name);
+// returns negative number on error
+int get_message_type_id(uint32_t service_id, const char* message_name);
+
 /// returns a message handle on success and less than zero on failure
 int message_from_packet(const uint8_t* data, size_t bytes);
+
+/// returns a message handle on success and less than zero on failure
+int message_from_type_id(uint32_t service_id, uint32_t message_id);
 
 /// releases a message resource, returns true on success
 bool release_message(int message_handle);
@@ -42,13 +50,18 @@ const char* message_get_service_type(int message_handle);
 bool message_is_service_tx_message(int message_handle);
 size_t message_get_number_of_fields(int message_handle);
 
-// field access
-const char* message_get_field_name(int message_handle, size_t field_id);
-fieldtype_t message_get_field_type(int message_handle, size_t field_id);
-const char* message_get_enum_field_string_value(int message_handle, size_t field_id);
-uint64_t message_get_enum_field_integer_value(int message_handle, size_t field_id);
-int64_t message_get_integer_field_value(int message_handle, size_t field_id);
-bool message_get_boolean_field_value(int message_handle, size_t field_id);
+// field read access
+const char* message_get_field_name(int message_handle, int field_id);
+fieldtype_t message_get_field_type(int message_handle, int field_id);
+const char* message_get_enum_field_string_value(int message_handle, int field_id);
+int64_t message_get_integer_field_value(int message_handle, int field_id);
+bool message_get_boolean_field_value(int message_handle, int field_id);
+
+// field write access
+int message_get_field_id(int message_handle, const char * field_name);
+bool message_set_enum_field_string_value(int message_handle, int field_id, const char* value);
+bool message_set_integer_field_value(int message_handle, int field_id, int64_t value);
+bool message_set_boolean_field_value(int message_handle, int field_id, bool value);
 
 #ifdef __cplusplus
 }

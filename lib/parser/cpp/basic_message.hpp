@@ -16,9 +16,17 @@ namespace awap {
 
 
 class MessageField {
+protected:
+	MessageField(const std::string name, const size_t id)
+		: name(name), id(id) {}
+
 public:
 	const std::string getName() const {
 		return this->name;
+	}
+
+	size_t getId() const {
+		return this->id;
 	}
 
 	virtual FieldType getType() const = 0;
@@ -27,16 +35,29 @@ public:
 		return "";
 	}
 
+	virtual bool setValue(const std::string value) {
+		return false;
+	}
+
 	virtual int64_t getIntegerValue() const {
 		return 0;
+	}
+
+	virtual bool setValue(int64_t value) {
+		return false;
 	}
 
 	virtual bool getBooleanValue() const {
 		return false;
 	}
 
+	virtual bool setValue(bool value) {
+		return false;
+	}
+
 private:
-	std::string name;
+	const std::string name;
+	const size_t id;
 };
 
 /// provides functionality common to all messages
@@ -92,14 +113,6 @@ public:
 		}
 	}
 
-	uint64_t getEnumFieldIntegerValue(size_t fieldId) const override {
-		if(isValidFieldId(fieldId)) {
-			return static_cast<uint64_t>(this->fields[fieldId]->getIntegerValue());
-		} else {
-			return 0;
-		}
-	}
-
 	int64_t getIntegerFieldValue(size_t fieldId) const override {
 		if(isValidFieldId(fieldId)) {
 			return this->fields[fieldId]->getIntegerValue();
@@ -111,6 +124,39 @@ public:
 	bool getBooleanFieldValue(size_t fieldId) const override {
 		if(isValidFieldId(fieldId)) {
 			return this->fields[fieldId]->getBooleanValue();
+		} else {
+			return false;
+		}
+	}
+
+	int getFieldId(const std::string fieldName) const override {
+		for(const auto& field : this->fields) {
+			if(field and field->getName() == fieldName) {
+				return field->getId();
+			}
+		}
+		return -1; // not found
+	}
+
+	bool setEnumFieldStringValue(size_t fieldId, const std::string value) override {
+		if(isValidFieldId(fieldId)) {
+			return this->fields[fieldId]->setValue(value);
+		} else {
+			return false;
+		}
+	}
+
+	bool setIntegerFieldValue(size_t fieldId, int64_t value) override {
+		if(isValidFieldId(fieldId)) {
+			return this->fields[fieldId]->setValue(value);
+		} else {
+			return false;
+		}
+	}
+
+	bool setBooleanFieldValue(size_t fieldId, bool value) override {
+		if(isValidFieldId(fieldId)) {
+			return this->fields[fieldId]->setValue(value);
 		} else {
 			return false;
 		}
@@ -129,7 +175,8 @@ private:
 
 private:
 	inline bool isValidFieldId(size_t fieldId) const {
-		return fieldId < this->fields.size();
+		return fieldId >= 0 and
+		       fieldId < this->fields.size();
 	}
 };
 

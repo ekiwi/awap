@@ -28,6 +28,12 @@ class Message {
 public:
 	/// returns emptr unique_ptr on error, check for nullptr!
 	static std::unique_ptr<Message> fromPacket(const uint8_t* data, size_t length);
+	static std::unique_ptr<Message> fromTypeId(uint32_t serviceId, uint32_t messageId);
+
+	// returns negative number on error
+	static int getServiceTypeId(const std::string serviceName);
+	// returns negative number on error
+	static int getMessageTypeId(uint32_t serviceId, const std::string messageName);
 
 public:
 	virtual bool isBroadcast() const = 0;
@@ -41,9 +47,13 @@ public:
 	virtual const std::string getFieldName(size_t fieldId) const = 0;
 	virtual FieldType getFieldType(size_t fieldId) const = 0;
 	virtual const std::string getEnumFieldStringValue(size_t fieldId) const = 0;
-	virtual uint64_t getEnumFieldIntegerValue(size_t fieldId) const = 0;
 	virtual int64_t getIntegerFieldValue(size_t fieldId) const = 0;
 	virtual bool getBooleanFieldValue(size_t fieldId) const = 0;
+
+	virtual int getFieldId(const std::string fieldName) const = 0;
+	virtual bool setEnumFieldStringValue(size_t fieldId, const std::string value) = 0;
+	virtual bool setIntegerFieldValue(size_t fieldId, int64_t value) = 0;
+	virtual bool setBooleanFieldValue(size_t fieldId, bool value) = 0;
 };
 
 

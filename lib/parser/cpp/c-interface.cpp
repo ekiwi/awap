@@ -14,11 +14,20 @@
 // for the C interface, message memory is managed in the library
 std::vector<std::unique_ptr<awap::Message>> messages;
 
-
-/// returns a message handle on success and less than zero on failure
-int message_from_packet(const uint8_t* data, size_t bytes)
+// returns negative number on error
+int get_service_type_id(const char* service_name)
 {
-	auto msg = awap::Message::fromPacket(data, bytes);
+	return awap::Message::getServiceTypeId(std::string(service_name));
+}
+
+// returns negative number on error
+int get_message_type_id(uint32_t service_id, const char* message_name)
+{
+	return awap::Message::getMessageTypeId(service_id, std::string(message_name));
+}
+
+static inline int insertMessage(std::unique_ptr<awap::Message> msg)
+{
 	if(msg) {
 		// search for empty slot in messages array and return random access id
 		int msg_id = 0;
@@ -35,6 +44,18 @@ int message_from_packet(const uint8_t* data, size_t bytes)
 	} else {
 		return -1;
 	}
+}
+
+/// returns a message handle on success and less than zero on failure
+int message_from_packet(const uint8_t* data, size_t bytes)
+{
+	return insertMessage(std::move(awap::Message::fromPacket(data, bytes)));
+}
+
+/// returns a message handle on success and less than zero on failure
+int message_from_type_id(uint32_t service_id, uint32_t message_id)
+{
+	return insertMessage(std::move(awap::Message::fromTypeId(service_id, message_id)));
 }
 
 static inline bool is_valid_message_handle(int message_handle) {
@@ -99,13 +120,13 @@ size_t message_get_number_of_fields(int message_handle)
 }
 
 // field access
-const char* message_get_field_name(int message_handle, size_t field_id)
+const char* message_get_field_name(int message_handle, int field_id)
 {
 	// TODO: what to do about strings?
 	return "TODO: implement";
 }
 
-fieldtype_t message_get_field_type(int message_handle, size_t field_id)
+fieldtype_t message_get_field_type(int message_handle, int field_id)
 {
 	if(is_valid_message_handle(message_handle)) {
 		return static_cast<fieldtype_t>(
@@ -115,7 +136,7 @@ fieldtype_t message_get_field_type(int message_handle, size_t field_id)
 	}
 }
 
-const char* message_get_enum_field_string_value(int message_handle, size_t field_id)
+const char* message_get_enum_field_string_value(int message_handle, int field_id)
 {
 	// TODO: what to do about strings?
 	return "TODO: implement";
@@ -128,17 +149,44 @@ const char* message_get_enum_field_string_value(int message_handle, size_t field
 		return default;                                    \
 	}
 
-uint64_t message_get_enum_field_integer_value(int message_handle, size_t field_id)
-{
-	RETURN_MESSAGE_FIELD_VALUE(getEnumFieldIntegerValue, 0);
-}
-
-int64_t message_get_integer_field_value(int message_handle, size_t field_id)
+int64_t message_get_integer_field_value(int message_handle, int field_id)
 {
 	RETURN_MESSAGE_FIELD_VALUE(getIntegerFieldValue, 0);
 }
 
-bool message_get_boolean_field_value(int message_handle, size_t field_id)
+bool message_get_boolean_field_value(int message_handle, int  field_id)
 {
 	RETURN_MESSAGE_FIELD_VALUE(getBooleanFieldValue, false);
+}
+
+// field write access
+int message_get_field_id(int message_handle, const char* field_name)
+{
+	if(is_valid_message_handle(message_handle)) {
+		return messages[message_handle]->getFieldId(std::string(field_name));
+	} else {
+		return -1;
+	}
+}
+
+#define SET_MESSAGE_FIELD_VALUE(method, value)                    \
+	if(is_valid_message_handle(message_handle)) {                 \
+		return messages[message_handle]->method(field_id, value); \
+	} else {                                                      \
+		return false;                                             \
+	}
+
+bool message_set_enum_field_string_value(int message_handle, int field_id, const char* value)
+{
+	SET_MESSAGE_FIELD_VALUE(setEnumFieldStringValue, std::string(value));
+}
+
+bool message_set_integer_field_value(int message_handle, int field_id, int64_t value)
+{
+	SET_MESSAGE_FIELD_VALUE(setIntegerFieldValue, value);
+}
+
+bool message_set_boolean_field_value(int message_handle, int field_id, bool value)
+{
+	SET_MESSAGE_FIELD_VALUE(setBooleanFieldValue, value);
 }
