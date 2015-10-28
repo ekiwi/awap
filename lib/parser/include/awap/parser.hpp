@@ -61,6 +61,9 @@ public:
 	virtual bool setFieldValue(size_t fieldId, const std::string value) = 0;
 	virtual bool setFieldValue(size_t fieldId, int64_t value) = 0;
 	virtual bool setFieldValue(size_t fieldId, bool value) = 0;
+
+public:
+	virtual ~Message(){}
 };
 
 
