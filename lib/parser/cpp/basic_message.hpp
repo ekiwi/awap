@@ -11,6 +11,7 @@
 
 #include <awap/parser.hpp>
 #include <vector>
+#include <initializer_list>
 
 namespace awap {
 
@@ -19,9 +20,8 @@ class BasicMessage;
 class MessageField {
 protected:
 	MessageField(
-		std::weak_ptr<BasicMessage> msg,
-		const std::string name, const size_t id)
-		: msg(msg), name(name), id(id) {}
+		const std::string name)
+		: name(name) {}
 
 public:
 	const std::string getName() const {
@@ -58,18 +58,52 @@ public:
 		return false;
 	}
 
+public:
+	void setParentMessage(BasicMessage* msg) {
+		this->msg = msg;
+	}
+
+	void setId(size_t id) {
+		this->id = id;
+	}
+
 protected:
-	std::weak_ptr<BasicMessage> msg;
+	BasicMessage* msg;
 	const std::string name;
-	const size_t id;
+	size_t id;
 };
+
+class EnumMessageField : public MessageField {
+public:
+	EnumMessageField(const std::string name)
+		: MessageField(name) {}
+
+	int64_t getIntegerValue() const override {
+		return static_cast<int64_t>(this->value);
+	}
+
+	bool setValue(int64_t value) override {
+		if(value < 0) {
+			return false;
+		} else {
+			this->value = static_cast<uint64_t>(value);
+			return true;
+		}
+	}
+
+	FieldType getType() const override {
+		return FieldType::Enum;
+	}
+
+private:
+	uint64_t value;
+};
+
 
 class BooleanMessageField : public MessageField {
 public:
-	BooleanMessageField(
-		std::weak_ptr<BasicMessage> msg,
-		const std::string name, const size_t id)
-		: MessageField(msg, name, id) {}
+	BooleanMessageField(const std::string name)
+		: MessageField(name) {}
 
 	bool getBooleanValue() const override {
 		return this->value;
@@ -80,12 +114,45 @@ public:
 		return true;
 	}
 
+	FieldType getType() const override {
+		return FieldType::Boolean;
+	}
+
 private:
 	bool value;
 };
 
 
+class IntegerMessageField : public MessageField {
+public:
+	IntegerMessageField(const std::string name)
+		: MessageField(name) {}
+
+	int64_t getIntegerValue() const override {
+		return this->value;
+	}
+
+	bool setValue(int64_t value) override {
+		this->value = value;
+		return true;
+	}
+
+	FieldType getType() const override {
+		return FieldType::Integer;
+	}
+
+private:
+	int64_t value;
+};
+
+
 struct MessageTypeProperties {
+	MessageTypeProperties(
+		const std::string serviceName,
+		const std::string name,
+		const std::string performative) :
+		serviceName(serviceName),
+		name(name), performative(performative) {}
 	size_t size;
 	bool is_service_tx_message;
 	uint32_t typeId;
@@ -97,6 +164,25 @@ struct MessageTypeProperties {
 
 /// provides functionality common to all messages
 class BasicMessage : public Message {
+public:
+	BasicMessage(
+		const MessageTypeProperties& properties,
+		// should be unique_ptr<MessageField>, because ownership is moved...
+		std::initializer_list<MessageField*> msg_fields)
+		: data(nullptr), properties(properties)
+	{
+		for(auto& field : msg_fields) {
+			field->setParentMessage(this);
+			field->setId(this->fields.size());
+			this->fields.emplace_back(field);
+		}
+	}
+
+	BasicMessage(
+		std::unique_ptr<uint8_t []> data,
+		const MessageTypeProperties properties)
+		: data(std::move(data)), properties(properties) {}
+
 public:
 	size_t getSize() const override {
 		return this->properties.size;
@@ -214,12 +300,6 @@ public:
 			return false;
 		}
 	}
-
-private:
-	BasicMessage(
-		std::unique_ptr<uint8_t []> data,
-		const MessageTypeProperties properties)
-		: data(std::move(data)), properties(properties) {}
 
 private:
 	std::unique_ptr<uint8_t []> data;

@@ -11,6 +11,11 @@
 namespace awap {
 namespace generated {
 
+// specific enum fields
+
+
+
+
 // returns negative number on error
 int getServiceTypeId(const std::string serviceName)
 {
@@ -47,6 +52,54 @@ int getMessageTypeId(uint32_t serviceId, const std::string messageName)
 %% endfor
 	default:
 		return -1;
+	}
+}
+
+
+std::unique_ptr<Message> messageFromTypeId(uint32_t serviceId, uint32_t messageId)
+{
+	switch(serviceId) {
+%% for service in services
+	case {{ service.id }}: // {{ service.name }}
+	switch(messageId) {
+	%% for msg in service.messages
+	case {{ msg.id }}: // {{ msg.name }}
+	{
+		MessageTypeProperties prop {
+			"{{ service.name }}",	// service.name
+			"{{ msg.name }}",	// msg.name
+			"{{ msg.performative }}"};	// msg.performative
+		prop.size = {{ msg.bytes }};	// msg.bytes
+		prop.is_service_tx_message = {{ msg.tx | string | camelCase }};	// msg.tx
+		prop.typeId = {{ msg.id }};	// msg.id
+		prop.serviceTypeId = {{ service.id }};	// service.id
+
+		std::unique_ptr<BasicMessage> msg(new BasicMessage(prop, {
+		%% for field in msg.fields
+			%% if field.is_bool
+				%% set type = "Boolean"
+			%% elif field.is_enum
+				%% set type = "Enum"
+			%% else
+				%% set type = "Integer"
+			%% endif
+			%% if loop.last
+			new {{ type }}MessageField("{{ field.name}}")
+			%% else
+			new {{ type }}MessageField("{{ field.name}}"),
+			%% endif
+			// {{ field.name }}
+		%% endfor
+		}));
+		return std::move(msg);
+	}
+	%% endfor
+	default:
+		return nullptr;	// invalid messageId
+	}
+%% endfor
+	default:
+		return nullptr;	// invalid serviceId
 	}
 }
 

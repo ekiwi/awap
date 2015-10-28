@@ -21,7 +21,7 @@ enum class FieldType {
 	Invalid = 0,	///< returned for invalid field ids
 	Enum = 1,
 	Boolean = 2,
-	Int = 3,
+	Integer = 3,
 };
 
 class Message {

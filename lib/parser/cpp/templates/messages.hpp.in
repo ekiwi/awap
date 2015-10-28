@@ -19,6 +19,8 @@ int getServiceTypeId(const std::string serviceName);
 // returns negative number on error
 int getMessageTypeId(uint32_t serviceId, const std::string messageName);
 
+std::unique_ptr<Message> messageFromTypeId(uint32_t serviceId, uint32_t messageId);
+
 } // namespace generated
 } // namespace awap
 

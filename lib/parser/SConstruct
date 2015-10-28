@@ -12,6 +12,8 @@ xpcc_tools = os.path.join(xpcc_root, 'scons', 'site_tools')
 env = Environment(toolpath = [os.path.join(awap_root, 'scons')], tools = ['awap'])
 
 env.Architecture('amd64')
+# env['CXXFLAGS'].remove('-std=c++11')
+# env['CXXFLAGS'].append('-std=c++14')
 env['CCFLAGS'].append("-fsanitize=address")
 env['LINKFLAGS'].append("-fsanitize=address")
 

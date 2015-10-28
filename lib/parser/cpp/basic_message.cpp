@@ -25,9 +25,7 @@ std::unique_ptr<Message> Message::fromPacket(const uint8_t* data, size_t length)
 /// returns emptr unique_ptr on error, check for nullptr!
 std::unique_ptr<Message> Message::fromTypeId(uint32_t serviceId, uint32_t messageId)
 {
-	// TODO: determine which message this is and create derrived BaseMessage
-	//       instance accordingly
-	return nullptr;
+	return awap::generated::messageFromTypeId(serviceId, messageId);
 }
 
 // returns negative number on error
