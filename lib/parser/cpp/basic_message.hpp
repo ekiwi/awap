@@ -24,6 +24,9 @@ protected:
 		: name(name) {}
 
 public:
+	virtual ~MessageField() {}
+
+public:
 	const std::string getName() const {
 		return this->name;
 	}
