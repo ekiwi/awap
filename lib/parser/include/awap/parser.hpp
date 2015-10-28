@@ -36,6 +36,8 @@ public:
 	static int getMessageTypeId(uint32_t serviceId, const std::string messageName);
 
 public:
+	virtual size_t getSize() const = 0;
+
 	virtual bool isBroadcast() const = 0;
 	virtual uint8_t getDestinationAgentId() const = 0;
 	virtual uint8_t getSourceAgentId() const = 0;

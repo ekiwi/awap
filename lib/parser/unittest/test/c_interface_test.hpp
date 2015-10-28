@@ -12,5 +12,6 @@
 class CInterfaceTest : public unittest::TestSuite
 {
 public:
-	void testX();
+	void testGetTypeId();
+	void testMessageFromTypeId();
 };

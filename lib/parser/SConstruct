@@ -41,14 +41,18 @@ runner = xpcc_env.UnittestRunner(target = xpcc_env.Buildpath('runner.cpp'),
 # the other files will be compiled to libmote and linked later
 source  = files.sources + runner
 source += xpcc_env.FindFiles(path=['unittest'], unittest=False).sources
-xpcc_env.AppendUnique(LIB = env['AWAP_LIB_PARSER_SO'])
-#xpcc_env.PrependUnique(LIBPATH = [os.path.basename(str(env['AWAP_LIB_PARSER_SO'][0]))])
-#xpcc_env.AppendUnique(LIB = ['awap-parser'])
+
+libpath = os.path.dirname(str(env['AWAP_LIB_PARSER_SO'][0]))
+xpcc_env.PrependUnique(LIBPATH = [libpath])
+xpcc_env.AppendUnique(LIBS = ['awap-parser'])
 
 # copy libmote include path
 xpcc_env.Append(CPPPATH = 'include')
 program = xpcc_env.Program(target = 'build/unittest', source = source)
 env.Alias('build_unittest', program)
-env.Alias('unittest', env.Run(program))
+
+# build run command
+run_cmd = 'LD_LIBRARY_PATH={}:$LD_LIBRARY_PATH {}'.format(libpath, program[0].abspath)
+env.Alias('unittest', env.Command('run_program', program, run_cmd))
 
 env.Default('libparser')

@@ -63,6 +63,10 @@ private:
 /// provides functionality common to all messages
 class BasicMessage : public Message {
 public:
+	size_t getSize() const override {
+		return this->size;
+	}
+
 	bool isBroadcast() const override {
 		return data[0] & (1<<7);
 	}
@@ -163,11 +167,11 @@ public:
 	}
 
 private:
-	BasicMessage(std::unique_ptr<uint8_t []> data, size_t length);
+	BasicMessage(std::unique_ptr<uint8_t []> data, size_t size);
 
 private:
 	std::unique_ptr<uint8_t []> data;
-	size_t data_length;
+	size_t size;
 	// will be populated by derrived class
 	std::vector<std::unique_ptr<MessageField>> fields;
 	// can be changed by derrived class in constructor

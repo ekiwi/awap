@@ -42,6 +42,7 @@ int message_from_type_id(uint32_t service_id, uint32_t message_id);
 bool release_message(int message_handle);
 
 // message access
+size_t message_get_size(int message_handle);
 bool message_is_broadcast(int message_handle);
 int message_get_dest_agent_id(int message_handle);
 int message_get_src_agent_id(int message_handle);

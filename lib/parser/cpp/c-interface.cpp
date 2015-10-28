@@ -83,6 +83,11 @@ bool release_message(int message_handle)
 }
 
 // message access
+size_t message_get_size(int message_handle)
+{
+	RETURN_MESSAGE_VALUE(getSize, 0)
+}
+
 bool message_is_broadcast(int message_handle)
 {
 	RETURN_MESSAGE_VALUE(isBroadcast, false)

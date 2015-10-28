@@ -29,9 +29,22 @@ std::unique_ptr<Message> Message::fromTypeId(uint32_t serviceId, uint32_t messag
 	return nullptr;
 }
 
+// returns negative number on error
+int Message::getServiceTypeId(const std::string serviceName)
+{
+	// TODO: use generated data to determine type id
+	return -1;
+}
 
-BasicMessage::BasicMessage(std::unique_ptr<uint8_t []> data, size_t length)
-	: data(std::move(data)), data_length(length)
+// returns negative number on error
+int Message::getMessageTypeId(uint32_t serviceId, const std::string messageName)
+{
+	// TODO: use generated data to determine type id
+	return -1;
+}
+
+BasicMessage::BasicMessage(std::unique_ptr<uint8_t []> data, size_t size)
+	: data(std::move(data)), size(size)
 {
 }
 
