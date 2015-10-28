@@ -1,0 +1,25 @@
+/**
+ * messages.hpp
+ *
+ * Copyright (c) 2015 Kevin Laeufer <kevin.laeufer@rwth-aachen.de>
+ *
+ * This file is part of awap.
+ */
+
+#ifndef GENERATED_MESSAGES_HPP
+#define GENERATED_MESSAGES_HPP
+
+#include <basic_message.hpp>
+
+namespace awap {
+namespace generated {
+
+// returns negative number on error
+int getServiceTypeId(const std::string serviceName);
+// returns negative number on error
+int getMessageTypeId(uint32_t serviceId, const std::string messageName);
+
+} // namespace generated
+} // namespace awap
+
+#endif // GENERATED_MESSAGES_HPP

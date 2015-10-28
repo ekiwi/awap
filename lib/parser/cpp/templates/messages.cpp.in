@@ -1,0 +1,54 @@
+/**
+ * messages.cpp
+ *
+ * Copyright (c) 2015 Kevin Laeufer <kevin.laeufer@rwth-aachen.de>
+ *
+ * This file is part of awap.
+ */
+
+#include <generated/messages.hpp>
+
+namespace awap {
+namespace generated {
+
+// returns negative number on error
+int getServiceTypeId(const std::string serviceName)
+{
+%% for service in services
+	%% if loop.first
+	if(serviceName == "{{ service.name }}") {
+	%% else
+	} else if(serviceName == "{{ service.name }}") {
+	%% endif
+		return {{ service.id }};
+%% endfor
+	} else {
+		return -1;
+	}
+}
+
+// returns negative number on error
+int getMessageTypeId(uint32_t serviceId, const std::string messageName)
+{
+	switch(serviceId) {
+%% for service in services
+	case {{ service.id }}: // {{ service.name }}
+	%% for msg in service.messages
+		%% if loop.first
+		if(messageName == "{{ msg.name }}") {
+		%% else
+		} else if(messageName == "{{ msg.name }}") {
+		%% endif
+			return {{ msg.id }};
+	%% endfor
+		} else {
+			return -1;
+		}
+%% endfor
+	default:
+		return -1;
+	}
+}
+
+} // namespace generated
+} // namespace awap

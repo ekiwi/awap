@@ -7,6 +7,7 @@
  */
 
 #include "basic_message.hpp"
+#include <generated/messages.hpp>
 
 namespace awap {
 
@@ -32,15 +33,13 @@ std::unique_ptr<Message> Message::fromTypeId(uint32_t serviceId, uint32_t messag
 // returns negative number on error
 int Message::getServiceTypeId(const std::string serviceName)
 {
-	// TODO: use generated data to determine type id
-	return -1;
+	return generated::getServiceTypeId(serviceName);
 }
 
 // returns negative number on error
 int Message::getMessageTypeId(uint32_t serviceId, const std::string messageName)
 {
-	// TODO: use generated data to determine type id
-	return -1;
+	return generated::getMessageTypeId(serviceId, messageName);
 }
 
 BasicMessage::BasicMessage(std::unique_ptr<uint8_t []> data, size_t size)
