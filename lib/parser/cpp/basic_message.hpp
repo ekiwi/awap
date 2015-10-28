@@ -14,11 +14,14 @@
 
 namespace awap {
 
+class BasicMessage;
 
 class MessageField {
 protected:
-	MessageField(const std::string name, const size_t id)
-		: name(name), id(id) {}
+	MessageField(
+		std::weak_ptr<BasicMessage> msg,
+		const std::string name, const size_t id)
+		: msg(msg), name(name), id(id) {}
 
 public:
 	const std::string getName() const {
@@ -55,16 +58,72 @@ public:
 		return false;
 	}
 
-private:
+protected:
+	std::weak_ptr<BasicMessage> msg;
 	const std::string name;
 	const size_t id;
+};
+
+class BooleanMessageField : public MessageField {
+public:
+	BooleanMessageField(
+		std::weak_ptr<BasicMessage> msg,
+		const std::string name, const size_t id)
+		: MessageField(msg, name, id) {}
+
+	bool getBooleanValue() const override {
+		return this->value;
+	}
+
+	bool setValue(bool value) override {
+		this->value = value;
+		return true;
+	}
+
+private:
+	bool value;
+};
+
+
+struct MessageTypeProperties {
+	size_t size;
+	bool is_service_tx_message;
+	uint32_t typeId;
+	uint32_t serviceTypeId;
+	const std::string serviceName;
+	const std::string name;
+	const std::string performative;
 };
 
 /// provides functionality common to all messages
 class BasicMessage : public Message {
 public:
 	size_t getSize() const override {
-		return this->size;
+		return this->properties.size;
+	}
+
+	uint32_t getTypeId() const override {
+		return this->properties.typeId;
+	}
+
+	uint32_t getServiceTypeId() const override {
+		return this->properties.serviceTypeId;
+	}
+
+	const std::string getName() const override {
+		return this->properties.name;
+	}
+
+	const std::string getServiceName() const override {
+		return this->properties.serviceName;
+	}
+
+	const std::string getPerformative() const override {
+		return this->properties.performative;
+	}
+
+	bool isServiceTxMessage() const override {
+		return this->properties.is_service_tx_message;
 	}
 
 	bool isBroadcast() const override {
@@ -78,16 +137,6 @@ public:
 	uint8_t getSourceAgentId() const override {
 		return (data[0] >> 0) & 0x7;
 	}
-
-	uint8_t getServiceTypeId() const override {
-		return data[1];
-	}
-
-	bool isServiceTxMessage() const override {
-		return is_service_tx_message;
-	}
-
-	const std::string getServiceType() const override;
 
 	size_t getNumberOfFields() const override {
 		return this->fields.size();
@@ -142,7 +191,7 @@ public:
 		return -1; // not found
 	}
 
-	bool setEnumFieldStringValue(size_t fieldId, const std::string value) override {
+	bool setFieldValue(size_t fieldId, const std::string value) override {
 		if(isValidFieldId(fieldId)) {
 			return this->fields[fieldId]->setValue(value);
 		} else {
@@ -150,7 +199,7 @@ public:
 		}
 	}
 
-	bool setIntegerFieldValue(size_t fieldId, int64_t value) override {
+	bool setFieldValue(size_t fieldId, int64_t value) override {
 		if(isValidFieldId(fieldId)) {
 			return this->fields[fieldId]->setValue(value);
 		} else {
@@ -158,7 +207,7 @@ public:
 		}
 	}
 
-	bool setBooleanFieldValue(size_t fieldId, bool value) override {
+	bool setFieldValue(size_t fieldId, bool value) override {
 		if(isValidFieldId(fieldId)) {
 			return this->fields[fieldId]->setValue(value);
 		} else {
@@ -167,15 +216,16 @@ public:
 	}
 
 private:
-	BasicMessage(std::unique_ptr<uint8_t []> data, size_t size);
+	BasicMessage(
+		std::unique_ptr<uint8_t []> data,
+		const MessageTypeProperties properties)
+		: data(std::move(data)), properties(properties) {}
 
 private:
 	std::unique_ptr<uint8_t []> data;
-	size_t size;
 	// will be populated by derrived class
 	std::vector<std::unique_ptr<MessageField>> fields;
-	// can be changed by derrived class in constructor
-	bool is_service_tx_message = false;
+	const MessageTypeProperties properties;
 
 private:
 	inline bool isValidFieldId(size_t fieldId) const {

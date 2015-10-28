@@ -174,24 +174,24 @@ int message_get_field_id(int message_handle, const char* field_name)
 	}
 }
 
-#define SET_MESSAGE_FIELD_VALUE(method, value)                    \
-	if(is_valid_message_handle(message_handle)) {                 \
-		return messages[message_handle]->method(field_id, value); \
-	} else {                                                      \
-		return false;                                             \
+#define SET_MESSAGE_FIELD_VALUE(value)                           \
+	if(is_valid_message_handle(message_handle)) {                        \
+		return messages[message_handle]->setFieldValue(field_id, value); \
+	} else {                                                             \
+		return false;                                                    \
 	}
 
 bool message_set_enum_field_string_value(int message_handle, int field_id, const char* value)
 {
-	SET_MESSAGE_FIELD_VALUE(setEnumFieldStringValue, std::string(value));
+	SET_MESSAGE_FIELD_VALUE(std::string(value));
 }
 
 bool message_set_integer_field_value(int message_handle, int field_id, int64_t value)
 {
-	SET_MESSAGE_FIELD_VALUE(setIntegerFieldValue, value);
+	SET_MESSAGE_FIELD_VALUE(value);
 }
 
 bool message_set_boolean_field_value(int message_handle, int field_id, bool value)
 {
-	SET_MESSAGE_FIELD_VALUE(setBooleanFieldValue, value);
+	SET_MESSAGE_FIELD_VALUE(value);
 }

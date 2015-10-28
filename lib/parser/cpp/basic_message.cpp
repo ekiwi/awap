@@ -42,18 +42,4 @@ int Message::getMessageTypeId(uint32_t serviceId, const std::string messageName)
 	return generated::getMessageTypeId(serviceId, messageName);
 }
 
-BasicMessage::BasicMessage(std::unique_ptr<uint8_t []> data, size_t size)
-	: data(std::move(data)), size(size)
-{
-}
-
-const std::string BasicMessage::getServiceType() const
-{
-	// TODO: get service type string from generated function
-	return "";
-}
-
-
-
-
 } // namesapce awap

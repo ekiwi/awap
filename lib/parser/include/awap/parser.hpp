@@ -36,14 +36,19 @@ public:
 	static int getMessageTypeId(uint32_t serviceId, const std::string messageName);
 
 public:
+	// static data, specific to message tye
 	virtual size_t getSize() const = 0;
+	virtual uint32_t getTypeId() const = 0;
+	virtual uint32_t getServiceTypeId() const = 0;
+	virtual const std::string getName() const = 0;
+	virtual const std::string getServiceName() const = 0;
+	virtual const std::string getPerformative() const = 0;
+	virtual bool isServiceTxMessage() const = 0;
 
+	// data that can change in each individual message
 	virtual bool isBroadcast() const = 0;
 	virtual uint8_t getDestinationAgentId() const = 0;
 	virtual uint8_t getSourceAgentId() const = 0;
-	virtual uint8_t getServiceTypeId() const = 0;
-	virtual bool isServiceTxMessage() const = 0;
-	virtual const std::string getServiceType() const = 0;
 
 	virtual size_t getNumberOfFields() const = 0;
 	virtual const std::string getFieldName(size_t fieldId) const = 0;
@@ -53,9 +58,9 @@ public:
 	virtual bool getBooleanFieldValue(size_t fieldId) const = 0;
 
 	virtual int getFieldId(const std::string fieldName) const = 0;
-	virtual bool setEnumFieldStringValue(size_t fieldId, const std::string value) = 0;
-	virtual bool setIntegerFieldValue(size_t fieldId, int64_t value) = 0;
-	virtual bool setBooleanFieldValue(size_t fieldId, bool value) = 0;
+	virtual bool setFieldValue(size_t fieldId, const std::string value) = 0;
+	virtual bool setFieldValue(size_t fieldId, int64_t value) = 0;
+	virtual bool setFieldValue(size_t fieldId, bool value) = 0;
 };
 
 
