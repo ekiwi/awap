@@ -12,7 +12,44 @@ namespace awap {
 namespace generated {
 
 // specific enum fields
+%% for enum in enums
 
+class {{ enum.name }}EnumMessageField : public IntegerMessageField {
+public:
+	{{ enum.name }}EnumMessageField(const std::string name)
+		: IntegerMessageField(name, {{ enum.min_value }}, {{ enum.max_value }}) {}
+
+	FieldType getType() const override {
+		return FieldType::Enum;
+	}
+
+	const std::string getStringValue() const override {
+		switch(this->value) {
+	%% for element in enum.elements
+		case {{ element.id }}: return "{{ element.name }}";
+	%% endfor
+		default: return "Error: InvalidValue";
+		}
+	}
+
+	bool setValue(const std::string value) override {
+	%% for element in enum.elements
+		%% if loop.first
+		if(value == "{{ element.name }}") {
+		%% else
+		} else if(value == "{{ element.name }}") {
+		%% endif
+			this->value = {{ element.id }}; // element.id
+			return true;
+	%% endfor
+		} else {
+			return false;
+		}
+	}
+
+};
+
+%% endfor
 
 
 
@@ -78,15 +115,18 @@ std::unique_ptr<Message> messageFromTypeId(uint32_t serviceId, uint32_t messageI
 		%% for field in msg.fields
 			%% if field.is_bool
 				%% set type = "Boolean"
+				%% set params = ""
 			%% elif field.is_enum
-				%% set type = "Enum"
+				%% set type = field.enum_name ~ "Enum"
+				%% set params = ""
 			%% else
 				%% set type = "Integer"
+				%% set params = ", " ~ field.min_value ~ ", " ~ field.max_value
 			%% endif
 			%% if loop.last
-			new {{ type }}MessageField("{{ field.name}}")
+			new {{ type }}MessageField("{{ field.name}}"{{ params }})
 			%% else
-			new {{ type }}MessageField("{{ field.name}}"),
+			new {{ type }}MessageField("{{ field.name}}"{{ params }}),
 			%% endif
 			// {{ field.name }}
 		%% endfor

@@ -41,7 +41,7 @@ public:
 		return "";
 	}
 
-	virtual bool setValue(const std::string value) {
+	virtual bool setValue(const std::string /* value */) {
 		return false;
 	}
 
@@ -49,7 +49,7 @@ public:
 		return 0;
 	}
 
-	virtual bool setValue(int64_t value) {
+	virtual bool setValue(int64_t /* value */) {
 		return false;
 	}
 
@@ -57,7 +57,7 @@ public:
 		return false;
 	}
 
-	virtual bool setValue(bool value) {
+	virtual bool setValue(bool /* value */) {
 		return false;
 	}
 
@@ -75,33 +75,6 @@ protected:
 	const std::string name;
 	size_t id;
 };
-
-class EnumMessageField : public MessageField {
-public:
-	EnumMessageField(const std::string name)
-		: MessageField(name) {}
-
-	int64_t getIntegerValue() const override {
-		return static_cast<int64_t>(this->value);
-	}
-
-	bool setValue(int64_t value) override {
-		if(value < 0) {
-			return false;
-		} else {
-			this->value = static_cast<uint64_t>(value);
-			return true;
-		}
-	}
-
-	FieldType getType() const override {
-		return FieldType::Enum;
-	}
-
-private:
-	uint64_t value;
-};
-
 
 class BooleanMessageField : public MessageField {
 public:
@@ -128,16 +101,25 @@ private:
 
 class IntegerMessageField : public MessageField {
 public:
-	IntegerMessageField(const std::string name)
-		: MessageField(name) {}
+	IntegerMessageField(
+			const std::string name,
+			int64_t minValue, int64_t maxValue)
+		: MessageField(name),
+		minValue(minValue),
+		maxValue(std::max(minValue, maxValue)),
+		value(minValue) {}
 
 	int64_t getIntegerValue() const override {
 		return this->value;
 	}
 
 	bool setValue(int64_t value) override {
-		this->value = value;
-		return true;
+		if(value >= minValue and value <= maxValue) {
+			this->value = value;
+			return true;
+		} else {
+			return false;
+		}
 	}
 
 	FieldType getType() const override {
@@ -145,6 +127,9 @@ public:
 	}
 
 private:
+	const int64_t minValue;
+	const int64_t maxValue;
+protected:
 	int64_t value;
 };
 
@@ -312,8 +297,7 @@ private:
 
 private:
 	inline bool isValidFieldId(size_t fieldId) const {
-		return fieldId >= 0 and
-		       fieldId < this->fields.size();
+		return fieldId < this->fields.size();
 	}
 };
 
