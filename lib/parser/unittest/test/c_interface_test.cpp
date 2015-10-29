@@ -45,6 +45,47 @@ CInterfaceTest::testMessageFromTypeId()
 	TEST_ASSERT_EQUALS(message_get_size(msg), 1u);
 }
 
+#define TEST_GET_STRING(method, string)      \
+{                                            \
+	char str[20];                            \
+	TEST_ASSERT_TRUE(method(msg, str, 20));  \
+	TEST_ASSERT_EQUALS_STRING(str, string);  \
+}
+
+void
+CInterfaceTest::testMessageAccess()
+{
+	auto msg = message_from_type_id(0, get_message_type_id(0, "BoolMessage"));
+	TEST_ASSERT_TRUE(msg >= 0);
+
+	// constant message type properties
+	TEST_ASSERT_EQUALS(message_get_size(msg), 1u);
+	TEST_ASSERT_EQUALS(message_get_type_id(msg), 4);
+	TEST_ASSERT_EQUALS(message_get_service_type_id(msg), 0);
+	TEST_GET_STRING(message_get_name, "BoolMessage");
+	TEST_GET_STRING(message_get_service_name, "MessageTestService");
+	TEST_GET_STRING(message_get_performative, "INFORM");
+	TEST_ASSERT_FALSE(message_is_service_tx_message(msg));
+	TEST_ASSERT_EQUALS(message_get_number_of_fields(msg), 3u);
+
+	// data that can change in each individual message
+	message_set_is_broadcast(msg, true);
+	TEST_ASSERT_TRUE(message_is_broadcast(msg));
+	message_set_is_broadcast(msg, false);
+	TEST_ASSERT_FALSE(message_is_broadcast(msg));
+
+	message_set_dest_agent_id(msg, 3);
+	TEST_ASSERT_EQUALS(message_get_dest_agent_id(msg), 3);
+	message_set_dest_agent_id(msg, 7);
+	TEST_ASSERT_EQUALS(message_get_dest_agent_id(msg), 7);
+
+	message_set_src_agent_id(msg, 0);
+	TEST_ASSERT_EQUALS(message_get_src_agent_id(msg), 0);
+	TEST_ASSERT_EQUALS(message_get_dest_agent_id(msg), 7);
+	message_set_src_agent_id(msg, 4);
+	TEST_ASSERT_EQUALS(message_get_src_agent_id(msg), 4);
+}
+
 void
 CInterfaceTest::testBooleanFieldAccess()
 {
