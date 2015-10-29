@@ -47,14 +47,14 @@ bool message_is_broadcast(int message_handle);
 int message_get_dest_agent_id(int message_handle);
 int message_get_src_agent_id(int message_handle);
 int message_get_service_type_id(int message_handle);
-const char* message_get_service_type(int message_handle);
+bool message_get_service_type(int message_handle, char* output, size_t len);
 bool message_is_service_tx_message(int message_handle);
 size_t message_get_number_of_fields(int message_handle);
 
 // field read access
-const char* message_get_field_name(int message_handle, int field_id);
+bool message_get_field_name(int message_handle, int field_id, char* output, size_t len);
 fieldtype_t message_get_field_type(int message_handle, int field_id);
-const char* message_get_enum_field_string_value(int message_handle, int field_id);
+bool message_get_enum_field_string_value(int message_handle, int field_id, char* output, size_t len);
 int64_t message_get_integer_field_value(int message_handle, int field_id);
 bool message_get_boolean_field_value(int message_handle, int field_id);
 

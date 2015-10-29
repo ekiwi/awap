@@ -10,6 +10,7 @@
 #include <awap/parser.hpp>
 
 #include <vector>
+#include <cstring>
 
 // for the C interface, message memory is managed in the library
 std::vector<std::unique_ptr<awap::Message>> messages;
@@ -108,10 +109,23 @@ int message_get_service_type_id(int message_handle)
 	RETURN_MESSAGE_VALUE(getServiceTypeId, -1)
 }
 
-const char* message_get_service_type(int message_handle)
+static bool copy_string(const std::string str, char* output, size_t len)
 {
-	// TODO: what to do about strings?
-	return "TODO: implement";
+	if(len < str.length()) {
+		return false;
+	} else {
+		std::memcpy(output, str.data(), str.length() + 1);
+		return true;
+	}
+}
+
+bool message_get_service_type(int message_handle, char* output, size_t len)
+{
+	if(is_valid_message_handle(message_handle)) {
+		return copy_string(messages[message_handle]->getServiceName(), output, len);
+	} else {
+		return false;
+	}
 }
 
 bool message_is_service_tx_message(int message_handle)
@@ -125,10 +139,13 @@ size_t message_get_number_of_fields(int message_handle)
 }
 
 // field access
-const char* message_get_field_name(int message_handle, int field_id)
+bool message_get_field_name(int message_handle, int field_id, char* output, size_t len)
 {
-	// TODO: what to do about strings?
-	return "TODO: implement";
+	if(is_valid_message_handle(message_handle)) {
+		return copy_string(messages[message_handle]->getFieldName(field_id), output, len);
+	} else {
+		return false;
+	}
 }
 
 fieldtype_t message_get_field_type(int message_handle, int field_id)
@@ -141,10 +158,13 @@ fieldtype_t message_get_field_type(int message_handle, int field_id)
 	}
 }
 
-const char* message_get_enum_field_string_value(int message_handle, int field_id)
+bool message_get_enum_field_string_value(int message_handle, int field_id, char* output, size_t len)
 {
-	// TODO: what to do about strings?
-	return "TODO: implement";
+	if(is_valid_message_handle(message_handle)) {
+		return copy_string(messages[message_handle]->getEnumFieldStringValue(field_id), output, len);
+	} else {
+		return false;
+	}
 }
 
 #define RETURN_MESSAGE_FIELD_VALUE(method, default)        \

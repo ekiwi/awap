@@ -75,7 +75,9 @@ CInterfaceTest::testEnumFieldAccess()
 	auto value_id = message_get_field_id(msg, "enum_value");
 	TEST_ASSERT_TRUE(message_set_integer_field_value(msg, value_id, 1));
 	TEST_ASSERT_EQUALS(message_get_integer_field_value(msg, value_id), 1);
-	TEST_ASSERT_EQUALS_STRING(message_get_enum_field_string_value(msg, value_id), "HK1Toaster");
+	char str[20];
+	TEST_ASSERT_TRUE(message_get_enum_field_string_value(msg, value_id, str, 20));
+	TEST_ASSERT_EQUALS_STRING(str, "HK1Toaster");
 
 	// Building can contain a maximum of 16 different values
 	// but only Build1(0), HK1Toaster(1) and SemiTemp(2) are defined
