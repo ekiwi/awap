@@ -44,3 +44,22 @@ CInterfaceTest::testMessageFromTypeId()
 	TEST_ASSERT_TRUE(msg >= 0);
 	TEST_ASSERT_EQUALS(message_get_size(msg), 1u);
 }
+
+void
+CInterfaceTest::testIntegerFieldAccess()
+{
+	auto msg = message_from_type_id(0, 2);	// SimpleUInt12Message
+	TEST_ASSERT_TRUE(msg >= 0);
+
+	auto value_id = message_get_field_id(msg, "uint_value");
+	TEST_ASSERT_TRUE(message_set_integer_field_value(msg, value_id, 4));
+	TEST_ASSERT_EQUALS(message_get_integer_field_value(msg, value_id), 4);
+
+	// the range of a 12bit unsigned integer is 0 - 4095
+	TEST_ASSERT_TRUE(message_set_integer_field_value(msg, value_id, 0));
+	TEST_ASSERT_FALSE(message_set_integer_field_value(msg, value_id, -1));
+	TEST_ASSERT_FALSE(message_set_integer_field_value(msg, value_id, -2000));
+	TEST_ASSERT_TRUE(message_set_integer_field_value(msg, value_id, 4095));
+	TEST_ASSERT_FALSE(message_set_integer_field_value(msg, value_id, 4096));
+	TEST_ASSERT_FALSE(message_set_integer_field_value(msg, value_id, 1000000));
+}
