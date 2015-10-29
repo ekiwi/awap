@@ -15,4 +15,5 @@ public:
 	void testGetTypeId();
 	void testMessageFromTypeId();
 	void testIntegerFieldAccess();
+	void testEnumFieldAccess();
 };
