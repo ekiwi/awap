@@ -100,7 +100,7 @@ static bool copy_string(const std::string str, char* output, size_t len)
 
 #define RETURN_MESSAGE_STRING_VALUE(method)                                   \
 	if(is_valid_message_handle(message_handle)) {                             \
-		return copy_string(messages[message_handle]->getName(), output, len); \
+		return copy_string(messages[message_handle]->method(), output, len); \
 	} else {                                                                  \
 		return false;                                                         \
 	}

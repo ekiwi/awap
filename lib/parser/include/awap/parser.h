@@ -49,6 +49,7 @@ bool message_get_name(int message_handle, char* output, size_t len);
 bool message_get_service_name(int message_handle, char* output, size_t len);
 bool message_get_performative(int message_handle, char* output, size_t len);
 bool message_is_service_tx_message(int message_handle);
+size_t message_get_number_of_fields(int message_handle);
 
 // data that can change in each individual message
 bool message_is_broadcast(int message_handle);
@@ -57,8 +58,6 @@ uint8_t message_get_dest_agent_id(int message_handle);
 void message_set_dest_agent_id(int message_handle, uint8_t dest_agent_id);
 uint8_t message_get_src_agent_id(int message_handle);
 void message_set_src_agent_id(int message_handle, uint8_t src_agent_id);
-
-size_t message_get_number_of_fields(int message_handle);
 
 // field read access
 bool message_get_field_name(int message_handle, int field_id, char* output, size_t len);
