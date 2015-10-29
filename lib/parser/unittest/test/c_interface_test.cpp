@@ -46,6 +46,31 @@ CInterfaceTest::testMessageFromTypeId()
 }
 
 void
+CInterfaceTest::testBooleanFieldAccess()
+{
+	auto msg = message_from_type_id(0, get_message_type_id(0, "BoolMessage"));
+	TEST_ASSERT_TRUE(msg >= 0);
+
+	auto b0 = message_get_field_id(msg, "b0");
+	auto b1 = message_get_field_id(msg, "b1");
+	auto b2 = message_get_field_id(msg, "b2");
+
+	TEST_ASSERT_TRUE(message_set_boolean_field_value(msg, b0, true));
+	TEST_ASSERT_EQUALS(message_get_boolean_field_value(msg, b0), true);
+	TEST_ASSERT_TRUE(message_set_boolean_field_value(msg, b0, false));
+	TEST_ASSERT_EQUALS(message_get_boolean_field_value(msg, b0), false);
+
+	TEST_ASSERT_TRUE(message_set_boolean_field_value(msg, b0, true));
+	TEST_ASSERT_TRUE(message_set_boolean_field_value(msg, b1, true));
+	TEST_ASSERT_TRUE(message_set_boolean_field_value(msg, b2, true));
+	TEST_ASSERT_EQUALS(message_get_boolean_field_value(msg, b0), true);
+	TEST_ASSERT_EQUALS(message_get_boolean_field_value(msg, b1), true);
+	TEST_ASSERT_EQUALS(message_get_boolean_field_value(msg, b2), true);
+
+	release_message(msg);
+}
+
+void
 CInterfaceTest::testIntegerFieldAccess()
 {
 	auto msg = message_from_type_id(0, 2);	// SimpleUInt12Message

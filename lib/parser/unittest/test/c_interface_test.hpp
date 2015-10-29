@@ -14,6 +14,7 @@ class CInterfaceTest : public unittest::TestSuite
 public:
 	void testGetTypeId();
 	void testMessageFromTypeId();
+	void testBooleanFieldAccess();
 	void testIntegerFieldAccess();
 	void testEnumFieldAccess();
 };
