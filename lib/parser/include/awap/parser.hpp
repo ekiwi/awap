@@ -47,8 +47,11 @@ public:
 
 	// data that can change in each individual message
 	virtual bool isBroadcast() const = 0;
+	virtual void setIsBroadcast(bool isBroadcast) = 0;
 	virtual uint8_t getDestinationAgentId() const = 0;
+	virtual void setDestinationAgentId(uint8_t destinationAgentId) = 0;
 	virtual uint8_t getSourceAgentId() const = 0;
+	virtual void setSourceAgentId(uint8_t sourceAgentId) = 0;
 
 	virtual size_t getNumberOfFields() const = 0;
 	virtual const std::string getFieldName(size_t fieldId) const = 0;

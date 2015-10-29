@@ -65,13 +65,6 @@ static inline bool is_valid_message_handle(int message_handle) {
 	       messages[message_handle];
 }
 
-#define RETURN_MESSAGE_VALUE(method, default)          \
-	if(is_valid_message_handle(message_handle)) {      \
-		return messages[message_handle]->method();     \
-	} else {                                           \
-		return default;                                \
-	}
-
 /// releases a message resource, returns true on success
 bool release_message(int message_handle)
 {
@@ -83,31 +76,17 @@ bool release_message(int message_handle)
 	}
 }
 
-// message access
-size_t message_get_size(int message_handle)
-{
-	RETURN_MESSAGE_VALUE(getSize, 0)
-}
+#define RETURN_MESSAGE_VALUE(method, default)          \
+	if(is_valid_message_handle(message_handle)) {      \
+		return messages[message_handle]->method();     \
+	} else {                                           \
+		return default;                                \
+	}
 
-bool message_is_broadcast(int message_handle)
-{
-	RETURN_MESSAGE_VALUE(isBroadcast, false)
-}
-
-int message_get_dest_agent_id(int message_handle)
-{
-	RETURN_MESSAGE_VALUE(getDestinationAgentId, -1)
-}
-
-int message_get_src_agent_id(int message_handle)
-{
-	RETURN_MESSAGE_VALUE(getSourceAgentId, -1)
-}
-
-int message_get_service_type_id(int message_handle)
-{
-	RETURN_MESSAGE_VALUE(getServiceTypeId, -1)
-}
+#define SET_MESSAGE_VALUE(method, value)           \
+	if(is_valid_message_handle(message_handle)) {  \
+		messages[message_handle]->method(value);   \
+	}
 
 static bool copy_string(const std::string str, char* output, size_t len)
 {
@@ -119,18 +98,77 @@ static bool copy_string(const std::string str, char* output, size_t len)
 	}
 }
 
-bool message_get_service_type(int message_handle, char* output, size_t len)
-{
-	if(is_valid_message_handle(message_handle)) {
-		return copy_string(messages[message_handle]->getServiceName(), output, len);
-	} else {
-		return false;
+#define RETURN_MESSAGE_STRING_VALUE(method)                                   \
+	if(is_valid_message_handle(message_handle)) {                             \
+		return copy_string(messages[message_handle]->getName(), output, len); \
+	} else {                                                                  \
+		return false;                                                         \
 	}
+
+// message access
+size_t message_get_size(int message_handle)
+{
+	RETURN_MESSAGE_VALUE(getSize, 0)
+}
+
+int message_get_type_id(int message_handle)
+{
+	RETURN_MESSAGE_VALUE(getTypeId, -1)
+}
+
+int message_get_service_type_id(int message_handle)
+{
+	RETURN_MESSAGE_VALUE(getServiceTypeId, -1)
+}
+
+bool message_get_name(int message_handle, char* output, size_t len)
+{
+	RETURN_MESSAGE_STRING_VALUE(getName);
+}
+
+bool message_get_service_name(int message_handle, char* output, size_t len)
+{
+	RETURN_MESSAGE_STRING_VALUE(getServiceName);
+}
+
+bool message_get_performative(int message_handle, char* output, size_t len)
+{
+	RETURN_MESSAGE_STRING_VALUE(getPerformative);
 }
 
 bool message_is_service_tx_message(int message_handle)
 {
 	RETURN_MESSAGE_VALUE(isServiceTxMessage, false)
+}
+
+bool message_is_broadcast(int message_handle)
+{
+	RETURN_MESSAGE_VALUE(isBroadcast, false)
+}
+
+uint8_t message_get_dest_agent_id(int message_handle)
+{
+	RETURN_MESSAGE_VALUE(getDestinationAgentId, -1)
+}
+
+uint8_t message_get_src_agent_id(int message_handle)
+{
+	RETURN_MESSAGE_VALUE(getSourceAgentId, -1)
+}
+
+void message_set_is_broadcast(int message_handle, bool is_broadcast)
+{
+	SET_MESSAGE_VALUE(setIsBroadcast, is_broadcast);
+}
+
+void message_set_dest_agent_id(int message_handle, uint8_t dest_agent_id)
+{
+	SET_MESSAGE_VALUE(setDestinationAgentId, dest_agent_id);
+}
+
+void message_set_src_agent_id(int message_handle, uint8_t src_agent_id)
+{
+	SET_MESSAGE_VALUE(setSourceAgentId, src_agent_id);
 }
 
 size_t message_get_number_of_fields(int message_handle)

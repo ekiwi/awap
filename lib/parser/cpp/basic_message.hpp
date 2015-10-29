@@ -157,7 +157,7 @@ public:
 		const MessageTypeProperties& properties,
 		// should be unique_ptr<MessageField>, because ownership is moved...
 		std::initializer_list<MessageField*> msg_fields)
-		: data(nullptr), properties(properties)
+		: properties(properties)
 	{
 		for(auto& field : msg_fields) {
 			field->setParentMessage(this);
@@ -166,10 +166,8 @@ public:
 		}
 	}
 
-	BasicMessage(
-		std::unique_ptr<uint8_t []> data,
-		const MessageTypeProperties properties)
-		: data(std::move(data)), properties(properties) {}
+	BasicMessage(const MessageTypeProperties properties)
+		: properties(properties) {}
 
 public:
 	size_t getSize() const override {
@@ -201,15 +199,31 @@ public:
 	}
 
 	bool isBroadcast() const override {
-		return data[0] & (1<<7);
+		return data0 & (1<<7);
+	}
+
+	void setIsBroadcast(bool isBroadcast) override {
+		if(isBroadcast) {
+			data0 |= (1<<7);
+		} else {
+			data0 &= ~(1<<7);
+		}
 	}
 
 	uint8_t getDestinationAgentId() const override {
-		return (data[0] >> 3) & 0x7;
+		return (data0 >> 3) & 0x7;
+	}
+
+	void setDestinationAgentId(uint8_t destinationAgentId) override {
+		data0 = (data0 & ~(0x7 << 3)) | ((destinationAgentId & 0x07) << 3);
 	}
 
 	uint8_t getSourceAgentId() const override {
-		return (data[0] >> 0) & 0x7;
+		return (data0 >> 0) & 0x7;
+	}
+
+	void setSourceAgentId(uint8_t sourceAgentId) override {
+		data0 = (data0 & ~(0x7)) | (sourceAgentId & 0x07);
 	}
 
 	size_t getNumberOfFields() const override {
@@ -290,10 +304,9 @@ public:
 	}
 
 private:
-	std::unique_ptr<uint8_t []> data;
-	// will be populated by derrived class
 	std::vector<std::unique_ptr<MessageField>> fields;
 	const MessageTypeProperties properties;
+	uint8_t data0 = 0;
 
 private:
 	inline bool isValidFieldId(size_t fieldId) const {
