@@ -133,6 +133,7 @@ protected:
 	int64_t value;
 };
 
+class Marshaller;
 
 struct MessageTypeProperties {
 	MessageTypeProperties(
@@ -154,10 +155,11 @@ struct MessageTypeProperties {
 class BasicMessage : public Message {
 public:
 	BasicMessage(
-		const MessageTypeProperties& properties,
+		const MessageTypeProperties properties,
+		std::unique_ptr<Marshaller> marshaller,
 		// should be unique_ptr<MessageField>, because ownership is moved...
 		std::initializer_list<MessageField*> msg_fields)
-		: properties(properties)
+		: properties(properties), marshaller(std::move(marshaller))
 	{
 		for(auto& field : msg_fields) {
 			field->setParentMessage(this);
@@ -166,10 +168,14 @@ public:
 		}
 	}
 
-	BasicMessage(const MessageTypeProperties properties)
-		: properties(properties) {}
+	BasicMessage(
+		const MessageTypeProperties properties,
+		std::unique_ptr<Marshaller> marshaller)
+		: properties(properties), marshaller(std::move(marshaller)) {}
 
 public:
+	bool loadFromPacket(const uint8_t* input, size_t len);
+
 	size_t getSize() const override {
 		return this->properties.size;
 	}
@@ -307,6 +313,7 @@ private:
 	std::vector<std::unique_ptr<MessageField>> fields;
 	const MessageTypeProperties properties;
 	uint8_t data0 = 0;
+	std::unique_ptr<Marshaller> marshaller;
 
 private:
 	inline bool isValidFieldId(size_t fieldId) const {
@@ -314,6 +321,27 @@ private:
 	}
 };
 
+class Marshaller {
+protected:
+	virtual bool fromSpecificPacket(BasicMessage* msg, const uint8_t* input) const = 0;
+	virtual bool toSpecificPacket(BasicMessage* msg, uint8_t* output) const = 0;
+public:
+	bool fromPacket(BasicMessage* msg, const uint8_t* input, size_t len) const {
+		if(len < msg->getSize()) {
+			return false;
+		} else {
+			return this->fromSpecificPacket(msg, input);
+		}
+	}
+
+	bool toPacket(BasicMessage* msg, uint8_t* output, size_t len) const {
+		if(len < msg->getSize()) {
+			return false;
+		} else {
+			return this->toSpecificPacket(msg, output);
+		}
+	}
+};
 
 } // namesapce awap
 

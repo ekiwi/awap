@@ -117,6 +117,7 @@ class Service(NamedCommunicationElement):
 		gc_unmarshal = fields.CodeGenerator(data_src="data", field_prefix="java_struct->")
 		gc_marshal   = fields.CodeGenerator(data_src="data")
 		dd = { 'unmarshal': "\n".join(gc_unmarshal.unmarshal(ff) for ff in field_list),
+			'unmarshal_without_struct': "\n".join(gc_marshal.unmarshal(ff) for ff in field_list),
 			'marshal': "\n".join(gc_marshal.marshal(bb) for bb in byte_list),
 			'bytes': len(byte_list) }
 		return dd
@@ -168,6 +169,7 @@ class Message(NamedCommunicationElement):
 		gc_unmarshal = fields.CodeGenerator(data_src="data", field_prefix="java_struct->")
 		gc_marshal   = fields.CodeGenerator(data_src="data")
 		dd = { 'unmarshal': "\n".join(gc_unmarshal.unmarshal(ff) for ff in field_list),
+			'unmarshal_without_struct': "\n".join(gc_marshal.unmarshal(ff) for ff in field_list),
 			'marshal': "\n".join(gc_marshal.marshal(bb) for bb in byte_list),
 			'bytes': len(byte_list) }
 		return dd

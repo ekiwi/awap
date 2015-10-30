@@ -17,9 +17,7 @@ std::unique_ptr<Message> Message::fromPacket(const uint8_t* data, size_t length)
 	if(length < 3) {
 		return nullptr;
 	}
-	// TODO: determine which message this is and create derrived BaseMessage
-	//       instance accordingly
-	return nullptr;
+	return awap::generated::fromPacket(data, length);
 }
 
 /// returns emptr unique_ptr on error, check for nullptr!
@@ -38,6 +36,14 @@ int Message::getServiceTypeId(const std::string serviceName)
 int Message::getMessageTypeId(uint32_t serviceId, const std::string messageName)
 {
 	return generated::getMessageTypeId(serviceId, messageName);
+}
+
+bool BasicMessage::loadFromPacket(const uint8_t* input, size_t len) {
+	if(this->marshaller) {
+		return this->marshaller->fromPacket(this, input, len);
+	} else {
+		return false;
+	}
 }
 
 } // namesapce awap
