@@ -330,7 +330,8 @@ public:
 		if(len < msg->getSize()) {
 			return false;
 		} else {
-			return this->fromSpecificPacket(msg, input);
+			// TODO: set data0 of message
+			return this->fromSpecificPacket(msg, &input[2]);
 		}
 	}
 
