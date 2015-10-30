@@ -170,6 +170,8 @@ CInterfaceTest::testUnmarshalPacket()
 	TEST_ASSERT_TRUE(msg >= 0);
 	TEST_GET_STRING(message_get_name, "SimpleUInt32Message");
 
+	auto value_id = message_get_field_id(msg, "uint_value");
+	TEST_ASSERT_EQUALS(message_get_integer_field_value(msg, value_id), 0x12345678);
 
 	release_message(msg);
 }
