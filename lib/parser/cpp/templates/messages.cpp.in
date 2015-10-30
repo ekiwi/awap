@@ -75,7 +75,7 @@ protected:
 		%% else
 			%% set type = "int64_t"
 		%% endif
-		msg->setFieldValue({{ loop.index }}, static_cast<{{ type }}>({{ field.name }}));
+		msg->setFieldValue({{ loop.index0 }}, static_cast<{{ type }}>({{ field.name }}));
 	%% endfor
 		return true;
 	}
