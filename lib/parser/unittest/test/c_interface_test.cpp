@@ -179,15 +179,16 @@ CInterfaceTest::testUnmarshalPacket()
 void
 CInterfaceTest::testMarshalPacket()
 {
-	// prepare SimpleUInt32Message body (leading two bytes are message header)
-	uint8_t msg_data[7] = { 0x00, 0x00, (1<<4) | 0x01, 0x23, 0x45, 0x67, 0x80 };
-
-	auto msg = message_unmarshal(msg_data, 7);
+	auto msg = message_from_type_id(0, get_message_type_id(0, "SimpleUInt32Message"));
 	TEST_ASSERT_TRUE(msg >= 0);
-	TEST_GET_STRING(message_get_name, "SimpleUInt32Message");
 
 	auto value_id = message_get_field_id(msg, "uint_value");
-	TEST_ASSERT_EQUALS(message_get_integer_field_value(msg, value_id), 0x12345678);
+	TEST_ASSERT_TRUE(message_set_integer_field_value(msg, value_id, 0x12345678));
+
+	uint8_t msg_data[7] = { 0xaa, 0xaa, 0xaa, 0xaa, 0xaa, 0xaa, 0xaa };
+	TEST_ASSERT_TRUE(message_marshal(msg, msg_data, 7));
+	const uint8_t expected_msg_data[7] = { 0x00, 0x00, (1<<4) | 0x01, 0x23, 0x45, 0x67, 0x80 };
+	TEST_ASSERT_EQUALS_ARRAY(msg_data, expected_msg_data, 7);
 
 	release_message(msg);
 }
