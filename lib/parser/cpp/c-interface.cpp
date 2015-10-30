@@ -48,9 +48,9 @@ static inline int insertMessage(std::unique_ptr<awap::Message> msg)
 }
 
 /// returns a message handle on success and less than zero on failure
-int message_from_packet(const uint8_t* data, size_t bytes)
+int message_unmarshal(const uint8_t* data, size_t bytes)
 {
-	return insertMessage(std::move(awap::Message::fromPacket(data, bytes)));
+	return insertMessage(std::move(awap::Message::unmarshal(data, bytes)));
 }
 
 /// returns a message handle on success and less than zero on failure
@@ -71,6 +71,15 @@ bool release_message(int message_handle)
 	if(is_valid_message_handle(message_handle)) {
 		messages[message_handle].reset(nullptr);
 		return true;
+	} else {
+		return false;
+	}
+}
+
+bool message_marshal(int message_handle, uint8_t* output, size_t len)
+{
+	if(is_valid_message_handle(message_handle)) {
+		return messages[message_handle]->marshal(output, len);
 	} else {
 		return false;
 	}

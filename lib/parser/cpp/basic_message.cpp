@@ -12,12 +12,12 @@
 namespace awap {
 
 /// returns emptr unique_ptr on error, check for nullptr!
-std::unique_ptr<Message> Message::fromPacket(const uint8_t* data, size_t length)
+std::unique_ptr<Message> Message::unmarshal(const uint8_t* data, size_t length)
 {
 	if(length < 3) {
 		return nullptr;
 	}
-	return awap::generated::fromPacket(data, length);
+	return awap::generated::unmarshal(data, length);
 }
 
 /// returns emptr unique_ptr on error, check for nullptr!
@@ -38,9 +38,17 @@ int Message::getMessageTypeId(uint32_t serviceId, const std::string messageName)
 	return generated::getMessageTypeId(serviceId, messageName);
 }
 
-bool BasicMessage::loadFromPacket(const uint8_t* input, size_t len) {
+bool BasicMessage::unmarshal(const uint8_t* input, size_t len) {
 	if(this->marshaller) {
-		return this->marshaller->fromPacket(this, input, len);
+		return this->marshaller->unmarshal(this, input, len);
+	} else {
+		return false;
+	}
+}
+
+bool BasicMessage::marshal(uint8_t* output, size_t len) const {
+	if(this->marshaller) {
+		return this->marshaller->marshal(this, output, len);
 	} else {
 		return false;
 	}

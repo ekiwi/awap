@@ -20,7 +20,7 @@ int getServiceTypeId(const std::string serviceName);
 int getMessageTypeId(uint32_t serviceId, const std::string messageName);
 
 std::unique_ptr<BasicMessage> messageFromTypeId(uint32_t serviceId, uint32_t messageId);
-std::unique_ptr<BasicMessage> fromPacket(const uint8_t* data, size_t length);
+std::unique_ptr<BasicMessage> unmarshal(const uint8_t* data, size_t length);
 
 } // namespace generated
 } // namespace awap

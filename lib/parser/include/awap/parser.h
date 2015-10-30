@@ -33,13 +33,15 @@ int get_service_type_id(const char* service_name);
 int get_message_type_id(uint32_t service_id, const char* message_name);
 
 /// returns a message handle on success and less than zero on failure
-int message_from_packet(const uint8_t* data, size_t bytes);
+int message_unmarshal(const uint8_t* data, size_t bytes);
 
 /// returns a message handle on success and less than zero on failure
 int message_from_type_id(uint32_t service_id, uint32_t message_id);
 
 /// releases a message resource, returns true on success
 bool release_message(int message_handle);
+
+bool message_marshal(int message_handle, uint8_t* output, size_t len);
 
 // message access
 size_t message_get_size(int message_handle);

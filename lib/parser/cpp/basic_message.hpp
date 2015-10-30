@@ -174,7 +174,9 @@ public:
 		: properties(properties), marshaller(std::move(marshaller)) {}
 
 public:
-	bool loadFromPacket(const uint8_t* input, size_t len);
+	bool unmarshal(const uint8_t* input, size_t len);
+
+	bool marshal(uint8_t* output, size_t len) const override;
 
 	size_t getSize() const override {
 		return this->properties.size;
@@ -323,23 +325,23 @@ private:
 
 class Marshaller {
 protected:
-	virtual bool fromSpecificPacket(BasicMessage* msg, const uint8_t* input) const = 0;
-	virtual bool toSpecificPacket(BasicMessage* msg, uint8_t* output) const = 0;
+	virtual bool unmarshalSpecific(BasicMessage* msg, const uint8_t* input) const = 0;
+	virtual bool marshalSpecific(const BasicMessage* msg, uint8_t* output) const = 0;
 public:
-	bool fromPacket(BasicMessage* msg, const uint8_t* input, size_t len) const {
+	bool unmarshal(BasicMessage* msg, const uint8_t* input, size_t len) const {
 		if(len < msg->getSize()) {
 			return false;
 		} else {
 			// TODO: set data0 of message
-			return this->fromSpecificPacket(msg, &input[2]);
+			return this->unmarshalSpecific(msg, &input[2]);
 		}
 	}
 
-	bool toPacket(BasicMessage* msg, uint8_t* output, size_t len) const {
+	bool marshal(const BasicMessage* msg, uint8_t* output, size_t len) const {
 		if(len < msg->getSize()) {
 			return false;
 		} else {
-			return this->toSpecificPacket(msg, output);
+			return this->marshalSpecific(msg, output);
 		}
 	}
 };

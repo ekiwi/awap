@@ -19,4 +19,5 @@ public:
 	void testIntegerFieldAccess();
 	void testEnumFieldAccess();
 	void testUnmarshalPacket();
+	void testMarshalPacket();
 };

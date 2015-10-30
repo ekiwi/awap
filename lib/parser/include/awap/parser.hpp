@@ -27,7 +27,7 @@ enum class FieldType {
 class Message {
 public:
 	/// returns emptr unique_ptr on error, check for nullptr!
-	static std::unique_ptr<Message> fromPacket(const uint8_t* data, size_t length);
+	static std::unique_ptr<Message> unmarshal(const uint8_t* data, size_t length);
 	static std::unique_ptr<Message> fromTypeId(uint32_t serviceId, uint32_t messageId);
 
 	// returns negative number on error
@@ -36,6 +36,8 @@ public:
 	static int getMessageTypeId(uint32_t serviceId, const std::string messageName);
 
 public:
+	virtual bool marshal(uint8_t* output, size_t len) const = 0;
+
 	// static data, specific to message tye
 	virtual size_t getSize() const = 0;
 	virtual uint32_t getTypeId() const = 0;

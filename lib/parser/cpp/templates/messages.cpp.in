@@ -60,9 +60,9 @@ namespace {{ service.name }} {
 class {{ msg.name }}Marshaller : public Marshaller {
 protected:
 	%% if msg.fields | length > 0
-	bool fromSpecificPacket(BasicMessage* msg, const uint8_t* data) const override {
+	bool unmarshalSpecific(BasicMessage* msg, const uint8_t* data) const override {
 	%% else
-	bool fromSpecificPacket(BasicMessage* /*msg*/, const uint8_t* /*data*/) const override {
+	bool unmarshalSpecific(BasicMessage* /*msg*/, const uint8_t* /*data*/) const override {
 	%% endif
 	%% for field in msg.fields
 		{{ field.cpp.unsigned_type }} {{ field.name }};
@@ -80,7 +80,7 @@ protected:
 		return true;
 	}
 
-	bool toSpecificPacket(BasicMessage* /*msg*/, uint8_t* /*output*/) const override {
+	bool marshalSpecific(const BasicMessage* /*msg*/, uint8_t* /*output*/) const override {
 		return false;	// TODO: implement
 	}
 };
@@ -181,7 +181,7 @@ std::unique_ptr<BasicMessage> messageFromTypeId(uint32_t serviceId, uint32_t mes
 	}
 }
 
-std::unique_ptr<BasicMessage> fromPacket(const uint8_t* data, size_t length) {
+std::unique_ptr<BasicMessage> unmarshal(const uint8_t* data, size_t length) {
 	if(length < 3) {
 		return nullptr;
 	}
@@ -203,7 +203,7 @@ std::unique_ptr<BasicMessage> fromPacket(const uint8_t* data, size_t length) {
 		return nullptr;	// invalid serviceId
 	}
 
-	if(msg and msg->loadFromPacket(data, length)) {
+	if(msg and msg->unmarshal(data, length)) {
 		return msg;
 	} else {
 		return nullptr;
