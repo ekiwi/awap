@@ -90,6 +90,10 @@ public:
 		return true;
 	}
 
+	int64_t getIntegerValue() const override {
+		return this->value? 1 : 0;
+	}
+
 	FieldType getType() const override {
 		return FieldType::Boolean;
 	}
@@ -317,6 +321,8 @@ private:
 	uint8_t data0 = 0;
 	std::unique_ptr<Marshaller> marshaller;
 
+	friend class Marshaller;
+
 private:
 	inline bool isValidFieldId(size_t fieldId) const {
 		return fieldId < this->fields.size();
@@ -332,7 +338,7 @@ public:
 		if(len < msg->getSize()) {
 			return false;
 		} else {
-			// TODO: set data0 of message
+			msg->data0 = input[0];
 			return this->unmarshalSpecific(msg, &input[2]);
 		}
 	}
@@ -341,7 +347,9 @@ public:
 		if(len < msg->getSize()) {
 			return false;
 		} else {
-			return this->marshalSpecific(msg, output);
+			output[0] = msg->data0;
+			output[1] = msg->properties.serviceTypeId;
+			return this->marshalSpecific(msg, &output[2]);
 		}
 	}
 };
