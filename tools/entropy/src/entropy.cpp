@@ -45,7 +45,7 @@ int main(int argc, char* argv[]) {
 	for(auto ii = 0; ii < 256; ++ii) {
 		double p = static_cast<double>(count[ii]) / static_cast<double>(size);
 		if(p > 0) {
-			entropy += p * std::log(p);
+			entropy += p * std::log2(p);
 		}
 
 
