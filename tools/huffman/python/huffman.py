@@ -220,8 +220,8 @@ if __name__ == "__main__":
 
 	hc = HuffmanCode()
 
-	files = ['../../../example/jade/build/ostfriesentee/app/TemperatureSensor/TemperatureSensor.di',
-		'../../../example/jade/build/ostfriesentee/app/SimpleTemperatureSubscriber/SimpleTemperatureSubscriber.di']
+	files = ['../../../example/compression/TemperatureSensor.di',
+		'../../../example/compression/SimpleTemperatureConsumer.di']
 
 	for filename in files: 
 		hc.count_symbols_in_file(filename)

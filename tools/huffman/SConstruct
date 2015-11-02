@@ -47,8 +47,8 @@ from huffman import HuffmanCode, HuffmanEncoder
 
 # generate code
 hc = HuffmanCode()
-files = ['../../example/mote/hosted/build/ostfriesentee/app/TemperatureSensor/TemperatureSensor.di',
-	'../../example/mote/hosted/build/ostfriesentee/app/SimpleTemperatureConsumer/SimpleTemperatureConsumer.di']
+files = ['../../example/compression/TemperatureSensor.di',
+	'../../example/compression/SimpleTemperatureConsumer.di']
 for filename in files: hc.count_symbols_in_file(filename)
 hc.generate()
 code = hc.to_dict()
