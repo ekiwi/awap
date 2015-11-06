@@ -83,12 +83,6 @@ class HuffmanCode(object):
 		# will be added to count when calculating distribution
 		self.base_count = 0.01
 		self.symbols = [HuffmanLeaf(chr(ii)) for ii in range(256)]
-		self.add_symbol('base')
-		self.add_symbol('util')
-		self.add_symbol('Temperature')
-		self.add_symbol('OBJECT')
-		self.add_symbol('awap-common')
-
 
 	def add_symbol(self, symbol):
 		if isinstance(symbol, HuffmanLeaf):
@@ -219,6 +213,12 @@ if __name__ == "__main__":
 	import os
 
 	hc = HuffmanCode()
+	# add some common strings as symbols
+	hc.add_symbol('base')
+	hc.add_symbol('util')
+	hc.add_symbol('Temperature')
+	hc.add_symbol('OBJECT')
+	hc.add_symbol('awap-common')
 
 	files = ['../../../example/compression/TemperatureSensor.di',
 		'../../../example/compression/SimpleTemperatureConsumer.di']
