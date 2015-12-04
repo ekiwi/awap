@@ -14,7 +14,7 @@
 
 namespace huffman {
 
-bool decode(const awap::Slice<uint8_t>& input, awap::Slice<uint8_t>& output);
+bool decode(const awap::Slice<const uint8_t>& input, awap::Slice<uint8_t>& output);
 
 } // namspace huffman
 

@@ -21,11 +21,11 @@ struct CodeBits
 
 class SymbolSource
 {
-	Slice<uint8_t> source;
+	Slice<const uint8_t> source;
 	CodeBits codeBits = { 0, 0 };
 
 public:
-	SymbolSource(const Slice<uint8_t> src) :
+	SymbolSource(const Slice<const uint8_t> src) :
 		source(src),
 		codeBits() {
 		updateCodeBits(0);
@@ -76,7 +76,7 @@ struct Symbol
 
 #include <generated/code.hpp>
 
-bool decode(const Slice<uint8_t>& input, Slice<uint8_t>& output) {
+bool decode(const Slice<const uint8_t>& input, Slice<uint8_t>& output) {
 	SymbolSource source(input);
 	Slice<uint8_t> buffer = output;
 
