@@ -25,6 +25,18 @@ def load_awap_confguration_method(env, configuration):
 	# keep track of enums and services, that are required for this configuration
 	env['AWAP_SERVICE_NAMES'] = []
 	enum_names = []
+
+	load_service_configuration(env, root)
+	# TODO: enums
+	agents = load_agents_configuration(env, root)
+	load_agent_file_format_configuration(env, root, os.path.dirname(configuration))
+	# at the end of this method, the communication has to be complete!
+	pp = env['AWAP_COMMUNICATION_PARSER']
+	env['AWAP_COMMUNICATION_DICT'] = pp.get_dict(env['AWAP_SERVICE_NAMES'], enum_names)
+
+	return agents
+
+def load_service_configuration(env, root):
 	# parse
 	services = root.find("services")
 	max_id = int(services.get('max-id'))
@@ -34,15 +46,38 @@ def load_awap_confguration_method(env, configuration):
 		service.id = int(serv_node.get('id'))
 		full_name = "{}.{}".format(service.module.name, service.name)
 		env['AWAP_SERVICE_NAMES'].append(full_name)
-	# TODO: enums
+
+def load_agents_configuration(env, root):
 	if root.find("agents") is not None:
 		agents = [env.LoadAgent(agent.get("name")) for agent in root.find("agents")]
 	else:
 		agents = []
-	# at the end of this method, the communication has to be complete!
-	pp = env['AWAP_COMMUNICATION_PARSER']
-	env['AWAP_COMMUNICATION_DICT'] = pp.get_dict(env['AWAP_SERVICE_NAMES'], enum_names)
 	return agents
+
+def load_agent_file_format_configuration(env, root, configuration_path):
+	env['AWAP_AGENT_FORMAT_COMPRESS'] = False
+	if root.find("agent-format") is not None:
+		comp = root.find("agent-format").find("compression")
+		if comp is not None:
+			env['AWAP_AGENT_FORMAT_COMPRESS'] = True
+			symbols = [x.text for x in comp.findall('symbol')]
+			symbol_src = [x.text for x in comp.findall('symbol-source')]
+			symbol_files = [os.path.join(configuration_path, src) for src in symbol_src]
+			generate_huffman_code(env, symbols, symbol_files)
+
+def generate_huffman_code(env, symbols, symbol_files):
+	from huffman import HuffmanCode, HuffmanEncoder
+	hc = HuffmanCode()
+	for symbol in symbols:
+		hc.add_symbol(symbol)
+	# this is somewhat inefficient, as file are loaded every time
+	# one could move this into a scons builder, but I rally need to
+	# get done with my thesis
+	for src in symbol_files:
+		hc.count_symbols_in_file(src)
+	hc.generate()
+	env['AWAP_HUFFMAN_ENCODER'] = HuffmanEncoder(hc)
+	env['AWAP_AGENT_FORMAT_COMPRESSSION_CODE'] = hc.to_dict()
 
 def get_communication_dict_method(env):
 	""" returns a dictionary containing all communication elements
