@@ -14,6 +14,7 @@ Agents will be found in env['AWAP_AGENT_PATH']
 
 import os
 import lxml.etree as ET
+import SCons
 
 def agent_method(env, path, name):
 	source_loc = (os.path.join(path, src) for src in ['src', 'java'])
@@ -62,9 +63,27 @@ def load_agent_method(env, name):
 	# agent was successfuly validated!
 	return { 'name': name, 'path': agent_path }
 
+def agent_from_di_action(target, source, env):
+	if 'AWAP_AGENT_FORMAT_COMPRESS' in env and env['AWAP_AGENT_FORMAT_COMPRESS']:
+		env['AWAP_HUFFMAN_ENCODER'].compress_file(
+			input_filename  = source[0].path,
+			output_filename = target[0].path)
+	else:
+		env.Execute(SCons.Script.Copy(target[0].path, source[0].path))
+
+def agent_from_di_emitter(target, source, env):
+	if 'AWAP_AGENT_FORMAT_COMPRESS' in env and env['AWAP_AGENT_FORMAT_COMPRESS']:
+		env.Depends(target, SCons.Node.Python.Value(
+			env['AWAP_AGENT_FORMAT_COMPRESSSION_CODE']))
+	return target, source
+
+def agent_from_di_string(target, source, env):
+	return "Agent: '{}'".format(str(target[0]))
+
 def agent_c_array_method(env, target, agent_name):
 	di = env['AWAP_AGENTS_DI'][agent_name]
-	return env.CArray(target, di)
+	awap_agent = di + '.awap'
+	return env.CArray(target, env.AgentFromDi(awap_agent, di))
 
 def generate(env):
 	# load configuration validator
@@ -76,6 +95,16 @@ def generate(env):
 	env.AddMethod(load_agent_method, 'LoadAgent')
 	env.AddMethod(agent_method, 'Agent')
 	env.AddMethod(agent_c_array_method, 'AgentCArray')
+
+	# AgentFromDi builder used internaly in the AgentCArray pseudo builder
+	agent_from_di_builder = SCons.Builder.Builder(
+		action = env.Action(agent_from_di_action, agent_from_di_string),
+		emitter = agent_from_di_emitter,
+		src_suffix = '.di',
+		single_source = True,
+		target_factory = SCons.Node.FS.File,
+		source_factory = SCons.Node.FS.File)
+	env.Append(BUILDERS = { 'AgentFromDi': agent_from_di_builder })
 
 def exists(env):
 	return 1
