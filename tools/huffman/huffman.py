@@ -135,8 +135,8 @@ class HuffmanCode(object):
 			symbols.append(combined)
 			symbols.sort(key=lambda s: -s.p)
 
-		print("Done merging")
-		print("Total count: {}\tTotal p: {}".format(symbols[0].count, symbols[0].p))
+		# print("Done merging")
+		# print("Total count: {}\tTotal p: {}".format(symbols[0].count, symbols[0].p))
 
 		# assign code to all leafs
 		symbols[0].propagate_code("")
