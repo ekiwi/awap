@@ -17,4 +17,17 @@ This file is part of awap.
 		<service module="service.energy-supply" name="EnergySupplyService" id="1" />
 		<service module="service.room"          name="RoomService" id="2" />
 	</services>
+	<agent-format>
+		<compression>
+			<!-- binary symbol sources for offline huffman code -->
+			<symbol-source>compression/SimpleTemperatureConsumer.di</symbol-source>
+			<symbol-source>compression/TemperatureSensor.di</symbol-source>
+			<!-- strings that get compressed to one symbol -->
+			<symbol>base</symbol>
+			<symbol>util</symbol>
+			<symbol>awap-common</symbol>
+			<symbol>Temperature</symbol>
+			<symbol>OBJECT</symbol>
+		</compression>
+	</agent-format>
 </awap-configuration>
