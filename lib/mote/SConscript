@@ -51,15 +51,17 @@ lib_env = env.Clone()
 lib_env.Append(CPPPATH = ['cpp'])
 lib_env.Append(CPPPATH = [generated_include_path])
 
-# build huffman decoder
-huffman_path = os.path.join(env['AWAP_ROOT'], 'tools', 'huffman')
-huffman_src_path = os.path.join(huffman_path, 'src')
-lib_env.Append(CPPPATH = [huffman_src_path])
-source += env.Template(
-			target=os.path.join(generated_path, 'code.hpp'),
-			source=os.path.join(huffman_path, 'templates', 'code.hpp.in'),
-			substitutions=env['AWAP_AGENT_FORMAT_COMPRESSSION_CODE'])
-source += env.Glob(os.path.join(huffman_src_path, '*.cpp'))
+# build huffman decoder, if compression enabled
+if 'AWAP_AGENT_FORMAT_COMPRESS' in env and env['AWAP_AGENT_FORMAT_COMPRESS']:
+	huffman_path = os.path.join(env['AWAP_ROOT'], 'tools', 'huffman')
+	huffman_src_path = os.path.join(huffman_path, 'src')
+	lib_env.Append(CPPPATH = [huffman_src_path])
+	source += env.Template(
+				target=os.path.join(generated_path, 'code.hpp'),
+				source=os.path.join(huffman_path, 'templates', 'code.hpp.in'),
+				substitutions=env['AWAP_AGENT_FORMAT_COMPRESSSION_CODE'])
+	source += env.Glob(os.path.join(huffman_src_path, '*.cpp'))
+	lib_env.Append(CCFLAGS = '-DAGENT_COMPRESSION_ENABLED')
 
 libmote = lib_env.StaticLibrary(os.path.join(lib_path, libname), source)
 # add libmote twice because of cicular dependencies

@@ -11,9 +11,12 @@
 
 #include <jlib_awap-common.hpp>
 #include <jlib_awap-mote.hpp>
-#include <cstring>		// for std::memcpy
 
-#include <huffman.hpp>
+#if defined(AGENT_COMPRESSION_ENABLED)
+	#include <huffman.hpp>
+#else // !defined(AGENT_COMPRESSION_ENABLED)
+	#include <cstring>		// for std::memcpy
+#endif
 
 using namespace ostfriesentee;
 
@@ -23,6 +26,7 @@ namespace awap {
 Agent*
 Agent::fromPacket(Node& node, uint8_t localId, const uint8_t* content, const size_t length)
 {
+#if defined(AGENT_COMPRESSION_ENABLED)
 	auto input = slice(content, length);
 
 	// allocate memory to store infusion
@@ -38,6 +42,13 @@ Agent::fromPacket(Node& node, uint8_t localId, const uint8_t* content, const siz
 	Slice<uint8_t> output(infusion, agent_size);
 	bool success = huffman::decode(input.sub(2), output);
 	assert(success, Panic::LoadingAgentFailedToDecompress);
+
+#else // !defined(AGENT_COMPRESSION_ENABLED)
+	assert(length <= 1000, Panic::AgentSizeLarger1KiB);
+	uint8_t* infusion = new uint8_t[length];
+	assert(infusion != nullptr, Panic::LoadingAgentOutOfMemory);
+	std::memcpy(infusion, content, length);
+#endif
 
 	Infusion inf = node.getVm().loadInfusion(infusion);
 
