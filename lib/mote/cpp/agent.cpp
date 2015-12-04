@@ -13,6 +13,8 @@
 #include <jlib_awap-mote.hpp>
 #include <cstring>		// for std::memcpy
 
+#include <huffman.hpp>
+
 using namespace ostfriesentee;
 
 
@@ -21,13 +23,21 @@ namespace awap {
 Agent*
 Agent::fromPacket(Node& node, uint8_t localId, const uint8_t* content, const size_t length)
 {
-	// right now we assume, that content points to a .di file in memory
+	auto input = slice(content, length);
 
 	// allocate memory to store infusion
-	uint8_t* infusion = new uint8_t[length];
-	std::memcpy(infusion, content, length);
+	if(input.length < 3) { return nullptr; }
 
-	// TODO: decompress compressed infusion
+	uint16_t agent_size = static_cast<uint16_t>(input.data[0]) << 8 | input.data[1];
+	assert(agent_size <= 1000, Panic::AgentSizeLarger1KiB);
+
+	uint8_t* infusion = new uint8_t[agent_size];
+	assert(infusion != nullptr, Panic::LoadingAgentOutOfMemory);
+
+	// decompress
+	Slice<uint8_t> output(infusion, agent_size);
+	bool success = huffman::decode(input.sub(2), output);
+	assert(success, Panic::LoadingAgentFailedToDecompress);
 
 	Infusion inf = node.getVm().loadInfusion(infusion);
 

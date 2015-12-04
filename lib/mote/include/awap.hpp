@@ -23,6 +23,10 @@ enum class Panic {
 	NotInitialized,
 	AwapCommonInfusionNotFound,
 	AwapMoteInfusionNotFound,
+	// Errors that mights occure trying to load an agent
+	AgentSizeLarger1KiB,
+	LoadingAgentOutOfMemory,
+	LoadingAgentFailedToDecompress,
 	// Ostfriesentee Errors
 	JavaOutOfMemory,
 	JavaIllegalInternalState,

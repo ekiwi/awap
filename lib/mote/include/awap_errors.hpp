@@ -25,6 +25,12 @@ static inline const char* getPanicDescription(Panic panic)
 		return "Awap::init: awap-common infusion was not found!";
 	case Panic::NotInitialized:
 		return "Awap::init wasn't called first!";
+	case Panic::AgentSizeLarger1KiB:
+		return "The agent size specified in the file header exceeds 1KiB!";
+	case Panic::LoadingAgentOutOfMemory:
+		return "Failed to allocate memory trying to load a new agent.";
+	case Panic::LoadingAgentFailedToDecompress:
+		return "Failed to decompress agent.";
 	case Panic::JavaOutOfMemory:
 		return "JVM (Ostfriesentee): Out of Memory";
 	case Panic::JavaIllegalInternalState:
