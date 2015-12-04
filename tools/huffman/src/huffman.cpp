@@ -63,7 +63,7 @@ struct Symbol
 	static constexpr uint32_t Mask = ((1 << Bits) - 1) << ZeroBits;
 	static constexpr uint32_t Compare = Code << ZeroBits;
 	/// returns how many bits where matched
-	static inline constexpr uint32_t match(const CodeBits input) {
+	static inline uint32_t match(const CodeBits input) {
 		// check if enough valid bits to match this symbol
 		if(input.count >= Bits) {
 			if((input.bits & Mask) == Compare) {
