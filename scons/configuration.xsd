@@ -12,6 +12,7 @@ This file is part of awap.
 	<xs:sequence>
 		<xs:element ref="agents" minOccurs="0" maxOccurs="1"/>
 		<xs:element ref="services"/>
+		<xs:element ref="agent-format" minOccurs="0" maxOccurs="1"/>
 	</xs:sequence>
 	<xs:attribute name="name" use="required" type="xs:NCName"/>
 	<xs:attribute name="version" use="required" type="xs:decimal" fixed="0.1"/>
@@ -63,6 +64,23 @@ This file is part of awap.
 	<xs:attribute name="id" use="required" type="ServiceId"/>
 	<xs:attribute name="module" use="required" type="xs:NCName"/>
 	<xs:attribute name="name" use="required" type="xs:NCName"/>
+</xs:complexType>
+</xs:element>
+
+<xs:element name="agent-format">
+<xs:complexType>
+	<xs:sequence>
+		<xs:element ref="compression"/>
+	</xs:sequence>
+</xs:complexType>
+</xs:element>
+
+<xs:element name="compression">
+<xs:complexType>
+	<xs:sequence>
+		<xs:element name="symbol-source" type="xs:string" minOccurs="0" maxOccurs="unbounded"/>
+		<xs:element name="symbol"        type="xs:string" minOccurs="0" maxOccurs="unbounded"/>
+	</xs:sequence>
 </xs:complexType>
 </xs:element>
 
