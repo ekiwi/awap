@@ -51,7 +51,6 @@ env['CCFLAGS'].append("-fsanitize=address")
 env['LINKFLAGS'].append("-fsanitize=address")
 
 # build the program
-print(env['XPCC_CONFIG']['general']['name'])
 mote = env.Program(target = env['XPCC_CONFIG']['general']['name'], source = sources)
 
 # build the xpcc library
