@@ -60,8 +60,8 @@ for filename in files:
 	enc.compress_file(filename, output)
 
 # tell scons how to build encoder template
-env.Template(target='build/code.hpp', source='templates/code.hpp.in', substitutions=code)
-
+env.Template(target='build/generated/code.hpp', source='templates/code.hpp.in', substitutions=code)
+env.Append(CPPPATH = 'build')
 
 huffman = env.Program('build/huffman', env.Glob('build/*.cpp'))
 env.Alias('huffman', huffman)

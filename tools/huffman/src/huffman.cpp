@@ -72,7 +72,7 @@ struct Symbol
 	}
 };
 
-#include "code.hpp"
+#include <generated/code.hpp>
 
 bool decode(const Slice<uint8_t>& input, Slice<uint8_t>& output) {
 	SymbolSource source(input);
