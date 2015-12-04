@@ -160,12 +160,14 @@ class HuffmanEncoder(object):
 		touples = (HuffmanTouple(sym) for sym in code.symbols)
 		self.symbols = sorted(touples, key=lambda s: -len(s.value))
 
-	def compress_file(self, input_filename, output_filename):
+	def compress_file(self, input_filename, output_filename, prepend_input_size=False):
 		# FIXME: this is very ineficient code ... we build tje
 		#        file as a string of 0s and 1s which is terribly
 		#        inefficient, but this is python anyways ... so who cares?
 		with open(input_filename, 'rb') as ff:
 			inp = ff.read()
+
+		print("len(inp): {}".format(len(inp)))
 
 		# translate symbols
 		outp = ""
@@ -186,27 +188,33 @@ class HuffmanEncoder(object):
 		# pad to get bytes
 		outp += '0' * (8 - (len(outp) % 8))
 
+		with open(output_filename, 'wb') as ff:
+			if prepend_input_size:
+				input_size = len(inp)
+				ff.write(chr((input_size >> 8) & 0xff))
+				ff.write(chr((input_size >> 0) & 0xff))
+			self._write_bit_string(ff, outp)
+
 		old_size = len(inp)
 		new_size = len(outp) / 8
 		print("{} ({}bytes) => {} ({}bytes) ({:.2%})".format(
 			input_filename, old_size, output_filename, new_size, float(new_size) / old_size))
 
-		self._write_bit_string(output_filename, outp)
 
-	def _write_bit_string(self, filename, bitstr):
+	def _write_bit_string(self, ff, bitstr):
 		assert(len(bitstr) % 8 == 0)
 		bit_count = 0
 		value = 0
-		with open(filename, 'wb') as ff:
-			for bit in bitstr:
-				value = value << 1
-				if bit == "1":
-					value = value | 1
-				bit_count += 1
-				if bit_count == 8:
-					bit_count = 0
-					ff.write(chr(value))
-					value = 0
+
+		for bit in bitstr:
+			value = value << 1
+			if bit == "1":
+				value = value | 1
+			bit_count += 1
+			if bit_count == 8:
+				bit_count = 0
+				ff.write(chr(value))
+				value = 0
 
 
 if __name__ == "__main__":

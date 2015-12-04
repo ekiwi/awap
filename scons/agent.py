@@ -67,7 +67,8 @@ def agent_from_di_action(target, source, env):
 	if 'AWAP_AGENT_FORMAT_COMPRESS' in env and env['AWAP_AGENT_FORMAT_COMPRESS']:
 		env['AWAP_HUFFMAN_ENCODER'].compress_file(
 			input_filename  = source[0].path,
-			output_filename = target[0].path)
+			output_filename = target[0].path,
+			prepend_input_size = True)
 	else:
 		env.Execute(SCons.Script.Copy(target[0].path, source[0].path))
 
