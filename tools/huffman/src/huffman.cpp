@@ -8,6 +8,8 @@
 
 #include "huffman.hpp"
 
+using namespace awap;
+
 namespace huffman {
 
 /// contains up to 32bit that will be right aligned

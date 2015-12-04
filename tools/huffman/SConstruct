@@ -61,7 +61,11 @@ for filename in files:
 
 # tell scons how to build encoder template
 env.Template(target='build/generated/code.hpp', source='templates/code.hpp.in', substitutions=code)
-env.Append(CPPPATH = 'build')
+env.Append(CPPPATH = ['build'])
+
+# use util/slice.hpp from libawap-mote
+libmote_inc = os.path.abspath(os.path.join('..', '..', 'lib', 'mote', 'cpp'))
+env.Append(CPPPATH = [libmote_inc])
 
 huffman = env.Program('build/huffman', env.Glob('build/*.cpp'))
 env.Alias('huffman', huffman)

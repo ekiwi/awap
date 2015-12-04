@@ -13,6 +13,7 @@
 #include "huffman.hpp"
 
 using namespace huffman;
+using namespace awap;
 
 int main(int argc, char* argv[]) {
 	if(argc < 2) {

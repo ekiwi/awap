@@ -10,11 +10,11 @@
 #define HUFFMAN_HPP
 
 #include <stdint.h>
-#include "slice.hpp"
+#include <util/slice.hpp>
 
 namespace huffman {
 
-bool decode(const Slice<uint8_t>& input, Slice<uint8_t>& output);
+bool decode(const awap::Slice<uint8_t>& input, awap::Slice<uint8_t>& output);
 
 } // namspace huffman
 
