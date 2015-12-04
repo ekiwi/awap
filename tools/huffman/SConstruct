@@ -42,7 +42,6 @@ env['CXXFLAGS'] = [
 ]
 
 # huffman code progam
-sys.path.append(os.path.abspath('python'))
 from huffman import HuffmanCode, HuffmanEncoder
 
 # generate code
@@ -54,10 +53,10 @@ hc.generate()
 code = hc.to_dict()
 
 # encode files
-Execute(Mkdir('python/temp'))
+Execute(Mkdir('temp'))
 enc = HuffmanEncoder(hc)
 for filename in files: 
-	output = os.path.join('python', 'temp', os.path.basename(filename))
+	output = os.path.join('temp', os.path.basename(filename))
 	enc.compress_file(filename, output)
 
 # tell scons how to build encoder template
