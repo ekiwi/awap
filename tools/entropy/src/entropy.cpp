@@ -13,10 +13,18 @@
 
 int main(int argc, char* argv[]) {
 	if(argc < 2) {
-		std::cout << argv[0] << " INPUT" << std::endl;
+		std::cout << argv[0] << " [-csv] INPUT" << std::endl;
 		return 1;
 	}
-	std::string filename(argv[1]);
+
+	bool print_csv = false;
+	std::string filename;
+	if(argc > 2 and std::string(argv[1]) == "-csv") {
+		print_csv = true;
+		filename = argv[2];
+	} else {
+		filename = argv[1];
+	}
 
 	std::cout << "input: " << filename << std::endl;
 
@@ -55,4 +63,14 @@ int main(int argc, char* argv[]) {
 	}
 	std::cout << "H = " << (-entropy);
 	std::cout << "\t(" << (-entropy * 100.0 / 8.0) << "%)" << std::endl;
+
+	// print values as csv
+	if(print_csv) {
+		std::cout << std::endl << std::endl;
+		std::cout << "sym,p" << std::endl;
+		for(uint32_t ii = 0; ii < 256; ++ii) {
+			double p = static_cast<double>(count[ii]) / static_cast<double>(size);
+			std::cout << ii << "," << p << std::endl;
+		}
+	}
 }
