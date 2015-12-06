@@ -220,6 +220,52 @@ class HuffmanEncoder(object):
 if __name__ == "__main__":
 	import os
 
+	# generate CSV files for thesis
+	def symbols_to_csv(symbols, filename):
+		filename += "_{}.csv".format(sum(s.count for s in symbols))
+		filename = "temp/" + filename
+		with open(filename, 'w') as ff:
+			ff.write("sym,p,count,key\n")
+			ff.write('\n'.join([
+				"{0},{1},{2},{3}".format(
+					ord(s.value),
+					s.p if s.count > 0 else 0,
+					s.count, ii) for s, ii in zip(symbols, range(0, len(symbols)))]))
+
+	# common
+	hc = HuffmanCode()
+	hc.count_symbols_in_file('../../example/compression/TemperatureSensor.di')
+	hc.count_symbols_in_file('../../example/compression/SimpleTemperatureConsumer.di')
+	hc.generate()
+	common_symbols = sorted(hc.symbols, key=lambda s: ord(s.value))
+	symbols_to_csv(common_symbols, 'SimpleTemperatureConsumerAndTemperatureSensorByteDistribution_ValueSort')
+	symbols_to_csv(
+		sorted(common_symbols, key=lambda s: -s.p),
+		'SimpleTemperatureConsumerAndTemperatureSensorByteDistribution_LocalSort')
+
+	hc = HuffmanCode()
+	hc.count_symbols_in_file('../../example/compression/TemperatureSensor.di')
+	hc.generate()
+	symbols0 = sorted(hc.symbols, key=lambda s: ord(s.value))
+	symbols_to_csv(symbols0, 'TemperatureSensorByteDistribution_ValueSort')
+	for s,c in zip(symbols0, common_symbols): s.common_p = c.p
+	symbols0 = sorted(hc.symbols, key=lambda s: -s.common_p)
+	symbols_to_csv(symbols0, 'TemperatureSensorByteDistribution_CommonSort')
+	symbols0 = sorted(hc.symbols, key=lambda s: -s.p)
+	symbols_to_csv(symbols0, 'TemperatureSensorByteDistribution_LocalSort')
+
+	hc = HuffmanCode()
+	hc.count_symbols_in_file('../../example/compression/SimpleTemperatureConsumer.di')
+	hc.generate()
+	symbols0 = sorted(hc.symbols, key=lambda s: ord(s.value))
+	symbols_to_csv(symbols0, 'SimpleTemperatureConsumerByteDistribution_ValueSort')
+	for s,c in zip(symbols0, common_symbols): s.common_p = c.p
+	symbols0 = sorted(hc.symbols, key=lambda s: -s.common_p)
+	symbols_to_csv(symbols0, 'SimpleTemperatureConsumerByteDistribution_CommonSort')
+	symbols0 = sorted(hc.symbols, key=lambda s: -s.p)
+	symbols_to_csv(symbols0, 'SimpleTemperatureConsumerByteDistribution_LocalSort')
+
+
 	hc = HuffmanCode()
 	# add some common strings as symbols
 	hc.add_symbol('base')
@@ -228,8 +274,8 @@ if __name__ == "__main__":
 	hc.add_symbol('OBJECT')
 	hc.add_symbol('awap-common')
 
-	files = ['../../../example/compression/TemperatureSensor.di',
-		'../../../example/compression/SimpleTemperatureConsumer.di']
+	files = ['../../example/compression/TemperatureSensor.di',
+		'../../example/compression/SimpleTemperatureConsumer.di']
 
 	for filename in files: 
 		hc.count_symbols_in_file(filename)
