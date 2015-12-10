@@ -10,7 +10,7 @@ This file is part of awap.
 
 <xs:element name="awap-agent">
 <xs:complexType>
-	<xs:sequence>
+	<xs:sequence minOccurs="0" maxOccurs="unbounded">
 		<xs:element ref="service"/>
 	</xs:sequence>
 	<xs:attribute name="name" use="required" type="xs:NCName"/>
