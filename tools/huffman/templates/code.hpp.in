@@ -13,7 +13,7 @@ namespace Code {
 
 // TODO: maybe move to separate compilation unit
 %% for sym in map
-static uint8_t Symbol{{ loop.index0 }}Value[{{ sym.value.length }}] = { {{ sym.value.data|join(',') }} };
+static const uint8_t Symbol{{ loop.index0 }}Value[{{ sym.value.length }}] = { {{ sym.value.data|join(',') }} };
 %% endfor
 
 /// returns number of bits matched
