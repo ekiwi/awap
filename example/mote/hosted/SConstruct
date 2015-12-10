@@ -35,6 +35,7 @@ libmote_include = env['AWAP_LIB_MOTE_INCLUDE']
 sources  = libmote_a
 sources += env.AgentCArray("build/di_temperature_agent.c", "TemperatureSensor")
 sources += env.AgentCArray("build/di_consumer_agent.c", "SimpleTemperatureConsumer")
+sources += env.AgentCArray("build/di_heatpump_agent.c", "Heatpump")
 
 # build local source using xpcc
 env = Environment(tools = ['xpcc'], toolpath = [path_xpcc_scons])
