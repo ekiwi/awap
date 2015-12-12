@@ -29,7 +29,8 @@ char * ref_t_base_address;
 extern unsigned char di_lib_archive_data[];
 extern size_t di_lib_archive_size;
 
-static uint8_t __attribute__((aligned(4))) mem[MEMSIZE];
+static constexpr size_t JavaHeapByteSize = 2048;
+static uint8_t __attribute__((aligned(4))) mem[JavaHeapByteSize];
 static Vm vm;
 static awap::Node* node = nullptr;
 
