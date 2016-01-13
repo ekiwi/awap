@@ -14,33 +14,9 @@ The second pass will resolve all cross references.
 
 import os, math
 import lxml.etree as ET
-import fields
 
 def camelCase(identifier):
 	return identifier[0].lower() + identifier[1:]
-
-def determine_max_id(mod, ee, max_id_found):
-	""" Tries to determine the max-id from max-id and or size arguments
-	"""
-	max_id = ee.get("max-id")
-	size = ee.get("size")
-	mod.passert(ee, max_id is not None or size is not None,
-		"You need to define either a size or a max-id for reasons of backwards compatibility. " +
-		'e.g. <{} max-id="{}" />'.format(ee.tag, max_id_found))
-	if size is not None and max_id is not None:
-		mod.passert(ee, int(max_id) == (1 << int(size))-1,
-			'max-id="{}" does not match size="{}"'.format(max_id, size))
-		return int(max_id)
-	elif size is not None:
-		return ((1 << int(size)) -1)
-	elif max_id is not None:
-		return int(max_id)
-
-def number_of_bits_from_maxid(maxid):
-	if maxid == 0:
-		return 0
-	else:
-		return int(math.log(maxid,2) + 1)
 
 class ParserException(Exception):
 	def __init__(self, file, element, message):
@@ -53,149 +29,96 @@ class ParserException(Exception):
 		msg += '    Error: "{}"'.format(message)
 		super(ParserException, self).__init__(msg)
 
-class NamedCommunicationElement(object):
+class CommunicationElement(object):
 	def __init__(self, parent, node):
 		self.node = node
-		self.name = node.get('name')
 		self.parent = parent
 		self.mod = parent.module
-		self.full_name = parent.register(self, self.name)
-
-	def register(self, child, name):
-		return self.parent.register(child, self.name + "." + name)
 
 	@property
 	def module(self):
 		return self.mod
 
 	def to_dict(self):
+		return { }
+
+class NamedCommunicationElement(CommunicationElement):
+	def __init__(self, parent, node, name=None):
+		super(NamedCommunicationElement, self).__init__(parent, node)
+		self.name = node.get('name') if name is None else name
+		self.full_name = parent.register(self, self.name)
+
+	def register(self, child, name):
+		return self.parent.register(child, self.name + "." + name)
+
+	def to_dict(self):
 		return { 'name': self.name }
 
-
-class Service(NamedCommunicationElement):
-	def __init__(self, parent, node):
-		super(Service, self).__init__(parent, node)
-		self.id = -1    # needs to be set on a per configuration basis
-		                # the external code is responsible for avoiding clashes
-		self.messages = []
-		self.properties = []
-
-		messages = node.find("messages")
-		for msg_ee in messages:
-			if msg_ee.tag is not ET.Comment:
-				self.messages.append(Message(self, msg_ee))
-		max_id_found = max([msg.id for msg in self.messages])
-		self.max_message_id = determine_max_id(self.mod, messages, max_id_found)
-		self.mod.passert(node, self.max_message_id >= max_id_found,
-			'Found id "{}", but the maximum message id is "{}"!'.format(max_id_found, self.max_message_id))
-		self.message_id_size = number_of_bits_from_maxid(self.max_message_id)
-
-		properties = node.find("properties")
-		if properties is None:
-			properties = []
-		for prop_ee in properties:
-			if prop_ee.tag in ['int', 'uint']:
-				self.properties.append(IntProperty(self, prop_ee))
-			elif prop_ee.tag in ['enum']:
-				self.properties.append(EnumProperty(self, prop_ee))
-			elif prop_ee.tag in ['bool']:
-				self.properties.append(BooleanProperty(self, prop_ee))
-		if len(self.properties) > 0:
-			max_id_found = max([prop.id for prop in self.properties])
-			self.max_property_id = determine_max_id(self.mod, properties, max_id_found)
-		else:
-			max_id_found = 0
-			self.max_property_id = 0
-
-		self.mod.passert(node, self.max_property_id >= max_id_found,
-			'Found id "{}", but the maximum property id is "{}"!'.format(max_id_found, self.max_property_id))
-		self.property_id_size = number_of_bits_from_maxid(self.max_property_id)
-
-	def generate_property_field_placement(self):
-		field_list = [fields.Field(camelCase(ff.name), ff.size) for ff in self.properties]
-		byte_list = fields.InOrderPlacement().place(field_list)
-		gc_unmarshal = fields.CodeGenerator(data_src="data", field_prefix="java_struct->")
-		gc_marshal   = fields.CodeGenerator(data_src="data")
-		dd = { 'unmarshal': "\n".join(gc_unmarshal.unmarshal(ff) for ff in field_list),
-			'unmarshal_without_struct': "\n".join(gc_marshal.unmarshal(ff) for ff in field_list),
-			'marshal': "\n".join(gc_marshal.marshal(bb) for bb in byte_list),
-			'bytes': len(byte_list) }
-		return dd
+	def _check_ids(self, ids, max_id):
+		id_offset = ((index - id) for index, id in enumerate(ids))
+		consecutive = all(offset == 0 for offset in id_offset)
+		self.mod.passert(self.node, consecutive,
+			'Ids ({}) must be consecutive!'.format(list(ids)))
+		max_id_found = ids[-1]
+		self.mod.passert(self.node, max_id >= max_id_found,
+			'Found id "{}", but the maximum id is "{}"!'.format(max_id_found, max_id))
+		return True
 
 
-	def to_dict(self):
-		dd = super(Service, self).to_dict()
-		if self.id >= 0:
-			dd['id'] = self.id
-		dd['messages']   = [msg.to_dict()  for msg  in self.messages]
-		dd['max_message_id']  = self.max_message_id
-		dd['message_id_size'] = self.message_id_size
-		dd['properties'] = [prop.to_dict() for prop in self.properties]
-		dd['max_property_id']  = self.max_property_id
-		dd['property_id_size'] = self.property_id_size
-		dd['property_bit_count'] = sum(pp.size for pp in self.properties)
-		dd['cpp'] = self.generate_property_field_placement()
-		dd['java'] = {}
-		if len(self.properties) > 0:
-			dd['java']['arg_names'] = [camelCase(prop.name) for prop in self.properties]
-			dd['java']['args'] = ["{} {}".format(prop.java_type, camelCase(prop.name)) for prop in self.properties]
-			dd['cpp']['args']  = ["{} {}".format(prop.cpp_type,  camelCase(prop.name)) for prop in self.properties]
-			dd['java']['initializer_list'] = ", " + ", ".join(dd['java']['args'])
-			dd['java']['args_list'] = ", " + ", ".join(dd['java']['arg_names'])
-			dd['cpp']['initializer_list'] = ", " + ", ".join(dd['cpp']['args'])
-		return dd
+class CommunicationType(object):
+	"""
+	Base class for enum, bool, byte, short, int
+	"""
+	@property
+	def cpp_type(self):
+		return "void"
 
-class Message(NamedCommunicationElement):
-	def __init__(self, parent, node):
-		super(Message, self).__init__(parent, node)
-		self.id = int(node.get("id"))
-		self.performative = node.get("performative").replace('-', '_')
-		direction = node.get("direction")
-		self.tx = "tx" in direction
-		self.rx = "rx" in direction
-		self.fields = []
-		for field_ee in node:
-			if field_ee.tag in ['int', 'uint']:
-				self.fields.append(IntField(self, field_ee))
-			elif field_ee.tag in ['enum']:
-				self.fields.append(EnumField(self, field_ee))
-			elif field_ee.tag in ['bool']:
-				self.fields.append(BooleanField(self, field_ee))
+	@property
+	def cpp_unsigned_type(self):
+		return "void"
 
-	def generate_field_placement(self):
-		id_field = fields.Field("id", self.parent.message_id_size)
-		field_list = [fields.Field(camelCase(ff.name), ff.size) for ff in self.fields]
-		byte_list = fields.InOrderPlacement().place([id_field] + field_list)
-		gc_unmarshal = fields.CodeGenerator(data_src="data", field_prefix="java_struct->")
-		gc_marshal   = fields.CodeGenerator(data_src="data")
-		dd = { 'unmarshal': "\n".join(gc_unmarshal.unmarshal(ff) for ff in field_list),
-			'unmarshal_without_struct': "\n".join(gc_marshal.unmarshal(ff) for ff in field_list),
-			'marshal': "\n".join(gc_marshal.marshal(bb) for bb in byte_list),
-			'bytes': len(byte_list) }
-		return dd
+	@property
+	def java_type(self):
+		return "void"
+
+	@property
+	def java_box(self):
+		return "void"
+
+	@property
+	def max_value(self):
+		return 0
+
+	@property
+	def min_value(self):
+		return 0
+
+	@property
+	def size(self):
+		return 0
+
+	@property
+	def type(self):
+		return None
+
+	@property
+	def unsigned(self):
+		return False
 
 	def to_dict(self):
-		dd = super(Message, self).to_dict()
-		dd['id'] = self.id
-		dd['performative'] = self.performative
-		dd['service'] = self.parent.name
-		dd['tx'] = self.tx
-		dd['rx'] = self.rx
-		dd['fields'] = [field.to_dict() for field in self.fields]
-		dd['cpp'] = self.generate_field_placement()
-		dd['java'] = {}
-		if len(self.fields) > 0:
-			dd['java']['args'] = ["{} {}".format(field.java_type, camelCase(field.name)) for field in self.fields]
-			dd['cpp']['args']  = ["{} {}".format(field.cpp_type,  camelCase(field.name)) for field in self.fields]
-			dd['java']['initializer_list'] = ", " + ", ".join(dd['java']['args'])
-			dd['cpp']['initializer_list'] = ", " + ", ".join(dd['cpp']['args'])
-		dd['bytes'] = dd['cpp']['bytes']
+		dd = {}
+		dd['size'] = self.size
+		dd['max_value'] = self.max_value
+		dd['min_value'] = self.min_value
+		dd['unsigned'] = self.unsigned
+		dd['cpp'] = { 'type': self.cpp_type, 'unsigned_type': self.cpp_unsigned_type }
+		dd['java'] = { 'type': self.java_type, 'box': self.java_box}
+		dd['is_enum'] = 'enum' in self.type
+		dd['is_bool'] = 'bool' in self.type
 		return dd
 
-class BooleanField(NamedCommunicationElement):
-	def __init__(self, parent, node):
-		super(BooleanField, self).__init__(parent, node)
 
+class BooleanType(CommunicationType):
 	@property
 	def cpp_type(self):
 		return "bool"
@@ -209,6 +132,10 @@ class BooleanField(NamedCommunicationElement):
 		return "boolean"
 
 	@property
+	def java_box(self):
+		return "Boolean"
+
+	@property
 	def max_value(self):
 		return 1
 
@@ -220,149 +147,48 @@ class BooleanField(NamedCommunicationElement):
 	def size(self):
 		return 1
 
-	def to_dict(self):
-		dd = super(BooleanField, self).to_dict()
-		dd['name'] = camelCase(dd['name'])
-		dd['size'] = self.size
-		dd['max_value'] = self.max_value
-		dd['min_value'] = self.min_value
-		dd['cpp'] = { 'type': self.cpp_type, 'unsigned_type': self.cpp_unsigned_type }
-		dd['java'] = { 'type': self.java_type, 'box': "Boolean"}
-		dd['is_enum'] = False
-		dd['is_bool'] = True
-		return dd
+	@property
+	def type(self):
+		return "bool"
 
-class IntField(NamedCommunicationElement):
-	def __init__(self, parent, node):
-		super(IntField, self).__init__(parent, node)
-		self.unsigned = (node.tag == "uint")
-		self._size = int(node.get("size"))
+
+class IntType(CommunicationType):
+	def __init__(self, java_type):
+		self._java_type = java_type
+		assert(self._java_type in ['byte', 'short', 'int'])
+		self._size = {'byte': 1, 'short': 2, 'int': 4}[self._java_type]
 
 	@property
 	def cpp_type(self):
-		if self.size <= 8:    tt = "int8_t"
-		elif self.size <= 16: tt = "int16_t"
-		elif self.size <= 32: tt = "int32_t"
-		return ("u" + tt) if self.unsigned else tt
+		return 'int{}_t'.format(self.size * 8)
 
 	@property
 	def cpp_unsigned_type(self):
-		if self.unsigned: return self.cpp_type
-		else: return "u" + self.cpp_type
+		return "u" + self.cpp_type
 
 	@property
 	def java_type(self):
-		# there seem to be no unsigened Java types, therefore we need
-		# one bit more, if our input was a positive number
-		if self.unsigned: size = self.size - 1
-		else:             size = self.size
-		if size <= 8:    return "byte"
-		elif size <= 16: return "short"
-		elif size <= 32: return "int"
+		return self._java_type
+
+	@property
+	def java_box(self):
+		return {'byte': 'Byte', 'short': 'Short', 'int': 'Integer'}[self.java_type]
 
 	@property
 	def max_value(self):
-		if self.unsigned: return (1 << self._size)       - 1
-		else:             return (1 << (self._size - 1)) - 1
+		return (1 << (self.size * 8 -1)) - 1
 
 	@property
 	def min_value(self):
-		if self.unsigned: return 0
-		else:             return - (self.max_value + 1)
+		return - (self.max_value + 1)
 
 	@property
 	def size(self):
 		return self._size
 
-	def to_dict(self):
-		dd = super(IntField, self).to_dict()
-		dd['name'] = camelCase(dd['name'])
-		dd['unsigned'] = self.unsigned
-		dd['size'] = self.size
-		dd['max_value'] = self.max_value
-		dd['min_value'] = self.min_value
-		dd['cpp'] = { 'type': self.cpp_type, 'unsigned_type': self.cpp_unsigned_type }
-		java_box = self.java_type
-		java_box = java_box[0].upper() + java_box[1:]
-		dd['java'] = { 'type': self.java_type, 'box': java_box}
-		dd['is_enum'] = False
-		dd['is_bool'] = False
-		return dd
-
-class EnumField(NamedCommunicationElement):
-	def __init__(self, parent, node):
-		super(EnumField, self).__init__(parent, node)
-		self.enum_class = Reference(self.mod, node, node.get("class"))
-
 	@property
-	def java_type(self):
-		return self.enum_class.value.java_type
-
-	@property
-	def cpp_type(self):
-		return self.enum_class.value.name
-
-	@property
-	def cpp_unsigned_type(self):
-		return self.enum_class.value.cpp_unsigned_type
-
-	@property
-	def max_value(self):
-		return self.enum_class.value.max_value
-
-	@property
-	def min_value(self):
-		return self.enum_class.value.min_value
-
-	@property
-	def size(self):
-		return self.enum_class.value.size
-
-	def to_dict(self):
-		dd = super(EnumField, self).to_dict()
-		dd['name'] = camelCase(dd['name'])
-		dd['size'] = self.size
-		dd['max_value'] = self.max_value
-		dd['min_value'] = self.min_value
-		dd['cpp'] = { 'type': self.cpp_type, 'unsigned_type': self.cpp_unsigned_type }
-		dd['java'] = { 'type': self.java_type }
-		dd['enum_name'] = self.enum_class.value.name
-		dd['is_enum'] = True
-		dd['is_bool'] = False
-		return dd
-
-class BooleanProperty(BooleanField):
-	def __init__(self, parent, node):
-		super(BooleanProperty, self).__init__(parent, node)
-		self.id = int(node.get("id"))
-
-	def to_dict(self):
-		dd = super(BooleanProperty, self).to_dict()
-		dd['name'] = camelCase(dd['name'])
-		dd['id'] = self.id
-		return dd
-
-class IntProperty(IntField):
-	def __init__(self, parent, node):
-		super(IntProperty, self).__init__(parent, node)
-		self.id = int(node.get("id"))
-
-	def to_dict(self):
-		dd = super(IntProperty, self).to_dict()
-		dd['name'] = camelCase(dd['name'])
-		dd['id'] = self.id
-		return dd
-
-class EnumProperty(EnumField):
-	def __init__(self, parent, node):
-		super(EnumProperty, self).__init__(parent, node)
-		self.id = int(node.get("id"))
-
-	def to_dict(self):
-		dd = super(EnumProperty, self).to_dict()
-		dd['name'] = camelCase(dd['name'])
-		dd['id'] = self.id
-		return dd
+	def type(self):
+		return self._java_type
 
 class Reference(object):
 	def __init__(self, module, node, name):
@@ -376,83 +202,54 @@ class Reference(object):
 			'Could not resolve reference to "{}"'.format(self.name))
 		self.value = mod.combined_index[self.name]
 
-class EnumType(NamedCommunicationElement):
+class EnumType(NamedCommunicationElement, CommunicationType):
 	def __init__(self, parent, node):
 		super(EnumType, self).__init__(parent, node)
 		self.elements = []
+		self.max_id = 255	# enums will be sent as bytes
 
 		for el_ee in node:
 			self.elements.append(EnumElement(self, el_ee))
 		self.elements.sort(key=lambda ee: ee.id)
 		# make sure ids are consecutive
-		id_offset = ((index - ee.id) for index, ee in enumerate(self.elements))
-		consecutive = all(offset == 0 for offset in id_offset)
-		self.mod.passert(node, consecutive,
-			'Ids ({}) must be consecutive!'.format([ee.id for ee in self.elements]))
-		max_id_found = self.elements[-1].id
-		self.max_id = determine_max_id(self.mod, node, max_id_found)
-		self.mod.passert(node, self.max_id >= max_id_found,
-			'Found id "{}", but the maximum id is "{}"!'.format(max_id_found, self.max_id))
-
-	def _underlying_type_size(self):
-		if self.size <= 8:    return  8
-		elif self.size <= 16: return 16
-		elif self.size <= 32: return 32
-
-	def to_signed_id(self, id_value):
-		""" in java all integers are unsigned, thus we need to convert
-		    ids that would fit into the unsigned type, but do not fit into the
-		    signed type
-		"""
-		max_id_value = (1 << (self._underlying_type_size() - 1)) - 1
-		if id_value > max_id_value:
-			return max_id_value - id_value
-		else:
-			return id_value
-
-	@property
-	def size(self):
-		return int(math.log(self.max_id,2) + 1)
-
-	@property
-	def java_type(self):
-		if self.size <= 8:    return "byte"
-		elif self.size <= 16: return "short"
-		elif self.size <= 32: return "int"
+		self._check_ids([ee.id for ee in self.elements], self.max_id)
 
 	@property
 	def cpp_type(self):
-		if self.size <= 8:    return "uint8_t"
-		elif self.size <= 16: return "uint16_t"
-		elif self.size <= 32: return "uint32_t"
+		return "uint8_t"
 
 	@property
 	def cpp_unsigned_type(self):
 		return self.cpp_type
 
 	@property
+	def java_type(self):
+		return "short"
+
+	@property
+	def java_box(self):
+		return "Short"
+
+	@property
 	def max_value(self):
-		if self.to_signed_id(self.max_id) < 0:
-			return (1 << (self._underlying_type_size() - 1)) - 1
-		else:
-			return self.max_id
+		return 255
 
 	@property
 	def min_value(self):
-		if self.to_signed_id(self.max_id) < 0:
-			return self.to_signed_id(self.max_id)
-		else:
-			return 0
+		return 0
+
+	@property
+	def size(self):
+		return 8
+
+	@property
+	def type(self):
+		return "enumtype"
 
 	def to_dict(self):
 		dd = super(EnumType, self).to_dict()
 		dd['elements'] = [element.to_dict() for element in self.elements]
-		dd['size'] = self.size
-		dd['max_value'] = self.max_value
-		dd['min_value'] = self.min_value
 		dd['max_id'] = self.max_id
-		dd['cpp'] = { 'type': self.cpp_type, 'unsigned_type': self.cpp_unsigned_type }
-		dd['java'] = { 'type': self.java_type }
 		return dd
 
 class EnumElement(NamedCommunicationElement):
@@ -462,8 +259,115 @@ class EnumElement(NamedCommunicationElement):
 
 	def to_dict(self):
 		dd = super(EnumElement, self).to_dict()
-		dd['id'] = self.parent.to_signed_id(self.id)
+		dd['id'] = self.id
 		return dd
+
+class CommunicationField(NamedCommunicationElement):
+	Boolean = BooleanType()
+	Integer = IntType('int')
+	Short   = IntType('short')
+	Byte    = IntType('byte')
+	Types   = {'bool': Boolean, 'byte': Byte, 'short': Short, 'int': Integer}
+
+	def __init__(self, parent, node):
+		assert(node.tag in ['bool', 'byte', 'short', 'int', 'enum'])
+		super(CommunicationField, self).__init__(parent, node)
+		self.id = int(node.get("id"))
+		if node.tag == 'enum':
+			self._type = Reference(self.mod, node, node.get("class"))
+		else:
+			self._type = CommunicationField.Types[node.tag]
+
+	@property
+	def type(self):
+		if isinstance(self._type, Reference):
+			return self._type.value
+		else:
+			return self._type
+
+	@property
+	def size(self):
+		return self.type.size
+
+	def to_dict(self):
+		dd = super(CommunicationField, self).to_dict()
+		dd['id'] = self.id
+		dd.update(self.type.to_dict())
+		return dd
+
+
+class FieldContainer(NamedCommunicationElement):
+	"""
+	Base class for properties and message elements in XML
+	"""
+	def __init__(self, parent, node, name=None):
+		super(FieldContainer, self).__init__(parent, node, name)
+		self.fields = [CommunicationField(self, field_node) for field_node in node]
+		if len(self.fields) > 0:
+			self.max_id = max(field.id for field in self.fields)
+		else:
+			self.max_id = -1
+
+	def to_dict(self):
+		dd = super(FieldContainer, self).to_dict()
+		dd.update({'java': {}, 'cpp': {} })
+		dd['fields'] = [field.to_dict() for field in self.fields]
+		if len(self.fields) > 0:
+			dd['java']['args'] = ["{} {}".format(field.type.java_type, camelCase(field.name)) for field in self.fields]
+			dd['cpp']['args']  = ["{} {}".format(field.type.cpp_type,  camelCase(field.name)) for field in self.fields]
+			dd['java']['initializer_list'] = ", " + ", ".join(dd['java']['args'])
+			dd['cpp']['initializer_list'] = ", " + ", ".join(dd['cpp']['args'])
+		dd['bytes']  = sum(field.type.size for field in self.fields)
+		dd['max_id'] = self.max_id
+		return dd
+
+class Message(FieldContainer):
+	def __init__(self, parent, node):
+		FieldContainer.__init__(self, parent, node)
+		self.id = int(node.get("id"))
+		self.performative = node.get("performative").replace('-', '_')
+		direction = node.get("direction")
+		self.tx = "tx" in direction
+		self.rx = "rx" in direction
+
+	def to_dict(self):
+		dd = FieldContainer.to_dict(self)
+		dd.update(NamedCommunicationElement.to_dict(self))
+		dd['id'] = self.id
+		dd['performative'] = self.performative
+		dd['service'] = self.parent.name
+		dd['tx'] = self.tx
+		dd['rx'] = self.rx
+		return dd
+
+class Service(NamedCommunicationElement):
+	def __init__(self, parent, node):
+		super(Service, self).__init__(parent, node)
+		self.id = -1    # needs to be set on a per configuration basis
+		                # the external code is responsible for avoiding clashes
+		self.messages = []
+		self.properties = None
+
+		messages = node.find("messages")
+		for msg_ee in messages:
+			if msg_ee.tag is not ET.Comment:
+				self.messages.append(Message(self, msg_ee))
+		self._check_ids([msg.id for msg in self.messages], 255)
+
+		properties = node.find("properties")
+		self.properties = FieldContainer(self, properties, "properties") if properties is not None else None
+		self._check_ids([prop.id for prop in self.properties.fields], 255)
+
+	def to_dict(self):
+		dd = super(Service, self).to_dict()
+		if self.id >= 0:
+			dd['id'] = self.id
+		dd['messages']   = [msg.to_dict() for msg  in self.messages]
+		dd['max_message_id']  = max(msg.id for msg in self.messages)
+		dd['properties'] = self.properties.to_dict()
+		dd['properties_bytes'] = dd['properties']['bytes']
+		return dd
+
 
 class Import(object):
 	def __init__(self, mod, node):
@@ -652,14 +556,14 @@ class CommunicationParser(object):
 			# a service can depend on enums
 			for msg in service.messages:
 				messages.append(msg)
-				enum_fields = (ff for ff in msg.fields if isinstance(ff, EnumField))
+				enum_fields = (ff for ff in msg.fields if isinstance(ff.type, EnumType))
 				for ff in enum_fields:
-					if not ff.enum_class.value in enums:
-						enums.append(ff.enum_class.value)
-			for prop in service.properties:
+					if not ff.type in enums:
+						enums.append(ff.type)
+			for prop in service.properties.fields:
 				properties.append(prop)
-				if isinstance(prop, EnumProperty) and not prop.enum_class.value in enums:
-					enums.append(prop.enum_class.value)
+				if isinstance(prop.type, EnumType) and not prop.type in enums:
+					enums.append(prop.type)
 		# collect enums that are required
 		for enum_name in required_enums:
 			mod = self.modules[enum_name.rsplit('.', 1)[0]]
@@ -685,14 +589,14 @@ class CommunicationParser(object):
 			                  for msg in service.messages]
 			dd['properties']= [prop.to_dict() for serv
 			                   in module.services.values() if serv in services
-			                   for prop in service.properties]
+			                   for prop in service.properties.fields]
 			output['modules'].append(dd)
 		# create other dicts
 		output['messages']   = [msg.to_dict()  for msg  in messages]
 		output['properties'] = [prop.to_dict() for prop in properties]
 		output['services']   = [serv.to_dict() for serv in services]
 		output['enums']      = [enum.to_dict() for enum in enums]
-		output['max_property_bit_count'] = max(serv['property_bit_count'] for serv in output['services'])
+		output['max_properties_size'] = max(serv['properties_bytes'] for serv in output['services'])
 		return output
 
 if __name__ == "__main__":

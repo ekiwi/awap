@@ -46,6 +46,7 @@ This file is part of awap.
 	<xs:choice minOccurs="0" maxOccurs="unbounded">
 		<xs:element name="int">
 			<xs:complexType>
+				<!-- TODO: max is is 255 -->
 				<xs:attribute name="id" use="required" type="xs:integer"/>
 				<xs:attribute name="name" use="required" type="xs:NCName"/>
 			</xs:complexType>
