@@ -13,14 +13,14 @@ This file is part of awap.
 
 <service name="TemperatureService">
 	<!-- This defines the service interface that can be used by other agents -->
-	<messages max-id="7" size="3">
+	<messages>
 		<message name="RequestTemperature" direction="rx" performative="REQUEST" id="0" />
 		<message name="Temperature" direction="tx" performative="INFORM" id="1">
-			<int name="value" size="32" />
+			<int name="value" id="0" />
 		</message>
 	</messages>
 	<!-- This will be used by the DF in order to diferentiate different services of the same kind -->
-	<properties max-id="3">
+	<properties>
 		<enum name="Building"      class="Building"      id="0" />
 		<enum name="SupplyCircuit" class="SupplyCircuit" id="1" />
 		<enum name="Room"          class="Room"          id="2" />
