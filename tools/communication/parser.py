@@ -242,7 +242,7 @@ class EnumType(NamedCommunicationElement, CommunicationType):
 
 	@property
 	def size(self):
-		return 8
+		return 1
 
 	@property
 	def type(self):
