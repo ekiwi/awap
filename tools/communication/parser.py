@@ -55,6 +55,8 @@ class NamedCommunicationElement(CommunicationElement):
 		return { 'name': self.name }
 
 	def _check_ids(self, ids, max_id):
+		if len(ids) == 0:
+			return True
 		id_offset = ((index - id) for index, id in enumerate(ids))
 		consecutive = all(offset == 0 for offset in id_offset)
 		self.mod.passert(self.node, consecutive,
@@ -306,7 +308,8 @@ class FieldContainer(NamedCommunicationElement):
 	"""
 	def __init__(self, parent, node, name=None):
 		super(FieldContainer, self).__init__(parent, node, name)
-		self.fields = [CommunicationField(self, field_node) for field_node in node]
+		self.fields = [CommunicationField(self, field_node)
+							for field_node in node] if node is not None else []
 		if len(self.fields) > 0:
 			self.max_id = max(field.id for field in self.fields)
 		else:
@@ -316,13 +319,13 @@ class FieldContainer(NamedCommunicationElement):
 		dd = super(FieldContainer, self).to_dict()
 		dd.update({'java': {'args': [] }, 'cpp': {'args': [] } })
 		dd['fields'] = [field.to_dict() for field in self.fields]
-		if len(self.fields) > 0:
-			dd['java']['arg_names'] = [camelCase(field.name) for field in self.fields]
-			dd['java']['args_list'] = ", " + ", ".join(dd['java']['arg_names'])
-			dd['java']['args'] = ["{} {}".format(field.type.java_type, camelCase(field.name)) for field in self.fields]
-			dd['cpp']['args']  = ["{} {}".format(field.type.cpp_type,  camelCase(field.name)) for field in self.fields]
-			dd['java']['initializer_list'] = ", " + ", ".join(dd['java']['args'])
-			dd['cpp']['initializer_list'] = ", " + ", ".join(dd['cpp']['args'])
+		sep = ", " if len(self.fields) > 0 else ""
+		dd['java']['arg_names'] = [camelCase(field.name) for field in self.fields]
+		dd['java']['args_list'] = sep + ", ".join(dd['java']['arg_names'])
+		dd['java']['args'] = ["{} {}".format(field.type.java_type, camelCase(field.name)) for field in self.fields]
+		dd['cpp']['args']  = ["{} {}".format(field.type.cpp_type,  camelCase(field.name)) for field in self.fields]
+		dd['java']['initializer_list'] = sep + ", ".join(dd['java']['args'])
+		dd['cpp']['initializer_list'] = sep + ", ".join(dd['cpp']['args'])
 		dd['bytes']  = sum(field.type.size for field in self.fields)
 		dd['max_id'] = self.max_id
 		return dd
@@ -361,7 +364,7 @@ class Service(NamedCommunicationElement):
 		self._check_ids([msg.id for msg in self.messages], 255)
 
 		properties = node.find("properties")
-		self.properties = FieldContainer(self, properties, "properties") if properties is not None else None
+		self.properties = FieldContainer(self, properties, "properties")
 		self._check_ids([prop.id for prop in self.properties.fields], 255)
 
 	def to_dict(self):
@@ -370,7 +373,10 @@ class Service(NamedCommunicationElement):
 			dd['id'] = self.id
 		dd['messages']   = [msg.to_dict() for msg  in self.messages]
 		dd['max_message_id']  = max(msg.id for msg in self.messages)
-		dd['properties'] = self.properties.to_dict()
+		if self.properties is None:
+			dd['properties'] = {'fields': [], 'bytes': 0}
+		else:
+			dd['properties'] = self.properties.to_dict()
 		dd['properties_bytes'] = dd['properties']['bytes']
 		return dd
 
@@ -566,10 +572,11 @@ class CommunicationParser(object):
 				for ff in enum_fields:
 					if not ff.type in enums:
 						enums.append(ff.type)
-			for prop in service.properties.fields:
-				properties.append(prop)
-				if isinstance(prop.type, EnumType) and not prop.type in enums:
-					enums.append(prop.type)
+			if service.properties:
+				for prop in service.properties.fields:
+					properties.append(prop)
+					if isinstance(prop.type, EnumType) and not prop.type in enums:
+						enums.append(prop.type)
 		# collect enums that are required
 		for enum_name in required_enums:
 			mod = self.modules[enum_name.rsplit('.', 1)[0]]
