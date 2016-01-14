@@ -17,11 +17,6 @@ namespace awap {
 namespace generated {
 
 
-// "enums"
-%% for enum in enums
-using {{ enum.name }} = {{ enum.cpp.type }};
-%% endfor
-
 // messages
 %% for service in services
 namespace {{ service.name }} {
@@ -84,8 +79,7 @@ struct MessageFactory {
 private:
 %% for service in services
 	static inline RxMessage* make{{ service.name }}RxMessage(const NodeAddress sender, Slice<const uint8_t> content) {
-		static constexpr uint8_t MessageIdBits = {{ service.message_id_size }};
-		const uint8_t messageId = content.data[2] >> (8 - MessageIdBits);
+		const uint8_t messageId = content.data[2];
 
 		switch(messageId) {
 	%% for msg in service.messages

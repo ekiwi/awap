@@ -38,7 +38,7 @@ ref_t ::awap::generated::{{ service.name }}::Rx{{ msg.name }}::createSpecificJav
 		const auto data = &this->content.data[2];
 
 		// unmarshal
-		{{ msg.cpp.unmarshal | indent(2) }}
+		// TODO
 
 		// WARN: needs to be handed to java code before any java memory is allocated
 		//       or else it will be garbage collected!
@@ -66,7 +66,7 @@ size_t ::awap::generated::{{ service.name }}::Tx{{ msg.name }}::marshalFromSpeci
 
 		// marshal, this is safe, because we checked the length above
 		auto data = &output.data[2];
-		{{ msg.cpp.marshal | indent(2) }}
+		// TODO
 
 		return this->getDataSize();
 	} else {

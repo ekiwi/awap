@@ -50,7 +50,7 @@ static inline size_t getPropertySize(ServiceTypeId serviceType) {
 	switch(serviceType) {
 %% for service in services
 	case {{ service.id }}:	// {{ service.name }}
-		return {{ ((service.property_bit_count / 8.0) | round(0, 'ceil')) | int }};
+		return {{ service.properties_bytes }};
 %% endfor
 	default:
 		return 0;
@@ -68,11 +68,11 @@ static inline uint8_t toBroadcastHeader(ref_t java_desc) {
 %% for service in services
 	case AWAP_COMMON_CDEF_de_rwth_aachen_awap_service_{{ service.name }}Description:
 	{
-	%% if service.properties | length > 0
+	%% if service.properties.fields | length > 0
 		auto java_data = static_cast<const {{ service.name }}DescriptionStruct*>(REF_TO_VOIDP(java_desc));
 	%% endif
 	return 0
-	%% for prop in service.properties
+	%% for prop in service.properties.fields
 		| (((java_data->{{ prop.name }}DoNotCare)? 0 : 1) << (7 - {{ prop.id }}))
 	%% endfor
 		;
@@ -106,11 +106,11 @@ static inline bool toQueryMask(
 %% for service in services
 	case {{ service.id }}:	// {{ service.name }}
 	{
-	%% for prop in service.properties
+	%% for prop in service.properties.fields
 		const {{ prop.cpp.unsigned_type }} {{ prop.name }} =
 			(broadcastHeader & (1 << (7 - {{ prop.id }})))? (1<<{{ prop.size }}) - 1 : 0;
 	%% endfor
-		{{ service.cpp.marshal | indent(2) }}
+		// TODO
 		return true;
 	}
 %% endfor
@@ -137,20 +137,19 @@ static inline size_t marshal(ref_t java_desc, Slice<uint8_t> output) {
 
 	switch(descClassId.entity_id) {
 %% for service in services
-	%% set bytes = ((service.property_bit_count / 8.0) | round(0, 'ceil')) | int
 	case AWAP_COMMON_CDEF_de_rwth_aachen_awap_service_{{ service.name }}Description:
 	{
-	%% if service.properties | length > 0
-		if(output.length < {{ bytes }}) {
+	%% if service.properties.fields | length > 0
+		if(output.length < {{ service.properties_bytes }}) {
 			return 0;
 		}
 		auto java_data = static_cast<const {{ service.name }}DescriptionStruct*>(REF_TO_VOIDP(java_desc));
-		%% for prop in service.properties
+		%% for prop in service.properties.fields
 		const auto {{ prop.name }} = cap<{{ prop.cpp.unsigned_type }}>(java_data->{{ prop.name }}, {{ prop.min_value }}, {{ prop.max_value }});
 		%% endfor
-		{{ service.cpp.marshal | indent(2) }}
+		// TODO
 	%% endif
-		return {{ bytes }};
+		return {{ service.properties_bytes }};
 	}
 %% endfor
 	default:
