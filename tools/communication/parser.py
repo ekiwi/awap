@@ -313,9 +313,11 @@ class FieldContainer(NamedCommunicationElement):
 
 	def to_dict(self):
 		dd = super(FieldContainer, self).to_dict()
-		dd.update({'java': {}, 'cpp': {} })
+		dd.update({'java': {'args': [] }, 'cpp': {'args': [] } })
 		dd['fields'] = [field.to_dict() for field in self.fields]
 		if len(self.fields) > 0:
+			dd['java']['arg_names'] = [camelCase(field.name) for field in self.fields]
+			dd['java']['args_list'] = ", " + ", ".join(dd['java']['arg_names'])
 			dd['java']['args'] = ["{} {}".format(field.type.java_type, camelCase(field.name)) for field in self.fields]
 			dd['cpp']['args']  = ["{} {}".format(field.type.cpp_type,  camelCase(field.name)) for field in self.fields]
 			dd['java']['initializer_list'] = ", " + ", ".join(dd['java']['args'])
