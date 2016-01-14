@@ -10,21 +10,21 @@ This file is part of awap.
 <import module="common" as="" />
 
 <service name="MessageTestService">
-	<messages max-id="15" size="4">
+	<messages>
 		<message name="EmptyMessage" direction="rx" performative="INFORM" id="0" />
-		<message name="SimpleUInt32Message" direction="rx" performative="INFORM" id="1" >
-			<uint name="uint_value" size="32" />
+		<message name="SimpleIntMessage" direction="rx" performative="INFORM" id="1" >
+			<int name="int_value" id="0" />
 		</message>
-		<message name="SimpleUInt12Message" direction="rx" performative="INFORM" id="2" >
-			<uint name="uint_value" size="12" />
+		<message name="SimpleShortMessage" direction="rx" performative="INFORM" id="2" >
+			<short name="short_value" id="0" />
 		</message>
 		<message name="EnumMessage" direction="rx" performative="INFORM" id="3" >
-			<enum name="enum_value" class="Building" />
+			<enum name="enum_value" class="Building" id="0" />
 		</message>
 		<message name="BoolMessage" direction="rx" performative="INFORM" id="4" >
-			<bool name="b0" />
-			<bool name="b1" />
-			<bool name="b2" />
+			<bool name="b0" id="0" />
+			<bool name="b1" id="1" />
+			<bool name="b2" id="2" />
 		</message>
 	</messages>
 </service>

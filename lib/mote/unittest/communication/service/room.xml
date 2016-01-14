@@ -11,38 +11,38 @@ This file is part of awap.
 <!-- imports values from common.xml in this modules namespace -->
 <import module="common" as="" />
 
-<enum name="TemperatureChangeRefuseReason" max-id="7">
+<enum name="TemperatureChangeRefuseReason">
 	<element name="NotOwnerOfRoom" id="0" />
 </enum>
 
-<enum name="TemperatureChangeFailedReason" max-id="7">
+<enum name="TemperatureChangeFailedReason">
 	<element name="NotOwnerOfRoom" id="0" />
 </enum>
 
 
 <service name="RoomService">
 	<!-- This defines the service interface that can be used by other agents -->
-	<messages max-id="7" size="3">
+	<messages>
 		<message name="RequestTemperatureChange" direction="rx" performative="REQUEST" id="0">
-			<enum name="userType" class="UserType" />
-			<enum name="action" class="TemperatureAction" />
-			<uint name="Tset" size="32" />
-			<uint name="deltaToTset" size="32" />
-			<uint name="prodLossCost" size="32" />
-			<uint name="worseCosts" size="32" />
-			<uint name="betterCosts" size="32" />
+			<enum name="userType" class="UserType" id="0" />
+			<enum name="action" class="TemperatureAction" id="1" />
+			<int name="Tset"         id="2" />
+			<int name="deltaToTset"  id="3" />
+			<int name="prodLossCost" id="4" />
+			<int name="worseCosts"   id="5" />
+			<int name="betterCosts"  id="6" />
 		</message>
 		<message name="RefuseTemperatureChange" direction="tx" performative="REFUSE" id="1">
-			<enum name="reason" class="TemperatureChangeRefuseReason" />
+			<enum name="reason" class="TemperatureChangeRefuseReason" id="0" />
 		</message>
 		<message name="AgreeToTemperatureChange" direction="tx" performative="AGREE" id="2" />
 		<message name="TemperatureChangeEnacted" direction="tx" performative="INFORM" id="3" />
 		<message name="TemperatureChangeFailed"  direction="tx" performative="FAILURE" id="4">
-			<enum name="reason" class="TemperatureChangeFailedReason" />
+			<enum name="reason" class="TemperatureChangeFailedReason" id="0" />
 		</message>
 	</messages>
 	<!-- This will be used by the DF in order to diferentiate different services of the same kind -->
-	<properties max-id="3">
+	<properties>
 		<enum name="Building"      class="Building"      id="0" />
 		<enum name="SupplyCircuit" class="SupplyCircuit" id="1" />
 		<enum name="Room"          class="Room"          id="2" />

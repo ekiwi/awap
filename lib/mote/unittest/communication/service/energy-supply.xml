@@ -13,20 +13,20 @@ This file is part of awap.
 
 <service name="EnergySupplyService">
 	<!-- This defines the service interface that can be used by other agents -->
-	<messages max-id="7" size="3">
+	<messages>
 		<message name="RequestProposal" direction="rx" performative="CFP" id="0">
-			<enum name="action" class="TemperatureAction" />
-			<enum name="room"   class="Room" />
-			<bool name="beMediator" />
+			<enum name="action" class="TemperatureAction" id="0" />
+			<enum name="room"   class="Room" id="1" />
+			<bool name="beMediator" id="2" />
 		</message>
 		<message name="ProposeAction" direction="tx" performative="PROPOSE" id="1">
-			<bool name="isOn" />
-			<bool name="canIncrease" />
-			<bool name="canDecrease" />
-			<bool name="isHeating" />
-			<bool name="isCooling" />
-			<int name="posGradCost" size="32"/>
-			<int name="negGradCost" size="32"/>
+			<bool name="isOn"        id="0" />
+			<bool name="canIncrease" id="1" />
+			<bool name="canDecrease" id="2" />
+			<bool name="isHeating"   id="3" />
+			<bool name="isCooling"   id="4" />
+			<int name="posGradCost"  id="5" />
+			<int name="negGradCost"  id="6" />
 		</message>
 		<!-- in the jade code this contains the same values as ProposeAction,
 		     but they are only used for logging. -->
@@ -35,7 +35,7 @@ This file is part of awap.
 		<message name="RejectProposal" direction="rx" performative="REJECT-PROPOSAL" id="4" />
 	</messages>
 	<!-- This will be used by the DF in order to diferentiate different services of the same kind -->
-	<properties max-id="3">
+	<properties>
 		<enum name="Building"      class="Building"      id="0" />
 		<enum name="SupplyCircuit" class="SupplyCircuit" id="1" />
 		<enum name="Room"          class="Room"          id="2" />
