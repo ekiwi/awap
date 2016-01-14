@@ -49,7 +49,7 @@ size_t TxMessage::marshal(ref_t java_msg, AgentId sourceAgent,
 	// load specific fields
 	size_t ret = this->marshalFromSpecificJavaObject(java_msg, output);
 	if(ret > 0) {
-		return ret + 2;
+		return ret + 3;
 	} else {
 		return 0; // error
 	}

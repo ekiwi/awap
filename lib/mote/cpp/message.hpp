@@ -25,8 +25,8 @@ public:
 
 	ref_t createJavaObject() const;
 
-	// 2 byte for the common header + data
-	size_t inline getSize() const { return 2 + this->getDataSize(); }
+	// 3 byte for the common header and message if + data
+	size_t inline getSize() const { return 3 + this->getDataSize(); }
 
 	/// returns the entity id of the correct OnReceive method defined in
 	/// the awap-common infusion
@@ -52,8 +52,8 @@ public:
 	// returns number of bytes written
 	size_t marshal(ref_t java_msg, AgentId sourceAgent,
 		bool isBroadcast, Slice<uint8_t> output);
-	// 2 byte for the common header + data
-	size_t inline getSize() const { return 2 + this->getDataSize(); }
+	// 3 byte for the common header and message if + data
+	size_t inline getSize() const { return 3 + this->getDataSize(); }
 
 	NodeAddress getReceiver() const { return remoteNode; }
 

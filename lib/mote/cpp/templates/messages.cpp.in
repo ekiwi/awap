@@ -35,10 +35,11 @@ ref_t ::awap::generated::{{ service.name }}::Rx{{ msg.name }}::createSpecificJav
 		JavaClass obj(awapCommonInfusion);
 		// this is safe, because we checked the length above
 		auto java_struct = obj.getUnderlying();
-		const auto data = &this->content.data[2];
+		const auto data = &this->content.data[3];
 
 		// unmarshal
-		// TODO
+		auto java_data_start = reinterpret_cast<uint8_t*>(java_struct) + 2 * sizeof(int32_t);
+		std::memcpy(java_data_start, data, this->getDataSize());
 
 		// WARN: needs to be handed to java code before any java memory is allocated
 		//       or else it will be garbage collected!
@@ -52,21 +53,14 @@ ref_t ::awap::generated::{{ service.name }}::Rx{{ msg.name }}::createSpecificJav
 
 size_t ::awap::generated::{{ service.name }}::Tx{{ msg.name }}::marshalFromSpecificJavaObject(ref_t java_msg, Slice<uint8_t> output) {
 	if(check(this->getSize() <= output.length, Warning::MessageParserOutputTooSmall)) {
-		%% if msg.fields|length > 0
-		auto java_data = static_cast<const JavaClass::UnderlyingType*>(REF_TO_VOIDP(java_msg));
-		%% endif
-		// field aliases
-		const auto id = Id;
-		// cap the data to make sure it can be transmitted and cast to unsigned
-		// type in order for the following shift operations to work as intended
-		// (logic vs. arithmetic shift)
-		%% for field in msg.fields
-		const auto {{ field.name }} = cap<{{ field.cpp.unsigned_type }}>(java_data->{{ field.name }}, {{ field.min_value }}, {{ field.max_value }});
-		%% endfor
+		output.data[2] = Id;
 
+		%% if msg.fields|length > 0
 		// marshal, this is safe, because we checked the length above
-		auto data = &output.data[2];
-		// TODO
+		auto java_struct = static_cast<const JavaClass::UnderlyingType*>(REF_TO_VOIDP(java_msg));
+		auto java_data_start = reinterpret_cast<const uint8_t*>(java_struct) + 2 * sizeof(int32_t);
+		std::memcpy(&output.data[3], java_data_start, this->getDataSize());
+		%% endif
 
 		return this->getDataSize();
 	} else {
