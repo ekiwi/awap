@@ -295,6 +295,7 @@ class CommunicationField(NamedCommunicationElement):
 		# copy type information
 		dd = self.type.to_dict()
 		dd.update(super(CommunicationField, self).to_dict())
+		dd['name'] = camelCase(dd['name'])
 		dd['id'] = self.id
 		return dd
 
