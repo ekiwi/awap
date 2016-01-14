@@ -16,8 +16,8 @@ import de.rwth_aachen.awap.messages.{{ service.name }}.*;
 import de.rwth_aachen.awap.service.{{ service.name }}Description;
 
 public abstract class {{service.name}} extends LocalService {
-	public {{service.name}}(Agent parent{{ service.java.initializer_list }}) {
-		super(parent, {{ service.id }}, new {{ service.name }}Description({{ service.id }}{{ service.java.args_list }}));
+	public {{service.name}}(Agent parent{{ service.properties.java.initializer_list }}) {
+		super(parent, {{ service.id }}, new {{ service.name }}Description({{ service.id }}{{ service.properties.java.args_list }}));
 	}
 	// message handlers
 %% for msg in service.messages

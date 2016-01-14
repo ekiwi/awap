@@ -11,14 +11,14 @@ package de.rwth_aachen.awap.service;
 import de.rwth_aachen.awap.ServiceDescription;
 
 public class {{ service.name }}Description extends ServiceDescription {
-%% for prop in service.properties
+%% for prop in service.properties.fields
 	public {{ prop.java.type }} {{ prop.name | camelCase }};
 	public boolean {{ prop.name | camelCase }}DoNotCare;
 %% endfor
-%% if service.properties | length > 0
-	public {{ service.name }}Description(int serviceTypeId {{ service.java.initializer_list }}) {
+%% if service.properties.fields | length > 0
+	public {{ service.name }}Description(int serviceTypeId {{ service.properties.java.initializer_list }}) {
 		this.serviceTypeId = serviceTypeId;
-	%% for prop in service.properties
+	%% for prop in service.properties.fields
 		this.{{ prop.name | camelCase }} = {{ prop.name | camelCase }};
 	%% endfor
 	}
@@ -26,7 +26,7 @@ public class {{ service.name }}Description extends ServiceDescription {
 
 	public {{ service.name }}Description(int serviceTypeId) {
 		this.serviceTypeId = serviceTypeId;
-	%% for prop in service.properties
+	%% for prop in service.properties.fields
 		this.{{ prop.name | camelCase }}DoNotCare = true;
 	%% endfor
 	}

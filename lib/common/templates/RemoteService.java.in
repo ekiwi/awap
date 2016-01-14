@@ -29,7 +29,7 @@ public final class {{service.name}} extends RemoteService {
 		}
 
 		// add properties to describe type
-%% for prop in service.properties
+%% for prop in service.properties.fields
 		public Type {{ prop.name | camelCase}}({{ prop.java.type }} value) {
 			this.description.{{ prop.name | camelCase }}DoNotCare= false;
 			this.description.{{ prop.name | camelCase }} = value;
