@@ -15,8 +15,8 @@ public:
 	void setUp() override;
 	void tearDown() override;
 	void testCommonHeaderParsing();
-	void testSimpleUInt32Message();
-	void testSimpleUInt12Message();
+	void testSimpleIntMessage();
+	void testSimpleShortMessage();
 	void testBoolMessage();
 	void testMakeRxMessage();
 	void testMakeTxMessage();

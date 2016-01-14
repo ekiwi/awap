@@ -62,26 +62,26 @@ MessagesTest::testCommonHeaderParsing()
 }
 
 void
-MessagesTest::testSimpleUInt32Message()
+MessagesTest::testSimpleIntMessage()
 {
 	// test service
-	using JavaClass = SimpleUInt32Message::JavaClass;
+	using JavaClass = SimpleIntMessage::JavaClass;
 
 	{
-		// prepare SimpleUInt32Message body (leading two bytes are message header)
-		uint8_t msg[7] = { 0x00, 0x00, 0x01, 0x23, 0x45, 0x67, 0x80 };
+		// prepare SimpleIntMessage body (leading two bytes are message header)
+		uint8_t msg[7] = { 0x00, 0x00, 0x00, 0x12, 0x34, 0x56, 0x78 };
 
 		// parse to Java Object
-		RxSimpleUInt32Message rx(0, slice(msg));
+		RxSimpleIntMessage rx(0, slice(msg));
 		ref_t obj = rx.createJavaObject();
 		TEST_ASSERT_FALSE(obj == 0);
 		auto obj_struct = static_cast<JavaClass::UnderlyingType*>(REF_TO_VOIDP(obj));
-		TEST_ASSERT_EQUALS(obj_struct->uint_value, 0x12345678);
+		TEST_ASSERT_EQUALS(obj_struct->int_value, 0x12345678);
 
 		// test that 32bits were read
 		uint8_t out[7] = { 0, 0, 0, 0, 0, 0, 0 };
 		// 32bit payload + 4bit message id + 2 byte common header
-		TxSimpleUInt32Message tx;
+		TxSimpleIntMessage tx;
 		TEST_ASSERT_EQUALS(tx.marshal(obj, 0, false, slice(out)), 7u);
 		// message id is 1 and should be set by the `fromJava` method
 		msg[2] |= (1 << 4);
@@ -92,42 +92,42 @@ MessagesTest::testSimpleUInt32Message()
 		// create Java message object
 		JavaClass obj(getAwapCommonInfusion());
 		auto raw = obj.getUnderlying();
-		raw->uint_value = 57343298;
+		raw->int_value = 57343298;
 
 		// to message...
 		uint8_t msg[7];
 		// 32bit payload + 4bit message id + 2 byte common header
-		TxSimpleUInt32Message tx;
+		TxSimpleIntMessage tx;
 		TEST_ASSERT_EQUALS(tx.marshal(obj.getRef(), 0, false, slice(msg)), 7u);
 		// ...and back
-		RxSimpleUInt32Message rx(0, slice(msg));
+		RxSimpleIntMessage rx(0, slice(msg));
 		ref_t out = rx.createJavaObject();
 		TEST_ASSERT_FALSE(out == 0);
 
 		auto obj_struct = static_cast<JavaClass::UnderlyingType*>(REF_TO_VOIDP(out));
-		TEST_ASSERT_EQUALS(obj_struct->uint_value, 57343298);
+		TEST_ASSERT_EQUALS(obj_struct->int_value, 57343298);
 	}
 
 }
 
 void
-MessagesTest::testSimpleUInt12Message()
+MessagesTest::testSimpleShortMessage()
 {
 	// test service
-	using JavaClass = SimpleUInt12Message::JavaClass;
+	using JavaClass = SimpleShortMessage::JavaClass;
 
 	{
-		// prepare SimpleUInt12Message body
-		uint8_t msg[4] = { 0x00, 0x00, 0x06, 0x078 };
+		// prepare SimpleShortMessage body
+		uint8_t msg[5] = { 0x00, 0x00, 0x00, 0x67, 0x89 };
 
 		// parse to Java Object
-		RxSimpleUInt12Message rx(0, slice(msg));
+		RxSimpleShortMessage rx(0, slice(msg));
 		ref_t obj = rx.createJavaObject();
 		TEST_ASSERT_FALSE(obj == 0);
 
-		uint8_t out[4] = { 0, 0, 0, 0 };
+		uint8_t out[5] = { 0, 0, 0, 0, 0 };
 		// 12bit payload + 4bit message id + 2 byte common header
-		TxSimpleUInt12Message tx;
+		TxSimpleShortMessage tx;
 		TEST_ASSERT_EQUALS(tx.marshal(obj, 0, false, slice(out)), 4u);
 		// message id is 2 and should be set by the `fromJava` method
 		msg[2] |= (2 << 4);
@@ -138,20 +138,20 @@ MessagesTest::testSimpleUInt12Message()
 		// create Java message object
 		JavaClass obj(getAwapCommonInfusion());
 		auto raw = obj.getUnderlying();
-		raw->uint_value = 1234;
+		raw->short_value = 1234;
 
 		// to message...
-		uint8_t msg[4];
-		// 12bit payload + 4bit message id + 2 byte common header
-		TxSimpleUInt12Message tx;
-		TEST_ASSERT_EQUALS(tx.marshal(obj.getRef(), 0, false, slice(msg)), 4u);
+		uint8_t msg[5];
+		// 16bit payload + 8bit message id + 2 byte common header
+		TxSimpleShortMessage tx;
+		TEST_ASSERT_EQUALS(tx.marshal(obj.getRef(), 0, false, slice(msg)), 5u);
 		// ...and back
-		RxSimpleUInt12Message rx(0, slice(msg));
+		RxSimpleShortMessage rx(0, slice(msg));
 		ref_t out = rx.createJavaObject();
 		TEST_ASSERT_FALSE(out == 0);
 
 		auto out_raw = static_cast<JavaClass::UnderlyingType*>(REF_TO_VOIDP(out));
-		TEST_ASSERT_EQUALS(out_raw->uint_value, 1234);
+		TEST_ASSERT_EQUALS(out_raw->short_value, 1234);
 	}
 
 }
@@ -171,8 +171,8 @@ MessagesTest::testBoolMessage()
 		raw->b2 = true;
 
 		// to message...
-		uint8_t msg[3];
-		// 3 x 1bit bool + 4bit message id + 2 byte common header
+		uint8_t msg[6];
+		// 3 x 8bit bool + 8bit message id + 2 byte common header
 		TxBoolMessage tx;
 		TEST_ASSERT_EQUALS(tx.marshal(obj.getRef(), 0, false, slice(msg)), 3u);
 		TEST_ASSERT_EQUALS(msg[2], (4 << 4) | (0b1010));
@@ -194,7 +194,7 @@ MessagesTest::testMakeRxMessage()
 {
 	// test with valid SimpleUInt32Message
 	{
-		uint8_t msg[7] = { 0, 0, 0x01 | (1 << 4), 0x23, 0x45, 0x67, 0x80 };
+		uint8_t msg[7] = { 0, 0, 1, 0x12, 0x34, 0x56, 0x78 };
 		auto rx = generated::MessageFactory::makeRxMessage(0x45, slice(msg));
 		TEST_ASSERT_TRUE(rx != nullptr);
 		TEST_ASSERT_EQUALS(rx->getSize(), 7u);
@@ -203,7 +203,7 @@ MessagesTest::testMakeRxMessage()
 
 	// test with invalid message id
 	{
-		uint8_t msg[7] = { 0, 0, 0x01 | (0xf << 4), 0x23, 0x45, 0x67, 0x80};
+		uint8_t msg[7] = { 0, 0, 0x0f, 0x12, 0x34, 0x56, 0x78};
 		TEST_ASSERT_TRUE(
 			generated::MessageFactory::makeRxMessage(0x45, slice(msg))
 			== nullptr);
@@ -216,7 +216,7 @@ MessagesTest::testMakeTxMessage()
 {
 	// test with SimpleUInt32Message object
 	{
-		SimpleUInt32Message::JavaClass obj(getAwapCommonInfusion());
+		SimpleIntMessage::JavaClass obj(getAwapCommonInfusion());
 		uint8_t msg[7] = { 0, 0, 0, 0, 0, 0, 0 };
 		auto tx = generated::MessageFactory::makeTxMessage(obj.getRef());
 		TEST_ASSERT_TRUE(tx != nullptr);
