@@ -69,7 +69,7 @@ MessagesTest::testSimpleIntMessage()
 
 	{
 		// prepare SimpleIntMessage body (leading two bytes are message header)
-		uint8_t msg[7] = { 0x00, 0x00, 0x00, 0x12, 0x34, 0x56, 0x78 };
+		uint8_t msg[7] = { 0x00, 0x00, 0x01, 0x78, 0x56, 0x34, 0x12 };
 
 		// parse to Java Object
 		RxSimpleIntMessage rx(0, slice(msg));
@@ -83,8 +83,6 @@ MessagesTest::testSimpleIntMessage()
 		// 32bit payload + 4bit message id + 2 byte common header
 		TxSimpleIntMessage tx;
 		TEST_ASSERT_EQUALS(tx.marshal(obj, 0, false, slice(out)), 7u);
-		// message id is 1 and should be set by the `fromJava` method
-		msg[2] |= (1 << 4);
 		TEST_ASSERT_EQUALS_ARRAY(msg, out, slice(msg).length);
 	}
 
@@ -118,7 +116,7 @@ MessagesTest::testSimpleShortMessage()
 
 	{
 		// prepare SimpleShortMessage body
-		uint8_t msg[5] = { 0x00, 0x00, 0x00, 0x67, 0x89 };
+		uint8_t msg[5] = { 0x00, 0x00, 0x02, 0x67, 0x89 };
 
 		// parse to Java Object
 		RxSimpleShortMessage rx(0, slice(msg));
@@ -128,9 +126,7 @@ MessagesTest::testSimpleShortMessage()
 		uint8_t out[5] = { 0, 0, 0, 0, 0 };
 		// 12bit payload + 4bit message id + 2 byte common header
 		TxSimpleShortMessage tx;
-		TEST_ASSERT_EQUALS(tx.marshal(obj, 0, false, slice(out)), 4u);
-		// message id is 2 and should be set by the `fromJava` method
-		msg[2] |= (2 << 4);
+		TEST_ASSERT_EQUALS(tx.marshal(obj, 0, false, slice(out)), 5u);
 		TEST_ASSERT_EQUALS_ARRAY(msg, out, slice(msg).length);
 	}
 
@@ -174,8 +170,11 @@ MessagesTest::testBoolMessage()
 		uint8_t msg[6];
 		// 3 x 8bit bool + 8bit message id + 2 byte common header
 		TxBoolMessage tx;
-		TEST_ASSERT_EQUALS(tx.marshal(obj.getRef(), 0, false, slice(msg)), 3u);
-		TEST_ASSERT_EQUALS(msg[2], (4 << 4) | (0b1010));
+		TEST_ASSERT_EQUALS(tx.marshal(obj.getRef(), 0, false, slice(msg)), 6u);
+		TEST_ASSERT_EQUALS(msg[2], 4);	// check message id
+		TEST_ASSERT_TRUE( msg[3]);	// check b0
+		TEST_ASSERT_FALSE(msg[4]);	// check b1
+		TEST_ASSERT_TRUE( msg[5]);	// check b2
 		// ...and back
 		RxBoolMessage rx(0, slice(msg));
 		ref_t out = rx.createJavaObject();
@@ -222,7 +221,7 @@ MessagesTest::testMakeTxMessage()
 		TEST_ASSERT_TRUE(tx != nullptr);
 		TEST_ASSERT_EQUALS(tx->getSize(), 7u);
 		TEST_ASSERT_EQUALS(tx->marshal(obj.getRef(), 0, false, slice(msg)), 7u);
-		TEST_ASSERT_EQUALS(msg[2] >> 4, 1);
+		TEST_ASSERT_EQUALS(msg[2], 1);	// check message id
 		delete tx;
 	}
 }
