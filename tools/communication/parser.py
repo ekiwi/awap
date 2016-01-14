@@ -248,6 +248,7 @@ class EnumType(NamedCommunicationElement, CommunicationType):
 
 	def to_dict(self):
 		dd = super(EnumType, self).to_dict()
+		dd.update(CommunicationType.to_dict(self))
 		dd['elements'] = [element.to_dict() for element in self.elements]
 		dd['max_id'] = self.max_id
 		return dd
@@ -292,7 +293,8 @@ class CommunicationField(NamedCommunicationElement):
 	def to_dict(self):
 		dd = super(CommunicationField, self).to_dict()
 		dd['id'] = self.id
-		dd.update(self.type.to_dict())
+		# copy type information
+		dd.update(CommunicationType.to_dict(self.type))
 		return dd
 
 
