@@ -98,6 +98,11 @@ static inline bool toQueryMask(
 		return false;
 	}
 
+	// fill mask with zero
+	for(size_t ii = 0; ii < PropertyCount; ++ii) {
+		mask.data[ii] = 0;
+	}
+
 	switch(serviceTypeId) {
 %% for service in services
 	case {{ service.id }}:	// {{ service.name }}
