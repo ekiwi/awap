@@ -62,7 +62,7 @@ size_t ::awap::generated::{{ service.name }}::Tx{{ msg.name }}::marshalFromSpeci
 		std::memcpy(&output.data[3], java_data_start, this->getDataSize());
 		%% endif
 
-		return this->getDataSize();
+		return this->getDataSize() + 1;	// +1 for id
 	} else {
 		return 0;	// error, zero bytes written
 	}
