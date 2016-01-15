@@ -59,9 +59,7 @@ private:
 	ostfriesentee::Vm& vm;
 	ostfriesentee::Infusion awapCommon;
 	ostfriesentee::Infusion awapMote;
-	static constexpr size_t MaxPropBytes =
-		divideCeil(generated::Configuration::MaxPropertyBitCount, 8u);
-	using Services = ServiceDirectory<MaxPropBytes, MaxServices>;
+	using Services = ServiceDirectory<generated::Configuration::MaxPropertyByteCount, MaxServices>;
 	Services services;
 };
 

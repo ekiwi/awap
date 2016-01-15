@@ -148,7 +148,7 @@ Node::sendBroadcast(AgentId agent, ref_t broadcastMessage)
 
 	const size_t msgSize = txMessage->getSize();
 	// 1 byte for broadcast header
-	const size_t maxPacketSize = msgSize + 1 + MaxPropBytes;
+	const size_t maxPacketSize = msgSize + 1 + generated::Configuration::MaxPropertyByteCount;
 	// TODO: should use a unique_ptr, but is there support on embedded?
 	auto output = slice(new uint8_t[maxPacketSize], maxPacketSize);
 

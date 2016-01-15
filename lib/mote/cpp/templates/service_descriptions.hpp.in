@@ -19,14 +19,19 @@ namespace generated {
 
 struct ServiceDescription {
 
-static constexpr size_t MaxPropBytes =
-		divideCeil(generated::Configuration::MaxPropertyBitCount, 8u);
-static constexpr size_t PropertyCount =
-		divideCeil(MaxPropBytes, sizeof(uint32_t));
+static constexpr size_t MaxPropBytes = generated::Configuration::MaxPropertyByteCount;
+static constexpr size_t PropertyCount = divideCeil(MaxPropBytes, sizeof(uint32_t));
 
 %% for service in services
 using {{ service.name }}DescriptionStruct =
 	::de::rwth_aachen::awap::service::{{ service.name }}Description::UnderlyingType;
+
+struct {{ service.name }}Properties {
+	static constexpr size_t Bytes = {{ service.properties.bytes }};
+%% for prop in service.properties.fields
+	{{ prop.cpp.type }} {{ prop.name }};
+%% endfor
+};
 %% endfor
 
 static inline ServiceTypeId getServiceTypeId(ref_t java_desc) {
@@ -93,24 +98,18 @@ static inline bool toQueryMask(
 		return false;
 	}
 
-	// fill mask with zero
-	for(size_t ii = 0; ii < PropertyCount; ++ii) {
-		mask.data[ii] = 0;
-	}
-
-	// interpret output as uint8_t to reuse the code generated for marshalling
-	// messages
-	auto data = reinterpret_cast<uint8_t*>(mask.data);
-
 	switch(serviceTypeId) {
 %% for service in services
 	case {{ service.id }}:	// {{ service.name }}
 	{
-	%% for prop in service.properties.fields
-		const {{ prop.cpp.unsigned_type }} {{ prop.name }} =
-			(broadcastHeader & (1 << (7 - {{ prop.id }})))? (1<<{{ prop.size }}) - 1 : 0;
-	%% endfor
-		// TODO
+	%% if service.properties.bytes > 0
+		{{ service.name }}Properties prop;
+		%% for prop in service.properties.fields
+		prop.{{ prop.name }} = (broadcastHeader & (1 << (7 - {{ prop.id }})))? (1<<{{ prop.size * 8 }}) - 1 : 0;
+		%% endfor
+		auto data = reinterpret_cast<uint8_t*>(mask.data);
+		std::memcpy(mask.data, &prop, {{ service.name }}Properties::Bytes);
+	%% endif
 		return true;
 	}
 %% endfor
@@ -133,21 +132,20 @@ static inline size_t marshal(ref_t java_desc, Slice<uint8_t> output) {
 		return 0;	// class is not from the awap-common infusion
 	}
 
-	auto data = output.data;
-
 	switch(descClassId.entity_id) {
 %% for service in services
 	case AWAP_COMMON_CDEF_de_rwth_aachen_awap_service_{{ service.name }}Description:
 	{
-	%% if service.properties.fields | length > 0
+	%% if service.properties.bytes > 0
 		if(output.length < {{ service.properties_bytes }}) {
 			return 0;
 		}
+		{{ service.name }}Properties prop;
 		auto java_data = static_cast<const {{ service.name }}DescriptionStruct*>(REF_TO_VOIDP(java_desc));
 		%% for prop in service.properties.fields
-		const auto {{ prop.name }} = cap<{{ prop.cpp.unsigned_type }}>(java_data->{{ prop.name }}, {{ prop.min_value }}, {{ prop.max_value }});
+		prop.{{ prop.name }} = cap<{{ prop.cpp.unsigned_type }}>(java_data->{{ prop.name }}, {{ prop.min_value }}, {{ prop.max_value }});
 		%% endfor
-		// TODO
+		std::memcpy(output.data, &prop, {{ service.name }}Properties::Bytes);
 	%% endif
 		return {{ service.properties_bytes }};
 	}

@@ -14,7 +14,7 @@ namespace generated {
 
 /// contains values that depend on the slected configuration
 struct Configuration {
-	static constexpr size_t MaxPropertyBitCount = {{ max_properties_size }} * 8;
+	static constexpr size_t MaxPropertyByteCount = {{ max_properties_size }};
 
 }; // struct Configuration
 
