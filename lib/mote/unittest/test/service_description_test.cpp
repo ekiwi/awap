@@ -103,21 +103,26 @@ ServiceDescriptionTest::testToQueryMaskWithServiceIdAndBroadcastHeader()
 
 		out[0] = 0xaaaaaaaau;
 		TEST_ASSERT_TRUE(SD::toQueryMask(7, 0b10000000, slice(out)));
-		// Building property (4bit) selected
-		TEST_ASSERT_EQUALS(out_bytes[0], 0xf0u);
+		// Building property (8bit) selected
+		TEST_ASSERT_EQUALS(out_bytes[0], 0xffu);
+		TEST_ASSERT_EQUALS(out_bytes[1], 0x00u);
+		TEST_ASSERT_EQUALS(out_bytes[2], 0x00u);
+		TEST_ASSERT_EQUALS(out_bytes[3], 0x00u);
 
 		out[0] = 0xaaaaaaaau;
 		TEST_ASSERT_TRUE(SD::toQueryMask(7, 0b01000000, slice(out)));
 		// SupplyCircuit property (8bit) selected
-		TEST_ASSERT_EQUALS(out_bytes[0], 0x0fu);
-		TEST_ASSERT_EQUALS(out_bytes[1], 0xf0u);
+		TEST_ASSERT_EQUALS(out_bytes[0], 0x00u);
+		TEST_ASSERT_EQUALS(out_bytes[1], 0xffu);
+		TEST_ASSERT_EQUALS(out_bytes[2], 0x00u);
+		TEST_ASSERT_EQUALS(out_bytes[3], 0x00u);
 
 		out[0] = 0xaaaaaaaau;
 		TEST_ASSERT_TRUE(SD::toQueryMask(7, 0b11100000, slice(out)));
 		// all properties selected
 		TEST_ASSERT_EQUALS(out_bytes[0], 0xffu);
 		TEST_ASSERT_EQUALS(out_bytes[1], 0xffu);
-		TEST_ASSERT_EQUALS(out_bytes[2], 0xf0u);
+		TEST_ASSERT_EQUALS(out_bytes[2], 0xffu);
 		TEST_ASSERT_EQUALS(out_bytes[3], 0x00u);
 	}
 }
@@ -162,16 +167,21 @@ ServiceDescriptionTest::testToQueryMask()
 		out[0] = 0xaaaaaaaau;
 		data->buildingDoNotCare = 0;
 		TEST_ASSERT_TRUE(SD::toQueryMask(obj.getRef(), slice(out)));
-		// Building property (4bit) selected
-		TEST_ASSERT_EQUALS(out_bytes[0], 0xf0u);
+		// Building property (8bit) selected
+		TEST_ASSERT_EQUALS(out_bytes[0], 0xffu);
+		TEST_ASSERT_EQUALS(out_bytes[1], 0x00u);
+		TEST_ASSERT_EQUALS(out_bytes[2], 0x00u);
+		TEST_ASSERT_EQUALS(out_bytes[3], 0x00u);
 
 		out[0] = 0xaaaaaaaau;
 		data->buildingDoNotCare = 1;
 		data->supplyCircuitDoNotCare = 0;
 		TEST_ASSERT_TRUE(SD::toQueryMask(obj.getRef(), slice(out)));
 		// SupplyCircuit property (8bit) selected
-		TEST_ASSERT_EQUALS(out_bytes[0], 0x0fu);
-		TEST_ASSERT_EQUALS(out_bytes[1], 0xf0u);
+		TEST_ASSERT_EQUALS(out_bytes[0], 0x00u);
+		TEST_ASSERT_EQUALS(out_bytes[1], 0xffu);
+		TEST_ASSERT_EQUALS(out_bytes[2], 0x00u);
+		TEST_ASSERT_EQUALS(out_bytes[3], 0x00u);
 
 		out[0] = 0xaaaaaaaau;
 		data->buildingDoNotCare = 0;
@@ -181,7 +191,7 @@ ServiceDescriptionTest::testToQueryMask()
 		// all properties selected
 		TEST_ASSERT_EQUALS(out_bytes[0], 0xffu);
 		TEST_ASSERT_EQUALS(out_bytes[1], 0xffu);
-		TEST_ASSERT_EQUALS(out_bytes[2], 0xf0u);
+		TEST_ASSERT_EQUALS(out_bytes[2], 0xffu);
 		TEST_ASSERT_EQUALS(out_bytes[3], 0x00u);
 	}
 }
@@ -209,7 +219,7 @@ ServiceDescriptionTest::testMarshalServiceDescription()
 		data->building = 0xf;
 		// marshal always writes the maximum number of bytes needed for the service
 		TEST_ASSERT_EQUALS(SD::marshal(obj.getRef(), slice(out)), 3u);
-		TEST_ASSERT_EQUALS(out_bytes[0], 0xf0);
+		TEST_ASSERT_EQUALS(out_bytes[0], 0x0f);
 		TEST_ASSERT_EQUALS(out_bytes[1], 0x00);
 		TEST_ASSERT_EQUALS(out_bytes[2], 0x00);
 
@@ -220,14 +230,15 @@ ServiceDescriptionTest::testMarshalServiceDescription()
 		// Building property (4bit) selected
 		TEST_ASSERT_EQUALS(out_bytes[0], 0x00);
 		TEST_ASSERT_EQUALS(out_bytes[1], 0x00);
-		TEST_ASSERT_EQUALS(out_bytes[2] >> 4, 0x0);
+		TEST_ASSERT_EQUALS(out_bytes[2], 0x00);
 
 		out[0] = 0;
 		data->supplyCircuit = 0xaa;
 		TEST_ASSERT_EQUALS(SD::marshal(obj.getRef(), slice(out)), 3u);
 		// SupplyCircuit property (8bit) selected
-		TEST_ASSERT_EQUALS(out_bytes[0], 0x0au);
-		TEST_ASSERT_EQUALS(out_bytes[1], 0xa0u);
+		TEST_ASSERT_EQUALS(out_bytes[0], 0x00u);
+		TEST_ASSERT_EQUALS(out_bytes[1], 0xaau);
+		TEST_ASSERT_EQUALS(out_bytes[2], 0x00u);
 
 		out[0] = 0x11111111u;
 		data->building = 0xa;
@@ -235,8 +246,8 @@ ServiceDescriptionTest::testMarshalServiceDescription()
 		data->room = 0xcc;
 		TEST_ASSERT_EQUALS(SD::marshal(obj.getRef(), slice(out)), 3u);
 		// all properties selected
-		TEST_ASSERT_EQUALS(out_bytes[0], 0xabu);
-		TEST_ASSERT_EQUALS(out_bytes[1], 0xbcu);
-		TEST_ASSERT_EQUALS(out_bytes[2] >> 4, 0xcu);
+		TEST_ASSERT_EQUALS(out_bytes[0], 0x0au);
+		TEST_ASSERT_EQUALS(out_bytes[1], 0xbbu);
+		TEST_ASSERT_EQUALS(out_bytes[2], 0xccu);
 	}
 }
