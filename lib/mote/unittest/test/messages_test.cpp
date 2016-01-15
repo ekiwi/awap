@@ -69,7 +69,7 @@ MessagesTest::testSimpleIntMessage()
 
 	{
 		// prepare SimpleIntMessage body (leading two bytes are message header)
-		uint8_t msg[7] = { 0x00, 0x00, 0x01, 0x78, 0x56, 0x34, 0x12 };
+		uint8_t msg[7] = { 0x00, 0x00, 0x00, 0x78, 0x56, 0x34, 0x12 };
 
 		// parse to Java Object
 		RxSimpleIntMessage rx(0, slice(msg));
@@ -189,11 +189,35 @@ MessagesTest::testBoolMessage()
 }
 
 void
+MessagesTest::testEmptyMessage()
+{
+	// test service
+	using JavaClass = EmptyMessage::JavaClass;
+
+	{
+		// create Java message object
+		JavaClass obj(getAwapCommonInfusion());
+
+		// to message...
+		uint8_t msg[3];
+		//  8bit message id + 2 byte common header
+		TxEmptyMessage tx;
+		TEST_ASSERT_EQUALS(tx.marshal(obj.getRef(), 0, false, slice(msg)), 3u);
+		TEST_ASSERT_EQUALS(msg[2], 1);	// check message id
+		// ...and back
+		RxEmptyMessage rx(0, slice(msg));
+		ref_t out = rx.createJavaObject();
+		TEST_ASSERT_FALSE(out == 0);
+	}
+
+}
+
+void
 MessagesTest::testMakeRxMessage()
 {
 	// test with valid SimpleUInt32Message
 	{
-		uint8_t msg[7] = { 0, 0, 1, 0x12, 0x34, 0x56, 0x78 };
+		uint8_t msg[7] = { 0, 0, 0, 0x12, 0x34, 0x56, 0x78 };
 		auto rx = generated::MessageFactory::makeRxMessage(0x45, slice(msg));
 		TEST_ASSERT_TRUE(rx != nullptr);
 		TEST_ASSERT_EQUALS(rx->getSize(), 7u);
@@ -213,7 +237,7 @@ MessagesTest::testMakeRxMessage()
 void
 MessagesTest::testMakeTxMessage()
 {
-	// test with SimpleUInt32Message object
+	// test with SimpleIntMessage object
 	{
 		SimpleIntMessage::JavaClass obj(getAwapCommonInfusion());
 		uint8_t msg[7] = { 0, 0, 0, 0, 0, 0, 0 };
@@ -221,6 +245,17 @@ MessagesTest::testMakeTxMessage()
 		TEST_ASSERT_TRUE(tx != nullptr);
 		TEST_ASSERT_EQUALS(tx->getSize(), 7u);
 		TEST_ASSERT_EQUALS(tx->marshal(obj.getRef(), 0, false, slice(msg)), 7u);
+		TEST_ASSERT_EQUALS(msg[2], 0);	// check message id
+		delete tx;
+	}
+	// test with EmptyMessage object
+	{
+		EmptyMessage::JavaClass obj(getAwapCommonInfusion());
+		uint8_t msg[3] = { 0, 0, 1 };
+		auto tx = generated::MessageFactory::makeTxMessage(obj.getRef());
+		TEST_ASSERT_TRUE(tx != nullptr);
+		TEST_ASSERT_EQUALS(tx->getSize(), 3u);
+		TEST_ASSERT_EQUALS(tx->marshal(obj.getRef(), 0, false, slice(msg)), 3u);
 		TEST_ASSERT_EQUALS(msg[2], 1);	// check message id
 		delete tx;
 	}

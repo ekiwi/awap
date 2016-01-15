@@ -11,10 +11,10 @@ This file is part of awap.
 
 <service name="MessageTestService">
 	<messages>
-		<message name="EmptyMessage" direction="rx" performative="INFORM" id="0" />
-		<message name="SimpleIntMessage" direction="rx" performative="INFORM" id="1" >
+		<message name="SimpleIntMessage" direction="rx" performative="INFORM" id="0" >
 			<int name="int_value" id="0" />
 		</message>
+		<message name="EmptyMessage" direction="rx" performative="INFORM" id="1" />
 		<message name="SimpleShortMessage" direction="rx" performative="INFORM" id="2" >
 			<short name="short_value" id="0" />
 		</message>

@@ -18,6 +18,7 @@ public:
 	void testSimpleIntMessage();
 	void testSimpleShortMessage();
 	void testBoolMessage();
+	void testEmptyMessage();
 	void testMakeRxMessage();
 	void testMakeTxMessage();
 };
