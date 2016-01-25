@@ -5,7 +5,7 @@
 
 # bridge.py
 
-import sys
+import sys, json
 from mtp import MTP, ACLCommunicator, AgentIdentifier, Performative
 from ams import AMS
 from df import DF, ServiceDescription
@@ -31,4 +31,14 @@ if __name__ == "__main__":
 	print("\n".join(str(a) for a in temperature_agents))
 
 	# reguest temperature from agent(s)
-	# TODO
+	test = ACLCommunicator("test", mtp)
+	msg = test.create_msg(Performative.REQUEST, temperature_agents)
+	msg.content = json.dumps({'service': 'TemperatureService', 'message': 'RequestTemperature'})
+	test.send(msg)
+	answer = test.receive()
+	if answer.performative != Performative.INFORM:
+		print("ERROR: Unexpected answer:\n{}".format(answer))
+	else:
+		print("Received Temperature: {}".format(json.loads(answer.content)['value']))
+
+
