@@ -44,8 +44,7 @@ class FP0(object):
 		return '"{}"'.format(value.replace('"', '\\"'))
 
 class ServiceDescription(object):
-	def __init__(self, name, service_type):
-		assert isinstance(name, str)
+	def __init__(self, service_type, name=None):
 		self.name = name
 		self.type = service_type
 		self.properties = []
@@ -54,7 +53,9 @@ class ServiceDescription(object):
 		self.properties.append((name, value))
 
 	def __str__(self):
-		s  = "(service‑description :name " + FP0.createConstantString(self.name)
+		s  = "(service-description"
+		if self.name is not None and len(self.name) > 0:
+			s += " :name " + FP0.createConstantString(self.name)
 		s += " :type " + FP0.createConstantString(self.type) + " :properties (set"
 		for pp in self.properties:
 			s += " (property :name "
@@ -77,11 +78,40 @@ class DF(ACLCommunicator):
 		super().__init__('df@{}'.format(self.platform_name), mtp)
 		self.parser = FP0.getParser()
 
+	def create_msg(self, performative, receiver=None):
+		msg = super().create_msg(performative, receiver)
+		msg.language = "fipa-sl0"
+		msg.ontology = "FIPA-Agent-Management"
+		msg.protocol = "fipa-request"
+		return msg
+
+	def create_action_msg(self, action, receiver=None):
+		msg = self.create_msg(Performative.REQUEST, receiver)
+		msg.content = '((action {} {}))'.format(receiver, action)
+		return msg
+
+	def search(self, df_id, service_desc):
+		assert isinstance(service_desc, ServiceDescription)
+		action = '(search (df-agent-description :services (set {}))'.format(service_desc)
+		action += ' (search-constraints :min-depth 2))'
+		self.send(self.create_action_msg(action, df_id))
+		answer = self.receive()
+		if answer.performative != Performative.INFORM:
+			print("ERROR: Unexpected answer:\n{}".format(answer))
+			return
+		res = self.parser.parse_content(answer.content)
+
+		agents = []
+		for desc in res[0][2]:
+			if desc[0] == 'ams-agent-description':
+				agents.append(desc[1])
+
+		return agents
 
 
 class TestServiceDescription(unittest.TestCase):
 	def setUp(self):
-		self.service = ServiceDescription("test_service", "the best kind")
+		self.service = ServiceDescription("the best kind", "test_service")
 		self.service.add_property("age", "old")
 
 

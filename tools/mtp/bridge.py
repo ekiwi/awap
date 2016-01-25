@@ -8,6 +8,7 @@
 import sys
 from mtp import MTP, ACLCommunicator, AgentIdentifier, Performative
 from ams import AMS
+from df import DF, ServiceDescription
 
 if __name__ == "__main__":
 	if len(sys.argv) < 2:
@@ -17,8 +18,11 @@ if __name__ == "__main__":
 	mtp = MTP("http://localhost:9000/acc")
 	ams = AMS("awap", mtp)
 	agents = ams.discover_agents(AgentIdentifier("ams@192.168.122.1:1099/JADE", jade_url))
-	print("Agents @ {}".format(jade_url))
-	for agent in agents:
-		name = agent['name']
-		print("{} @ {} ({})".format(name.name, name.addresses, agent['state']))
 
+	df_id = next(agent['name'] for agent in agents if agent['name'].name.startswith('df@'))
+	print("found df: {}".format(df_id))
+	df = DF("awap", mtp)
+	service = ServiceDescription("TemperatureService")
+	service.add_property("building", "Build1")
+	service.add_property("room", "R1")
+	df.search(df_id, service)
