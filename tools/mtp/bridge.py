@@ -8,7 +8,7 @@
 import sys, json
 from mtp import MTP, ACLCommunicator, AgentIdentifier, Performative
 from ams import AMS
-from df import DF, ServiceDescription
+from df import DF, ServiceDescription, DFAgentDescription
 
 if __name__ == "__main__":
 	if len(sys.argv) < 2:
@@ -40,5 +40,9 @@ if __name__ == "__main__":
 		print("ERROR: Unexpected answer:\n{}".format(answer))
 	else:
 		print("Received Temperature: {}".format(json.loads(answer.content)['value']))
+
+	# try to insert ourselves into df
+	bridge_service = ServiceDescription("BridgeService", "Blablabla")
+	df.register(df_id, DFAgentDescription(bridge_service, test.id))
 
 

@@ -66,11 +66,19 @@ class ServiceDescription(object):
 
 
 class DFAgentDescription(object):
-	def __init__(self, agent_id, service_desc):
-		assert isinstance(agent_id, AgentIdentifier)
+	def __init__(self, service_desc, agent_id = None):
+		assert (agent_id is None or isinstance(agent_id, AgentIdentifier))
 		assert isinstance(service_desc, ServiceDescription)
-		self.name = agent_is
+		self.name = agent_id
 		self.service = service_desc
+
+	def __str__(self):
+		s = "(df-agent-description"
+		if self.name is not None and isinstance(self.name, AgentIdentifier) > 0:
+			s += " :name " + FP0.createConstantString(self.name)
+		if self.service is not None:
+			s += " :services (set {})".format(self.service)
+		return s + ")"
 
 class DF(ACLCommunicator):
 	def __init__(self, platform_name, mtp):
@@ -92,7 +100,7 @@ class DF(ACLCommunicator):
 
 	def search(self, df_id, service_desc):
 		assert isinstance(service_desc, ServiceDescription)
-		action = '(search (df-agent-description :services (set {}))'.format(service_desc)
+		action = '(search {}'.format(DFAgentDescription(service_desc))
 		action += ' (search-constraints :min-depth 2))'
 		self.send(self.create_action_msg(action, df_id))
 
@@ -107,6 +115,14 @@ class DF(ACLCommunicator):
 			if desc[0] == 'df-agent-description':
 				agents.append(desc[1]['name'])
 		return agents
+
+	def register(self, df_id, agent_desc):
+		assert isinstance(agent_desc, DFAgentDescription)
+		action = '(register {})'.format(agent_desc)
+		self.send(self.create_action_msg(action, df_id))
+
+		answer = self.receive()
+		return answer.performative == Performative.INFORM
 
 
 class TestServiceDescription(unittest.TestCase):
