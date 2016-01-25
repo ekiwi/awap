@@ -17,12 +17,18 @@ if __name__ == "__main__":
 	jade_url = sys.argv[1]
 	mtp = MTP("http://localhost:9000/acc")
 	ams = AMS("awap", mtp)
+	# find DF
 	agents = ams.discover_agents(AgentIdentifier("ams@192.168.122.1:1099/JADE", jade_url))
-
 	df_id = next(agent['name'] for agent in agents if agent['name'].name.startswith('df@'))
 	print("found df: {}".format(df_id))
+ 	# find agents that can supply temperature in Building1, Room1
 	df = DF("awap", mtp)
 	service = ServiceDescription("TemperatureService")
 	service.add_property("building", "Build1")
 	service.add_property("room", "R1")
-	df.search(df_id, service)
+	temperature_agents = df.search(df_id, service)
+	print("found agents that provide a {}:".format(service.type))
+	print("\n".join(str(a) for a in temperature_agents))
+
+	# reguest temperature from agent(s)
+	# TODO

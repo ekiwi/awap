@@ -95,16 +95,18 @@ class DF(ACLCommunicator):
 		action = '(search (df-agent-description :services (set {}))'.format(service_desc)
 		action += ' (search-constraints :min-depth 2))'
 		self.send(self.create_action_msg(action, df_id))
+
 		answer = self.receive()
 		if answer.performative != Performative.INFORM:
 			print("ERROR: Unexpected answer:\n{}".format(answer))
 			return
 		res = self.parser.parse_content(answer.content)
 
-		print(res)
-
-
-		return []
+		agents = []
+		for desc in res[0][2]:
+			if desc[0] == 'df-agent-description':
+				agents.append(desc[1]['name'])
+		return agents
 
 
 class TestServiceDescription(unittest.TestCase):
