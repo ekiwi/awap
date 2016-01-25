@@ -1,7 +1,7 @@
 #!/usr/bin/env python3
 # -*- coding: utf-8 -*-
 #
-# Copyright (c) 2015 Kevin Laeufer <kevin.laeufer@rwth-aachen.de>
+# Copyright (c) 2015-2016 Kevin Laeufer <kevin.laeufer@rwth-aachen.de>
 
 # bridge.py
 

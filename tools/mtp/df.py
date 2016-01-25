@@ -1,12 +1,12 @@
 #!/usr/bin/env python3
 # -*- coding: utf-8 -*-
 #
-# Copyright (c) 2015 Kevin Laeufer <kevin.laeufer@rwth-aachen.de>
+# Copyright (c) 2015-2016 Kevin Laeufer <kevin.laeufer@rwth-aachen.de>
 
 # df.py
 
 from mtp import MTP, ACLCommunicator, AgentIdentifier, Performative
-from fipa import FP0Parser
+from fipa import FP0Parser, AlternativeFP0ObjectFactory
 
 import unittest
 
@@ -17,7 +17,7 @@ class FP0(object):
 	@staticmethod
 	def getParser():
 		if FP0.FP0ParserSingleton is None:
-			FP0.FP0ParserSingleton = FP0Parser()
+			FP0.FP0ParserSingleton = FP0Parser(AlternativeFP0ObjectFactory())
 		return FP0.FP0ParserSingleton
 
 	@staticmethod
@@ -101,12 +101,10 @@ class DF(ACLCommunicator):
 			return
 		res = self.parser.parse_content(answer.content)
 
-		agents = []
-		for desc in res[0][2]:
-			if desc[0] == 'ams-agent-description':
-				agents.append(desc[1])
+		print(res)
 
-		return agents
+
+		return []
 
 
 class TestServiceDescription(unittest.TestCase):

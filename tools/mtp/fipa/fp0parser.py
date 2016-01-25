@@ -1,7 +1,7 @@
 #!/usr/bin/env python3
 # -*- coding: utf-8 -*-
 #
-# Copyright (c) 2015 Kevin Laeufer <kevin.laeufer@rwth-aachen.de>
+# Copyright (c) 2015-2016 Kevin Laeufer <kevin.laeufer@rwth-aachen.de>
 
 """
 This module describes a parser for the FIPA SL0 Conent Language.
@@ -15,7 +15,7 @@ http://www.fipa.org/specs/fipa00008/SC00008I.html
 import unittest
 import datetime
 
-from . import aclparser
+from . import aclparser, acl
 from .fasterparsing import Regex, ParseException, Or, Literal, ZeroOrMore, Suppress, Forward, OneOrMore, Group
 
 class ObjectFactory(aclparser.ObjectFactory):
@@ -55,6 +55,33 @@ class ObjectFactory(aclparser.ObjectFactory):
 			return value
 		else:
 			return ('done', value)
+
+class AlternativeFP0ObjectFactory(ObjectFactory):
+	# agent identifier parser
+	def create_FunctionalTerm(self, name, terms):
+		if name == 'agent-identifier':
+			(id_name, id_addresses) = (None, [])
+			for term in terms:
+				if term[0] == 'name': id_name = term[1]
+				elif term[0] == 'addresses': id_addresses = term[1]
+			if id_name:
+				return acl.AgentIdentifier(id_name, id_addresses)
+		terms = self._terms_to_list_or_dict(terms)
+		return (name, terms)
+
+	# simplified atomic formulas
+	def create_AtomicFormula(self, tokens):
+		if len(tokens) == 1 and tokens[0] == 'true':
+			return True
+		elif len(tokens) == 1 and tokens[0] == 'false':
+			return False
+		elif len(tokens) == 1:
+			return str(tokens[0])
+		elif tokens[0] == 'result':
+			return ('result', tokens[1], tokens[2])
+		else:
+			terms = tokens[1:]
+			return (str(tokens[0]), terms)
 
 class FPLexicalDefinitionsParser(aclparser.ACLLexicalDefinitionsParser):
 	def __init__(self, obj_factory = ObjectFactory()):
