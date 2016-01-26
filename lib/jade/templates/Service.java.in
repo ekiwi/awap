@@ -10,8 +10,10 @@ package de.rwth_aachen.awap.jade.generated;
 
 import jade.domain.FIPAAgentManagement.Property;
 import de.rwth_aachen.awap.ServiceDescription;
+import net.minidev.json.JSONObject;
 
 public class Service {
+
 	public static jade.domain.FIPAAgentManagement.ServiceDescription
 	awapToJadeDescription(ServiceDescription description) throws Exception {
 		jade.domain.FIPAAgentManagement.ServiceDescription sd =
@@ -42,5 +44,36 @@ public class Service {
 		}
 
 		return sd;
+	}
+
+	public static String
+	awapDescriptionToString(ServiceDescription description) throws Exception {
+		JSONObject content = new JSONObject();
+
+%% for service in services
+	%% set type = "de.rwth_aachen.awap.service." ~ service.name ~ "Description"
+	%% if loop.first
+		if(description instanceof {{ type }}) {
+	%% else
+		} else if(description instanceof {{ type }}) {
+	%% endif
+			content.put("ServiceType", "{{ service.name }}");
+	%% if service.properties.fields | length > 0
+			{{ type }} pp = ({{ type }})description;
+	%% endif
+	%% for prop in service.properties.fields
+			if(!pp.{{ prop.name | camelCase }}DoNotCare) {
+		%% if prop.is_enum
+				Object value = de.rwth_aachen.awap.jade.generated.Enum.{{ prop.enum_name | camelCase }}ToString(pp.{{ prop.name | camelCase }});
+		%% else
+				Object value = pp.{{ prop.name | camelCase }};
+		%% endif
+				content.put("{{ prop.name }}", value);
+			}
+	%% endfor
+%% endfor
+		}
+
+		return content.toJSONString();
 	}
 }

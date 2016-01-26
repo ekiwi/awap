@@ -22,6 +22,7 @@ import jade.domain.FIPAException;
 import jade.domain.FIPAAgentManagement.DFAgentDescription;
 import jade.domain.FIPAAgentManagement.ServiceDescription;
 import jade.lang.acl.ACLMessage;
+import net.minidev.json.JSONObject;
 
 
 /**
@@ -54,14 +55,36 @@ public class NodeAdapter extends AbstractNode {
 	@Override
 	public void send(BroadcastMessage msg) {
 		try {
+			// check if there is a bridge service
+			{
+				DFAgentDescription dfd = new DFAgentDescription();
+				ServiceDescription sd = new ServiceDescription();
+				sd.setType("BridgeService");
+				dfd.addServices(sd);
+				DFAgentDescription[] services = DFService.search(this.wrapper, this.wrapper.getDefaultDF(), dfd);
+				// send message to each bridge
+				ACLMessage jadeMsg = Communication.awapToJade(msg.msg);
+				JSONObject content = new JSONObject();
+				content.put("Message", jadeMsg.getContent());
+				content.put("ServiceDescription", Service.awapDescriptionToString(msg.recipients));
+				jadeMsg.setContent(content.toJSONString());
+				jadeMsg.setSender(this.wrapper.getAID());
+				// TODO: include broadcast header
+				for(DFAgentDescription service : services) {
+					jadeMsg.addReceiver(service.getName());
+				}
+				this.wrapper.send(jadeMsg);
+			}
+
+
 			// 1.) find services that match description
 			DFAgentDescription dfd = new DFAgentDescription();
-		//	ServiceDescription sd = new ServiceDescription();
-		//	sd.setType(Service.typeIdToString(msg.recipients.serviceId));
-		//	for(ServiceProperty prop : msg.recipients.properties) {
-		//		sd.addProperties(Service.toJadeProperty(msg.recipients.serviceId, prop));
-		//	}
-		//	dfd.addServices(sd);
+			//	ServiceDescription sd = new ServiceDescription();
+			//	sd.setType(Service.typeIdToString(msg.recipients.serviceId));
+			//	for(ServiceProperty prop : msg.recipients.properties) {
+			//		sd.addProperties(Service.toJadeProperty(msg.recipients.serviceId, prop));
+			//	}
+			//	dfd.addServices(sd);
 			ServiceDescription sd = Service.awapToJadeDescription(msg.recipients);
 			dfd.addServices(sd);
 			DFAgentDescription[] services = DFService.search(this.wrapper, this.wrapper.getDefaultDF(), dfd);
@@ -83,7 +106,7 @@ public class NodeAdapter extends AbstractNode {
 		//System.out.println("NodeAdapter: Agent " + this.wrapper.getName() + " called registerService.");
 
 		// FIXME: this registers the agent, but we might just have to
-		//        update the 
+		//        update the
 		DFAgentDescription dfd = new DFAgentDescription();
 		dfd.setName(this.wrapper.getAID());
 		try {

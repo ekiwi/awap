@@ -45,4 +45,14 @@ if __name__ == "__main__":
 	bridge_service = ServiceDescription("BridgeService", "Blablabla")
 	df.register(df_id, DFAgentDescription(bridge_service, test.id))
 
+	# receive broadcasts
+	while True:
+		msg = test.receive()
+		content = json.loads(msg.content)
+		message = json.loads(content['Message'])
+		service_description = json.loads(content['ServiceDescription'])
+		print('Message: ', message)
+		print('Service Description: ', message)
+
+	# TODO: clean up on close, i.e. remove entries from foreign DF
 
