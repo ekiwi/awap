@@ -67,6 +67,12 @@ class MTP(object):
 			print("WARN: overwriting queue registered for `{}`".format(name))
 		self._rx_queues[name] = queue
 
+	def deregister_receiver(self, name):
+		try:
+			del self._rx_queues[name]
+		except KeyError:
+			pass
+
 	def _process_packet(self, envelope):
 		""" Called by the HTTPServer in it's own thread.
 			Distributes packets to the correct receiver queue
@@ -168,6 +174,12 @@ class ACLCommunicator(object):
 		self._mtp = mtp
 		self._rx_queue = queue.Queue()
 		self._mtp.register_receiver(self.id.name, self._rx_queue)
+
+	def __enter__(self):
+		return self
+
+	def __exit__(self, exc_type, exc_value, traceback):
+		self._mtp.deregister_receiver(self.id.name)
 
 	def send(self, msg):
 		self._mtp.send(msg)

@@ -80,14 +80,15 @@ class DFAgentDescription(object):
 			s += " :services (set {})".format(self.service)
 		return s + ")"
 
-class DF(ACLCommunicator):
-	def __init__(self, platform_name, mtp):
-		self.platform_name = platform_name
-		super().__init__('df@{}'.format(self.platform_name), mtp)
+class DF():
+	def __init__(self, communicator, df_id):
+		assert(isinstance(communicator, ACLCommunicator))
+		self.communicator = communicator
+		self.df_id = df_id
 		self.parser = FP0.getParser()
 
 	def create_msg(self, performative, receiver=None):
-		msg = super().create_msg(performative, receiver)
+		msg = self.communicator.create_msg(performative, receiver)
 		msg.language = "fipa-sl0"
 		msg.ontology = "FIPA-Agent-Management"
 		msg.protocol = "fipa-request"
@@ -98,13 +99,13 @@ class DF(ACLCommunicator):
 		msg.content = '((action {} {}))'.format(receiver, action)
 		return msg
 
-	def search(self, df_id, service_desc):
+	def search(self, service_desc):
 		assert isinstance(service_desc, ServiceDescription)
 		action = '(search {}'.format(DFAgentDescription(service_desc))
 		action += ' (search-constraints :min-depth 2))'
-		self.send(self.create_action_msg(action, df_id))
+		self.communicator.send(self.create_action_msg(action, self.df_id))
 
-		answer = self.receive()
+		answer = self.communicator.receive()
 		if answer.performative != Performative.INFORM:
 			print("ERROR: Unexpected answer:\n{}".format(answer))
 			return
@@ -116,13 +117,17 @@ class DF(ACLCommunicator):
 				agents.append(desc[1]['name'])
 		return agents
 
-	def register(self, df_id, agent_desc):
+	def register(self, agent_desc):
 		assert isinstance(agent_desc, DFAgentDescription)
 		action = '(register {})'.format(agent_desc)
-		self.send(self.create_action_msg(action, df_id))
+		self.communicator.send(self.create_action_msg(action, self.df_id))
+		return self.communicator.receive().performative == Performative.INFORM
 
-		answer = self.receive()
-		return answer.performative == Performative.INFORM
+	def deregister(self, agent_desc):
+		assert isinstance(agent_desc, DFAgentDescription)
+		action = '(deregister {})'.format(agent_desc)
+		self.communicator.send(self.create_action_msg(action, self.df_id))
+		return self.communicator.receive().performative == Performative.INFORM
 
 
 class TestServiceDescription(unittest.TestCase):
