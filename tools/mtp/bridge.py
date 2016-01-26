@@ -30,11 +30,13 @@ if __name__ == "__main__":
 	print("found agents that provide a {}:".format(service.type))
 	print("\n".join(str(a) for a in temperature_agents))
 
+	# Broadcast: Bridge -> JADE
 	# reguest temperature from agent(s)
 	test = ACLCommunicator("test", mtp)
 	msg = test.create_msg(Performative.REQUEST, temperature_agents)
 	msg.content = json.dumps({'service': 'TemperatureService', 'message': 'RequestTemperature'})
 	test.send(msg)
+	# Unicast: JADE -> Bridge
 	answer = test.receive()
 	if answer.performative != Performative.INFORM:
 		print("ERROR: Unexpected answer:\n{}".format(answer))
@@ -47,12 +49,18 @@ if __name__ == "__main__":
 
 	# receive broadcasts
 	while True:
+		# Broadcast: JADE -> Bridge
 		msg = test.receive()
 		content = json.loads(msg.content)
 		message = json.loads(content['Message'])
 		service_description = json.loads(content['ServiceDescription'])
 		print('Message: ', message)
 		print('Service Description: ', message)
+
+		# Unicast: Bridge -> JADE
+		answer = test.create_msg(Performative.INFORM, msg.sender)
+		answer.content = json.dumps({'service': 'TemperatureService', 'message': 'Temperature', 'value': 36})
+		test.send(answer)
 
 	# TODO: clean up on close, i.e. remove entries from foreign DF
 
