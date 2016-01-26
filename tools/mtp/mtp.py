@@ -7,7 +7,7 @@
 
 import http.client
 import queue, threading, re, sys
-from fipa import ACLMessage, ACLEnvelope, Performative, AgentIdentifier
+from .fipa import ACLMessage, ACLEnvelope, Performative, AgentIdentifier
 
 from http.server import HTTPServer, BaseHTTPRequestHandler
 from urllib.parse import urlparse

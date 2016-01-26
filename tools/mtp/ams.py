@@ -5,8 +5,8 @@
 
 # ams.py
 
-from mtp import MTP, ACLCommunicator, AgentIdentifier, Performative
-from fipa import FP0Parser, AlternativeFP0ObjectFactory
+from .mtp import MTP, ACLCommunicator, AgentIdentifier, Performative
+from .fipa import FP0Parser, AlternativeFP0ObjectFactory
 
 
 class AMS(ACLCommunicator):

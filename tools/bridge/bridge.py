@@ -5,10 +5,10 @@
 
 # bridge.py
 
-import sys, json
-from mtp import MTP, ACLCommunicator, AgentIdentifier, Performative
-from ams import AMS
-from df import DF, ServiceDescription, DFAgentDescription
+import os, sys, json
+tools_path = os.path.join('..')
+sys.path.append(tools_path)
+from mtp import *
 
 if __name__ == "__main__":
 	if len(sys.argv) < 2:
@@ -21,7 +21,7 @@ if __name__ == "__main__":
 	agents = ams.discover_agents(AgentIdentifier("ams@192.168.122.1:1099/JADE", jade_url))
 	df_id = next(agent['name'] for agent in agents if agent['name'].name.startswith('df@'))
 	print("found df: {}".format(df_id))
- 	# find agents that can supply temperature in Building1, Room1
+	# find agents that can supply temperature in Building1, Room1
 	df = DF("awap", mtp)
 	service = ServiceDescription("TemperatureService")
 	service.add_property("building", "Build1")
