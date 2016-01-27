@@ -5,3 +5,4 @@
 from .mtp import MTP, ACLCommunicator, AgentIdentifier, Performative
 from .ams import AMS
 from .df import DF, ServiceDescription, DFAgentDescription
+from .fipa import ACLMessage, Performative

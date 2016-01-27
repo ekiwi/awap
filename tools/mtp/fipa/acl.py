@@ -76,6 +76,12 @@ class AgentIdentifier(object):
 	def __repr__(self):
 		return str(self)
 
+	def __hash__(self):
+		return hash((self.name, "".join(self.addresses)))
+
+	def __eq__(self, other):
+		return (self.name, self.addresses) == (other.name, other.addresses)
+
 	def isempty(self):
 		return self.name is None
 
