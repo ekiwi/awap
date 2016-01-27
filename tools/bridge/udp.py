@@ -8,6 +8,19 @@
 
 import queue, threading, socket
 
+class FakeNode():
+	""" fakes a remote node on the network
+	"""
+	def __init__(self, dispatcher, name):
+		assert(isinstance(dispatcher, Dispatcher))
+		self.dispatcher = dispatcher
+		self.name = name
+		self.addr = "fake" + self.name
+
+#	def send(self, bb):
+#		self.dispatcher._rx_queue.put((self.addr))
+
+
 class Dispatcher():
 	def __init__(self, multicast_addr, src_port=6006):
 		self.multicast_addr = multicast_addr[0]
@@ -45,7 +58,8 @@ class Dispatcher():
 				print("from sender: {}".format(addr))
 				print(data)
 			else:
-				self._rx_queue.put((addr, data))
+				port = addr[1]
+				self._rx_queue.put((addr[0], data))
 
 	def _sender(self):
 		""" Thread that is responsible for sending UDP messages
