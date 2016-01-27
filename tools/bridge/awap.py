@@ -93,6 +93,7 @@ class Awap():
 			ii = Awap.field_to_dict(content, field, msg, ii)
 		dd['Content'] = content
 		dd['Length'] = msg_type['bytes'] + 3
+		dd['Performative'] = msg_type['performative']
 
 		return dd
 
@@ -163,6 +164,7 @@ class Tester(unittest.TestCase):
 		self.assertEqual(msg_dd['SourceAgent'], 2)
 		self.assertEqual(msg_dd['DestinationAgent'], 3)
 		self.assertEqual(msg_dd['Length'], 7)
+		self.assertEqual(msg_dd['Performative'], "INFORM")
 		# not used for simplicity
 		# self.assertEqual(msg_dd['ServiceId'], 0)
 		# self.assertEqual(msg_dd['MessageId'], 0)
