@@ -59,6 +59,18 @@ class Awap():
 		return ii
 
 	@staticmethod
+	def field_to_bin(dd, field):
+		value = dd[field['name']]
+		if field['is_bool']:
+			fmt = '?'
+		elif field['is_enum']:
+			value = Awap.EnumToInt[field['enum_name']][value]
+			fmt = 'B'
+		else:
+			fmt = {1: 'b', 2: 'h', 4: 'i'}[field['size']]
+		return struct.pack(fmt, value)
+
+	@staticmethod
 	def message_to_dict(msg):
 		assert(isinstance(msg, bytes))
 		assert(len(msg) > 2)
@@ -101,15 +113,7 @@ class Awap():
 
 		# parse message specific fields
 		for field in msg_type['fields']:
-			value = content[field['name']]
-			if field['is_bool']:
-				fmt = '?'
-			elif field['is_enum']:
-				value = Awap.EnumToInt[field['enum_name']][value]
-				fmt = 'B'
-			else:
-				fmt = {1: 'b', 2: 'h', 4: 'i'}[field['size']]
-			bb += struct.pack(fmt, value)
+			bb += Awap.field_to_bin(content, field)
 
 		return bb
 
@@ -124,8 +128,8 @@ class Awap():
 
 		mask = desc[0]
 		ii = 1
-		for mask_index, field in zip(range(0,len(fields)), fields):
-			if mask & (1 << (7-mask_index)):
+		for field in fields:
+			if mask & (1 << (7 - field['id'])):
 				ii = Awap.field_to_dict(dd, field, desc, ii)
 
 		return dd
@@ -133,7 +137,18 @@ class Awap():
 	@staticmethod
 	def service_desc_to_bin(desc):
 		assert(isinstance(desc, dict))
-		return b'\x00'
+
+		service = Awap.ServiceByName[desc['service']]
+		fields = service['properties']['fields']
+
+		mask = 0
+		bb = b''
+		for field in fields:
+			if field['name'] in desc:
+				mask |= (1 << (7 - field['id']))
+				bb += Awap.field_to_bin(desc, field)
+
+		return struct.pack("B", mask) + bb
 
 
 import unittest
