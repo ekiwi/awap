@@ -57,7 +57,7 @@ public class Service {
 	%% else
 		} else if(description instanceof {{ type }}) {
 	%% endif
-			content.put("ServiceType", "{{ service.name }}");
+			content.put("service", "{{ service.name }}");
 	%% if service.properties.fields | length > 0
 			{{ type }} pp = ({{ type }})description;
 	%% endif
