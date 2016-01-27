@@ -16,7 +16,7 @@ Communication files will be found in env['AWAP_COMMUNICATION_PATH']
 import os, math, sys
 import lxml.etree as ET
 
-def load_awap_confguration_method(env, configuration):
+def load_awap_confguration_method(env, configuration, load_services_only=False):
 	# open xml file
 	tree = ET.parse(configuration)
 	root = tree.getroot()
@@ -28,13 +28,14 @@ def load_awap_confguration_method(env, configuration):
 
 	load_service_configuration(env, root)
 	# TODO: enums
-	agents = load_agents_configuration(env, root)
-	load_agent_file_format_configuration(env, root, os.path.dirname(configuration))
+	if not load_services_only:
+		agents = load_agents_configuration(env, root)
+		load_agent_file_format_configuration(env, root, os.path.dirname(configuration))
+	else:
+		agents = []
 	# at the end of this method, the communication has to be complete!
 	pp = env['AWAP_COMMUNICATION_PARSER']
 	env['AWAP_COMMUNICATION_DICT'] = pp.get_dict(env['AWAP_SERVICE_NAMES'], enum_names)
-
-	return agents
 
 def load_service_configuration(env, root):
 	# parse

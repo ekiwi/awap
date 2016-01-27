@@ -30,7 +30,7 @@ class Awap():
 		sys.path.append(env['AWAP_SCONS_TOOLS'])
 		from configuration import load_awap_confguration_method
 
-		load_awap_confguration_method(env, configuration_file)
+		load_awap_confguration_method(env, configuration_file, load_services_only=True)
 
 		services = env['AWAP_COMMUNICATION_DICT']['services']
 		Awap.ServiceById = {service['id']: service for service in services}
