@@ -33,11 +33,30 @@ class Awap():
 		load_awap_confguration_method(env, configuration_file)
 
 		services = env['AWAP_COMMUNICATION_DICT']['services']
-		Awap.ServiceNameById = {service['id']: service['name'] for service in services}
-		Awap.ServiceIdByName = {service['name']: service['id'] for service in services}
+		Awap.ServiceById = {service['id']: service for service in services}
+		Awap.ServiceByName = {service['name']: service for service in services}
 		Awap.MessagesById   = {serv['id']: { msg['id']: msg for msg in serv['messages'] } for serv in services}
 		Awap.MessagesByName = {serv['name']: { msg['name']: msg for msg in serv['messages'] } for serv in services}
+		enums = env['AWAP_COMMUNICATION_DICT']['enums']
+		Awap.EnumToString = {enum['enum_name']: { elem['id']: elem['name'] for elem in enum['elements'] } for enum in enums}
+		Awap.EnumToInt    = {enum['enum_name']: { elem['name']: elem['id'] for elem in enum['elements'] } for enum in enums}
 
+	@staticmethod
+	def field_to_dict(dd, field, msg, ii):
+		if field['is_bool']:
+			fmt = '?'
+		elif field['is_enum']:
+			fmt = 'B'
+		else:
+			fmt = {1: 'b', 2: 'h', 4: 'i'}[field['size']]
+		old_ii = ii
+		ii += struct.calcsize(fmt)
+		value = struct.unpack(fmt, msg[old_ii:ii])[0]
+		if field['is_enum']:
+			dd[field['name']] = Awap.EnumToString[field['enum_name']][value]
+		else:
+			dd[field['name']] = value
+		return ii
 
 	@staticmethod
 	def message_to_dict(msg):
@@ -53,21 +72,14 @@ class Awap():
 		message_id = msg[2]
 
 		# look up information from xml
-		service_name = Awap.ServiceNameById[service_id]
+		service_name = Awap.ServiceById[service_id]['name']
 		msg_type = Awap.MessagesById[service_id][message_id]
 
 		# parse message specific fields
 		content = {'service' : service_name, 'message': msg_type['name']}
 		ii = 3
 		for field in msg_type['fields']:
-			if field['is_bool']:
-				fmt = '?'
-			elif field['is_enum']:
-				fmt = 'B'
-			else:
-				fmt = {1: 'b', 2: 'h', 4: 'i'}[field['size']]
-			content[field['name']] = struct.unpack(fmt, msg[ii:])[0]
-			ii += struct.calcsize(fmt)
+			ii = Awap.field_to_dict(content, field, msg, ii)
 		dd['Content'] = content
 
 		return dd
@@ -82,27 +94,41 @@ class Awap():
 		bb  = struct.pack("B", bb0)
 
 		content = dd['Content']
-		service_id = Awap.ServiceIdByName[content['service']]
+		service_id = Awap.ServiceByName[content['service']]['id']
 		msg_type = Awap.MessagesByName[content['service']][content['message']]
 		bb += struct.pack("B", service_id)
 		bb += struct.pack("B", msg_type['id'])
 
 		# parse message specific fields
 		for field in msg_type['fields']:
+			value = content[field['name']]
 			if field['is_bool']:
 				fmt = '?'
 			elif field['is_enum']:
+				value = Awap.EnumToInt[field['enum_name']][value]
 				fmt = 'B'
 			else:
 				fmt = {1: 'b', 2: 'h', 4: 'i'}[field['size']]
-			bb += struct.pack(fmt, content[field['name']])
+			bb += struct.pack(fmt, value)
 
 		return bb
 
 	@staticmethod
-	def service_desc_to_dict(desc):
+	def service_desc_to_dict(service_id, desc):
 		assert(isinstance(desc, bytes))
-		return {}
+		assert(isinstance(service_id, int))
+
+		service = Awap.ServiceById[service_id]
+		dd = { 'service': service['name'] }
+		fields = service['properties']['fields']
+
+		mask = desc[0]
+		ii = 1
+		for mask_index, field in zip(range(0,len(fields)), fields):
+			if mask & (1 << (7-mask_index)):
+				ii = Awap.field_to_dict(dd, field, desc, ii)
+
+		return dd
 
 	@staticmethod
 	def service_desc_to_bin(desc):
@@ -131,6 +157,15 @@ class Tester(unittest.TestCase):
 		msg_bin = Awap.message_to_bin(msg_dd)
 		self.assertEqual(msg_bin, b'\x1a\x00\x00\xaa\xaa\xaa\x00')
 
+	def test_EnergySupplyServiceDescription(self):
+		# the EnergySupplyService (id=7) has three different enum properties:
+		# Building, SupplyCircuit, Room
+		# 1.) Building=SemiTemp, Room=R2
+		desc_dd = Awap.service_desc_to_dict(7, b'\xa0\x02\x01')
+		self.assertEqual(desc_dd['service'], "EnergySupplyService")
+		self.assertEqual(desc_dd['building'], "SemiTemp")
+		self.assertFalse('supplyCircuit' in desc_dd)
+		self.assertEqual(desc_dd['room'], "R2")
 
 if __name__ == "__main__":
 	path = os.path.abspath(os.path.join('..', '..', 'lib', 'mote', 'unittest', 'communication'))
