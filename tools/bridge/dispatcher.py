@@ -53,11 +53,15 @@ class Dispatcher():
 		print('--------------------------------------')
 
 	def register_receiver(self, addr, queue):
+		if not isinstance(addr, str):
+			addr = addr[0]
 		if addr in self._rx_queues and self._rx_queues[addr] != queue:
 			print("WARN: overwriting queue registered for `{}`".format(addr))
 		self._rx_queues[addr] = queue
 
 	def deregister_receiver(self, addr):
+		if not isinstance(addr, str):
+			addr = addr[0]
 		try:             del self._rx_queues[addr]
 		except KeyError: pass
 
@@ -69,6 +73,7 @@ class Dispatcher():
 
 		while True:
 			data, addr = sock.recvfrom(1024)
+			addr = addr[0]
 			# TODO: parse results
 			if addr in self._rx_queues:
 				self._rx_queues[addr].put(data)
@@ -80,7 +85,7 @@ class Dispatcher():
 if __name__ == "__main__":
 	d = Dispatcher(("127.0.0.1", 5005))
 	qq = queue.Queue()
-	d.register_receiver(("127.0.0.1", 6006), qq)
+	d.register_receiver("127.0.0.1", qq)
 	d.send(AwapMessage())
 
 	data = qq.get()
