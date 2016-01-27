@@ -5,10 +5,11 @@
 
 # bridge.py
 
-import os, sys, json
+import os, sys, json, threading
 tools_path = os.path.join('..')
 sys.path.append(tools_path)
 from mtp import *
+from awap import Awap
 
 class BroadcastBridge(ACLCommunicator):
 	def __init__(self, platform_name, mtp, df_id):
@@ -19,37 +20,70 @@ class BroadcastBridge(ACLCommunicator):
 		self.desc = DFAgentDescription(
 			ServiceDescription("BridgeService", "Blablabla"),
 			self.id)
+		self._rx_thread = threading.Thread(target=self._receiver)
 
 	def register(self):
-		return self.df.register(self.desc)
+		success = self.df.register(self.desc)
+		if success:
+			self._rx_thread.start()
+		return success
 
 	def deregister(self):
 		return self.df.deregister(self.desc)
 
-	def sendBroadcast(self, service_desc, performative, content):
-		assert(isinstance(service_desc, ServiceDescription))
-		assert(isinstance(performative, Performative))
-		if not isinstance(content, str):
-			content = json.dumps(content)
+	def _receiver(self):
+		while True:
+			msg = self.receive()
+			print("BroadcastBridge received:")
+			print(msg.content)
+			self.dispatcher.sendBroadcast(msg)
+
+class AgentBridge(ACLCommunicator):
+	def __init__(self, ip_addr, agent_id, platform_name, mtp, df_id):
+		assert(isinstance(mtp, MTP))
+		assert(isinstance(df_id, AgentIdentifier))
+		name = "{}AgentId{}".format(ip_addr, agent_id)
+		super().__init__('{}@{}'.format(name, platform_name), mtp)
+		self.name = name
+		self.ip = ip_add
+		self.agent_id = agent_id
+		self.df = DF(self, df_id)
+		self._rx_thread = threading.Thread(target=self._receiver)
+		self._rx_thread.start()
+
+	def send(self, rec_fipa_id, data):
+		assert(isinstance(data, bytes))
+		dd = Awap.message_to_dict(data)
+		msg = self.create_msg(dd['performative'], rec_fipa_id)
+		msg.content = json.dumps(dd['content'])
+		self.send(msg)
+
+	def sendBroadcast(self, data):
+		assert(isinstance(data, bytes))
+		dd = Awap.message_to_dict(data)
+		assert(dd['IsBroadcast'])
+		service_desc = Awap.service_desc_to_dict(data[dd['Length']:])
 		# find agents that offer service
 		receivers = self.df.search(service_desc)
 		# create broadcast message
-		msg = self.create_msg(performative, receivers)
-		msg.content = content
+		msg = self.create_msg(dd['performative'], receivers)
+		msg.content = json.dumps(dd['content'])
 		self.send(msg)
 
-	def receiveBroadcast(self):
-		msg = self.receive()
-		content = json.loads(msg.content)
-		message = json.loads(content['Message'])
-		service_description = json.loads(content['ServiceDescription'])
-		return (service_description, message)
-
+	def _receiver(self):
+		while True:
+			msg = self.receive()
+			print("AgentBridge ({}) received:".format(self.name))
+			print(msg.content)
+			self.dispatcher.send(self.ip, self.agent_id, msg)
 
 class Bridge():
 	def __init__(self, local_url):
 		self.mtp = MTP(local_url)
-		self.broadcasts = None
+		self.broadcast_bridge = None
+		self.agent_bridges = {}
+		self.df_id = None
+		self.platform_name = "awap-bridge"
 
 	def register(self, jade_url):
 		""" Registers the Bridge Broadcast service with a running JADE instance
@@ -59,13 +93,11 @@ class Bridge():
 			agents = ams.discover_agents(AgentIdentifier("ams@192.168.122.1:1099/JADE", jade_url))
 			self.df_id = next(agent['name'] for agent in agents if agent['name'].name.startswith('df@'))
 			print("found df: {}".format(self.df_id))
-		self.broadcasts = BroadcastBridge("awap", self.mtp, self.df_id)
-		return self.broadcasts.register()
+		self.broadcast_bridge = BroadcastBridge(self.platform_name, self.mtp, self.df_id)
+		return self.broadcast_bridge.register()
 
 	def deregister(self):
-		self.broadcasts.deregister()
-
-
+		self.broadcast_bridge.deregister()
 
 if __name__ == "__main__":
 	if len(sys.argv) < 2:
@@ -75,9 +107,9 @@ if __name__ == "__main__":
 	bridge = Bridge("http://localhost:9000/acc")
 	bridge.register(jade_url)
 
-	(serv, msg) = bridge.broadcasts.receiveBroadcast()
-	print("serv ", serv)
-	print("msg ", msg)
+	#(serv, msg) = bridge.broadcasts.receiveBroadcast()
+	#print("serv ", serv)
+	#print("msg ", msg)
 
 	import time
 	time.sleep(2)
