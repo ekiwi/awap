@@ -37,6 +37,8 @@ def load_awap_confguration_method(env, configuration, load_services_only=False):
 	pp = env['AWAP_COMMUNICATION_PARSER']
 	env['AWAP_COMMUNICATION_DICT'] = pp.get_dict(env['AWAP_SERVICE_NAMES'], enum_names)
 
+	return agents
+
 def load_service_configuration(env, root):
 	# parse
 	services = root.find("services")
