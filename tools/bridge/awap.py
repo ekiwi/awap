@@ -70,7 +70,6 @@ class Awap():
 		dd['SourceAgent'] = msg[0] & 0x7
 		service_id = msg[1]
 		message_id = msg[2]
-
 		# look up information from xml
 		service_name = Awap.ServiceById[service_id]['name']
 		msg_type = Awap.MessagesById[service_id][message_id]
@@ -81,6 +80,7 @@ class Awap():
 		for field in msg_type['fields']:
 			ii = Awap.field_to_dict(content, field, msg, ii)
 		dd['Content'] = content
+		dd['Length'] = msg_type['bytes'] + 3
 
 		return dd
 
@@ -142,10 +142,12 @@ class Tester(unittest.TestCase):
 
 	def test_SimpleIntMessage(self):
 		# Broadcast: false, SourceAgent: 2, DestinationAgent: 3
-		msg_dd = Awap.message_to_dict(b'\x1a\x00\x00\xaa\xaa\xaa\x00')
+		# some garbage data was added. that should be ignored by the parser
+		msg_dd = Awap.message_to_dict(b'\x1a\x00\x00\xaa\xaa\xaa\x00\xca\xff\xee')
 		self.assertEqual(msg_dd['IsBroadcast'], False)
 		self.assertEqual(msg_dd['SourceAgent'], 2)
 		self.assertEqual(msg_dd['DestinationAgent'], 3)
+		self.assertEqual(msg_dd['Length'], 7)
 		# not used for simplicity
 		# self.assertEqual(msg_dd['ServiceId'], 0)
 		# self.assertEqual(msg_dd['MessageId'], 0)
@@ -166,6 +168,8 @@ class Tester(unittest.TestCase):
 		self.assertEqual(desc_dd['building'], "SemiTemp")
 		self.assertFalse('supplyCircuit' in desc_dd)
 		self.assertEqual(desc_dd['room'], "R2")
+		dec_bin = Awap.service_desc_to_bin(desc_dd)
+		self.assertEqual(dec_bin, b'\xa0\x02\x01')
 
 if __name__ == "__main__":
 	path = os.path.abspath(os.path.join('..', '..', 'lib', 'mote', 'unittest', 'communication'))
