@@ -140,8 +140,8 @@ class ACLEnvelope(object):
 			sender.append(AgentIdentifier.from_xml(identifier))
 		representation = params.find('acl-representation').text
 		length = int(params.find('payload-length').text)
-		if len(content) != length:
-			print("WARN: in ACLEnvelope.from_mtp: length ({}) does not match len(content) ({})".format(length, len(content)))
+		#if len(content) != length:
+		#	print("WARN: in ACLEnvelope.from_mtp: length ({}) does not match len(content) ({})".format(length, len(content)))
 		return ACLEnvelope(sender, receiver, content, representation)
 
 	@property
