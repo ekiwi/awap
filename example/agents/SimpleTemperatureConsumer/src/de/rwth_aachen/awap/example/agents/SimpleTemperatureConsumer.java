@@ -8,6 +8,9 @@
 
 package de.rwth_aachen.awap.example.agents;
 
+import java.util.ArrayList;
+import java.util.Iterator;
+
 import de.rwth_aachen.awap.Agent;
 import de.rwth_aachen.awap.enums.Building;
 import de.rwth_aachen.awap.enums.Room;
@@ -26,9 +29,52 @@ public class SimpleTemperatureConsumer extends Agent implements ITemperatureServ
 				this).building(Building.Build1).room(Room.R1);
 	}
 
+	class Result {
+		public Result(Temperature msg) {
+			this.senderId = msg.getRemoteAgent().id;
+			this.value = msg.value;
+			this.ttl = 3;
+		}
+		int senderId;
+		int value;
+		int ttl;
+	}
+
+	private ArrayList<Result> results = new ArrayList<Result>();
+
 	public void onReceive(Temperature msg) {
-		System.out.println("Received Temperature: " + msg.value);
-		System.out.println("From: " + msg.getRemoteAgent().id);
+		Result newRes = new Result(msg);
+		// remove results and calculate maximum
+		int max = 0;
+		Iterator it = results.iterator();
+		while(it.hasNext()) {
+			Result res = (Result)it.next();
+			res.ttl--;
+			if(res.ttl <= 0 || res.senderId == newRes.senderId) {
+				it.remove();
+			} else {
+				if(res.value > max) {
+					max = res.value;
+				}
+			}
+		}
+		results.add(newRes);
+		if(newRes.value > max) {
+			max = newRes.value;
+		}
+		// check if we are the maximum
+		int localValue = this.node.getSensorValue();
+		if(localValue >= max) {
+			this.node.setActorValue(1);
+			System.out.println("We have the largest value of: " + localValue);
+		} else {
+			this.node.setActorValue(0);
+			System.out.println("The largest value is: " + max);
+		}
+
+		// System.out.println("Received Temperature: " + msg.value);
+		// System.out.println("From: " + msg.getRemoteAgent().id);
+
 	}
 
 	public void onWakeUp(Object obj) {
