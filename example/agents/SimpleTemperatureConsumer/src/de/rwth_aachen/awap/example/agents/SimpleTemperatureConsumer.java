@@ -44,13 +44,29 @@ public class SimpleTemperatureConsumer extends Agent implements ITemperatureServ
 
 	public void onReceive(Temperature msg) {
 		Result newRes = new Result(msg);
+		// remove results from same sender
+		Iterator it = results.iterator();
+		while(it.hasNext()) {
+			Result res = (Result)it.next();
+			if(res.senderId == newRes.senderId) {
+				it.remove();
+			}
+		}
+		results.add(newRes);
+
+		// System.out.println("Received Temperature: " + msg.value);
+		// System.out.println("From: " + msg.getRemoteAgent().id);
+
+	}
+
+	private void displayResults() {
 		// remove results and calculate maximum
 		int max = 0;
 		Iterator it = results.iterator();
 		while(it.hasNext()) {
 			Result res = (Result)it.next();
 			res.ttl--;
-			if(res.ttl <= 0 || res.senderId == newRes.senderId) {
+			if(res.ttl <= 0) {
 				it.remove();
 			} else {
 				if(res.value > max) {
@@ -58,10 +74,7 @@ public class SimpleTemperatureConsumer extends Agent implements ITemperatureServ
 				}
 			}
 		}
-		results.add(newRes);
-		if(newRes.value > max) {
-			max = newRes.value;
-		}
+
 		// check if we are the maximum
 		int localValue = this.node.getSensorValue();
 		if(localValue >= max) {
@@ -71,15 +84,12 @@ public class SimpleTemperatureConsumer extends Agent implements ITemperatureServ
 			this.node.setActorValue(0);
 			System.out.println("The largest value is: " + max);
 		}
-
-		// System.out.println("Received Temperature: " + msg.value);
-		// System.out.println("From: " + msg.getRemoteAgent().id);
-
 	}
 
 	public void onWakeUp(Object obj) {
 		int ii = (Integer)obj;
 		System.out.println("Agent: Woke up: " + ii);
+		displayResults();
 		this.temperaturSensorType.send(new RequestTemperature());
 		this.requestWakeUp(1000, new Integer(ii+1));
 	}
