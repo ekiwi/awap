@@ -198,6 +198,8 @@ class ACLMessage(object):
 			ACLMessage.ACLParserSingleton = aclparser.ACLParser()
 		self.parser = ACLMessage.ACLParserSingleton
 		self.mime_type = "application/text"
+		if isinstance(performative, str):
+			performative = getattr(Performative, performative)
 		self.performative = performative
 		for param in self.parser.MessageParameterNames:
 			if param in ['receiver', 'reply-to']:
@@ -333,6 +335,12 @@ class TestACLMessageParsing(unittest.TestCase):
 		self.assertEqual(env.sender[0].addresses[0], "http://130-000.eduroam.rwth-aachen.de:7778/acc")
 		self.assertEqual(env.content, self.test_msg[0][1].strip())
 		self._helper_compare_msg(env.msg, self.test_msg[0][0])
+
+	def test_ACLMessage_performative_from_string(self):
+		msg = ACLMessage("INFORM")
+		self.assertEqual(msg.performative, Performative.INFORM)
+		msg = ACLMessage("REQUEST")
+		self.assertEqual(msg.performative, Performative.REQUEST)
 
 if __name__ == "__main__":
 	unittest.main()
