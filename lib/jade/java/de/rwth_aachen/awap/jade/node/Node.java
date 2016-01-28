@@ -8,13 +8,12 @@
 
 package de.rwth_aachen.awap.jade.node;
 
-import jade.wrapper.AgentController;
-import jade.wrapper.ContainerController;
-import jade.wrapper.StaleProxyException;
-
 import java.util.Stack;
 
 import de.rwth_aachen.awap.jade.WrapperAgent;
+import jade.wrapper.AgentController;
+import jade.wrapper.ContainerController;
+import jade.wrapper.StaleProxyException;
 
 /**
  * This class simulates a Node for JADE Agents.
@@ -28,6 +27,9 @@ public class Node {
 	private Stack<Integer> ids = new Stack<Integer>();;
 	private int address;
 	//private LocalAgent[] agents;
+
+	public int sensorValue;
+	public int actorValue;
 
 	public Node(String name) {
 		this.address = nodeCounter;

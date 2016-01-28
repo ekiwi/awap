@@ -26,4 +26,8 @@ public abstract class AbstractNode {
 	public abstract boolean deregisterService(int localServiceId);
 
 	public abstract void requestWakeUp(int milliseconds, byte index);
+
+	// debug functions
+	public abstract int getSensorValue();
+	public abstract void setActorValue(int value);
 }

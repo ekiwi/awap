@@ -34,10 +34,18 @@ import net.minidev.json.JSONObject;
 public class NodeAdapter extends AbstractNode {
 
 	private WrapperAgent wrapper;
+	private Node node;
 
 	public NodeAdapter(Node node, WrapperAgent wrapper){
 		this.wrapper = wrapper;
+		this.node = node;
 	}
+
+
+	@Override
+	public int getSensorValue() { return this.node.sensorValue; }
+	@Override
+	public void setActorValue(int value) { this.node.actorValue = value; }
 
 	@Override
 	public void send(Message tx_msg) {
