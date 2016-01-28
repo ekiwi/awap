@@ -28,7 +28,7 @@ public class Node {
 	private int address;
 	//private LocalAgent[] agents;
 
-	public int sensorValue;
+	public int sensorValue = 333;
 	public int actorValue;
 
 	public Node(String name) {
