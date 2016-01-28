@@ -7,7 +7,7 @@
 
 import os, sys, json, threading, queue
 from awap import Awap
-from udp import Dispatcher
+from udp import Dispatcher, FakeNode
 tools_path = os.path.join('..')
 sys.path.append(tools_path)
 from mtp import *
@@ -87,7 +87,7 @@ class AgentBridge(ACLCommunicator):
 		assert(isinstance(data, bytes))
 		dd = Awap.message_to_dict(data)
 		assert(dd['IsBroadcast'])
-		service_desc = Awap.service_desc_to_dict(data[dd['Length']:])
+		service_desc = Awap.service_desc_to_dict(data[1], data[dd['Length']:])
 		# find agents that offer service
 		service = ServiceDescription(service_desc['service'])
 		for name, value in service:
@@ -174,6 +174,32 @@ class Bridge():
 				bridge.send(self.id_to_fipa_name(dd['DestinationAgent']), data)
 
 
+# Fake Temperature Agent
+
+class FakeTemperatureAgent(FakeNode):
+	def __init__(self, dispatcher):
+		super().__init__(dispatcher, "123.45.67.8")
+
+	def receive(self, bb):
+		dd = Awap.message_to_dict(bb)
+
+		# check if this is a REQUEST Temperature message
+		if not dd['IsBroadcast']: return
+		if not dd['Content']['service'] == 'TemperatureService': return
+		if not dd['Content']['message'] == 'RequestTemperature': return
+		desc = Awap.service_desc_to_dict(bb[1], bb[dd['Length']:])
+		if not desc['building'] == 'Build1': return
+		if not desc['room'] == 'R1': return
+
+		print("FakeTemperatureAgent: received message: ", dd)
+
+		# apparently someone wants to know how hot we are ...
+		# answer!!!
+		content = {'service': 'TemperatureService', 'message': 'Temperature', 'value': 1993}
+		msg = {'IsBroadcast': False, 'SourceAgent': 0, 'DestinationAgent': dd['SourceAgent'], 'Content': content}
+		self.send(Awap.message_to_bin(msg))
+		print("FakeTemperatureAgent: sent answer: ", msg)
+
 
 if __name__ == "__main__":
 	if len(sys.argv) < 2:
@@ -188,6 +214,7 @@ if __name__ == "__main__":
 	# create network interfaces and start them
 	jade_url = sys.argv[1]
 	dispatcher = Dispatcher(("255.255.255.255", 5005), src_port=6006)
+	FakeTemperatureAgent(dispatcher)
 	bridge = Bridge("http://localhost:9000/acc", dispatcher)
 	bridge.register(jade_url)
 

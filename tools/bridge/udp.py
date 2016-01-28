@@ -16,9 +16,13 @@ class FakeNode():
 		self.dispatcher = dispatcher
 		self.name = name
 		self.addr = "fake" + self.name
+		self.dispatcher.fake_nodes[self.addr] = self
 
-#	def send(self, bb):
-#		self.dispatcher._rx_queue.put((self.addr))
+	def send(self, bb):
+		self.dispatcher._rx_queue.put((self.addr, bb))
+
+	def receive(self, bb):
+		pass
 
 
 class Dispatcher():
@@ -26,6 +30,7 @@ class Dispatcher():
 		self.multicast_addr = multicast_addr[0]
 		self.dest_port = multicast_addr[1]
 		self.src_port = src_port
+		self.fake_nodes = {}
 
 		self._rx_queue = queue.Queue()
 		self._rx_thread = threading.Thread(target=self._receiver)
@@ -39,7 +44,12 @@ class Dispatcher():
 		if bb is None and isinstance(ip_addr, bytes):
 			bb = ip_addr
 			ip_addr = self.multicast_addr
-		self._tx_queue.put((ip_addr, bb))
+			for addr, node in self.fake_nodes.items():
+				self.fake_nodes[addr].receive(bb)
+		if ip_addr in self.fake_nodes:
+			self.fake_nodes[ip_addr].receive(bb)
+		else:
+			self._tx_queue.put((ip_addr, bb))
 
 	def receive(self):
 		return self._rx_queue.get()
