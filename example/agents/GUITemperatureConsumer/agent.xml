@@ -1,0 +1,11 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!--
+agent.xml
+
+Copyright (c) 2016 Kevin Laeufer <kevin.laeufer@rwth-aachen.de>
+
+This file is part of awap.
+-->
+<awap-agent version="0.1" name="GUITemperatureConsumer">
+	<service module="service.temperature" name="TemperatureService" />
+</awap-agent>

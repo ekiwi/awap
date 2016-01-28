@@ -1,0 +1,43 @@
+# SConstruct
+# -*- coding: utf-8 -*-
+#
+# Copyright (c) 2015 Kevin Laeufer <kevin.laeufer@rwth-aachen.de>
+#
+# This file is part of awap.
+#
+#
+
+import os
+
+# root path of the awap repo
+path_awap_root = os.path.abspath('../..')
+# path to awap scons tools
+path_awap_scons = os.path.join(path_awap_root, 'scons')
+
+
+# create the scons environment which contains the custom awap build tools
+env = Environment(toolpath = [path_awap_scons], tools = ['awap'])
+# tell awap where to look for agents
+env.AppendUnique(AWAP_AGENT_PATH = '../agents')
+# tell awap where to look for communication modules
+env.AppendUnique(AWAP_COMMUNICATION_PATH = '../communication')
+env['AWAP_JADE_JAR'] = os.path.abspath(os.path.join(path_awap_root, '..', 'jade-mirror', 'lib', 'jade.jar'))
+
+# build awap configuration
+env.Awap(configuration = 'configuration.xml')
+
+# build local source
+env_java = env.Clone()
+env_java.AppendUnique(JAVACLASSPATH=env['AWAP_JADE_JAR'])
+env_java.AppendUnique(JAVACLASSPATH=env['AWAP_LIB_COMMON_JAR'])
+env_java.AppendUnique(JAVACLASSPATH=env['AWAP_LIB_JADE_JAR'])
+env_java.AppendUnique(JAVACLASSPATH='/usr/share/java/json-smart.jar')
+env_java.AppendUnique(JAVACLASSPATH=env['AWAP_AGENTS_JAR'])
+manifest = env_java.Manifest(target='build/MANIFEST.MF', mainclass="de.rwth_aachen.awap.example.simple.Main")
+simple = env_java.JavaToJar("build/simple.jar", ['src', 'build/MANIFEST.MF'])
+env.Alias('simple', simple)
+env.Alias('run', env.RunJar(simple))
+
+# print the size of the resulting temperature sensor
+#env.Default(['awap-common.size', 'TemperatureSensor.size', 'SimpleTemperatureSubscriber.size', 'awap-jade'])
+env.Default('simple')
