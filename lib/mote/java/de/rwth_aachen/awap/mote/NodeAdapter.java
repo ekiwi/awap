@@ -27,4 +27,6 @@ public class NodeAdapter extends AbstractNode {
 	public native void requestWakeUp(int milliseconds, byte index);
 	public native boolean deregisterService(int localServiceId);
 	public native boolean registerService(int localServiceId, ServiceDescription description);
+	public native int getSensorValue();
+	public native void setActorValue(int value);
 }

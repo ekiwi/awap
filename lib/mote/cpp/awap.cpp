@@ -182,6 +182,21 @@ void de_rwth_aachen_awap_mote_NodeAdapter_boolean_deregisterService_int()
 }
 
 
+// int de.rwth_aachen.awap.mote.NodeAdapter.getSensorValue()
+extern "C"
+void de_rwth_aachen_awap_mote_NodeAdapter_int_getSensorValue()
+{
+	dj_exec_stackPushInt(Runtime::getSensorValue());
+}
+
+// void de.rwth_aachen.awap.mote.NodeAdapter.setActorValue(int)
+extern "C"
+void de_rwth_aachen_awap_mote_NodeAdapter_void_setActorValue_int()
+{
+	const int32_t actorValue = dj_exec_stackPopInt();
+	Runtime::setActorValue(actorValue);
+}
+
 //----------------------------------------------------------------------------
 // Darjeeling Functions
 

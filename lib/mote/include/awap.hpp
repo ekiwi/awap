@@ -107,6 +107,10 @@ public:
 
 	/// after `milliseconds` Awap::timeoutExpired(id) needs to be called
 	static void registerTimeout(uint32_t milliseconds, uint32_t id);
+
+	static void setActorValue(int32_t value);
+
+	static int32_t getSensorValue();
 };
 
 } // namespace awap
