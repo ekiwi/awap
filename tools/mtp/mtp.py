@@ -28,6 +28,7 @@ Content-Type: {}
 class MTP(object):
 	def __init__(self, url):
 		self.url = url
+		self.debug_log = False
 		self._boundary = "a1723f6311bdcdc73e4145537302b33"
 
 		self._tx_headers = {
@@ -56,11 +57,12 @@ class MTP(object):
 					tx_thread.start()
 					self._tx_queues[url] = qq
 				self._tx_queues[url].put(body)
-		print('--------------------------------------')
-		print('Sending')
-		print('=======')
-		print(env.msg)
-		print('--------------------------------------')
+		if self.debug_log:
+			print('--------------------------------------')
+			print('Sending')
+			print('=======')
+			print(env.msg)
+			print('--------------------------------------')
 
 	def register_receiver(self, name, queue):
 		if name in self._rx_queues and self._rx_queues[name] != queue:
@@ -77,10 +79,11 @@ class MTP(object):
 		""" Called by the HTTPServer in it's own thread.
 			Distributes packets to the correct receiver queue
 		"""
-		print('--------------------------------------')
-		print('Received')
-		print('========')
-		print(envelope.msg)
+		if self.debug_log:
+			print('--------------------------------------')
+			print('Received')
+			print('========')
+			print(envelope.msg)
 
 		for receiver in envelope.receiver:
 			if receiver.name in self._rx_queues:
@@ -88,7 +91,8 @@ class MTP(object):
 			else:
 				print('\nERROR: could not deliver packet to `{}`'.format(receiver.name))
 
-		print('--------------------------------------')
+		if self.debug_log:
+			print('--------------------------------------')
 
 	def _sender(self, url, tx_queue):
 		""" Thread that is responsible for sending ACLMessages
