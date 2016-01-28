@@ -59,7 +59,9 @@ class BroadcastBridge(ACLCommunicator):
 class AgentBridge(ACLCommunicator):
 	@staticmethod
 	def generate_name(ip_addr, agent_id):
-		return "{}AgentId{}".format(ip_addr, agent_id)
+		clean_addr = ip_addr.replace('.', 'x')
+		clean_addr = clean_addr.replace(':', 'x')
+		return "{}AgentId{}".format(clean_addr, agent_id)
 
 	def __init__(self, ip_addr, agent_id, parent):
 		assert(isinstance(parent, Bridge))
@@ -70,27 +72,29 @@ class AgentBridge(ACLCommunicator):
 		self.name = name
 		self.parent = parent
 		self.dispatcher = parent.dispatcher
-		self.ip = ip_add
+		self.ip = ip_addr
 		self.agent_id = agent_id
 		self.df = DF(self, parent.df_id)
 		self._rx_thread = threading.Thread(target=self._receiver)
 		self._rx_thread.start()
 
-	def send(self, rec_fipa_id, data):
+	def sendUnicast(self, rec_fipa_id, data):
 		assert(isinstance(data, bytes))
 		dd = Awap.message_to_dict(data)
-		msg = self.create_msg(dd['performative'], rec_fipa_id)
-		msg.content = json.dumps(dd['content'])
+		msg = self.create_msg(dd['Performative'], rec_fipa_id)
+		msg.content = json.dumps(dd['Content'])
 		self.send(msg)
 
 	def sendBroadcast(self, data):
 		assert(isinstance(data, bytes))
 		dd = Awap.message_to_dict(data)
+		print("At: ", self.name)
+		print("Received: ", dd)
 		assert(dd['IsBroadcast'])
 		service_desc = Awap.service_desc_to_dict(data[1], data[dd['Length']:])
 		# find agents that offer service
 		service = ServiceDescription(service_desc['service'])
-		for name, value in service:
+		for name, value in service_desc.items():
 			if name != 'service':
 				service.add_property(name, value)
 		receivers = self.df.search(service)
@@ -124,6 +128,8 @@ class Bridge():
 		self._jade_agents_by_name = {}
 		self._jade_agents_by_id = {}
 		self._agent_ids = list(range(0,8))
+		self._rx_thread = threading.Thread(target=self._receiver)
+		self._rx_thread.start()
 
 	def register(self, jade_url):
 		""" Registers the Bridge Broadcast service with a running JADE instance
@@ -158,6 +164,11 @@ class Bridge():
 	def _receiver(self):
 		while True:
 			(addr, data) = self.dispatcher.receive()
+
+			# TODO: HACK: remove
+			if addr == "192.168.5.197":
+				continue
+
 			# decode message
 			dd = Awap.message_to_dict(data)
 
@@ -171,7 +182,7 @@ class Bridge():
 			if dd['IsBroadcast']:
 				bridge.sendBroadcast(data)
 			else:
-				bridge.send(self.id_to_fipa_name(dd['DestinationAgent']), data)
+				bridge.sendUnicast(self.id_to_fipa_name(dd['DestinationAgent']), data)
 
 
 # Fake Temperature Agent
