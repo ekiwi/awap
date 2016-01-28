@@ -52,6 +52,11 @@ public class GUITemperatureConsumer extends Agent implements ITemperatureService
 			this.value = value;
 			this.date = new Date();
 		}
+
+		public long getAge(Date now) {
+			return (now.getTime() - this.date.getTime()) / 1000;
+		}
+
 		public RemoteAgent sender;
 		public Date date;
 		public int value;
@@ -66,6 +71,31 @@ public class GUITemperatureConsumer extends Agent implements ITemperatureService
 				res.sender.id + ": " + res.value + "\n";
 	}
 
+	private void printResults() {
+		String text = "";
+		for(Result res : this.results.values()) {
+			text += resultLine(res);
+		}
+		this.textArea.setText(text);
+	}
+
+	private void updateGUI() {
+		printResults();
+		int max = 0;
+		Date now = new Date();
+		for(Result res : this.results.values()) {
+			// only count values that are at max 2 seconds old
+			if(res.getAge(now) < 2 && res.value > max){
+				max = res.value;
+			}
+		}
+		if(this.node.getSensorValue() >= max) {
+			this.node.setActorValue(1);
+		} else {
+			this.node.setActorValue(0);
+		}
+	}
+
 	public void setup() {
 		this.requestWakeUp(500, new Integer(0));
 		// temperature services in Building1 in Room1
@@ -77,11 +107,7 @@ public class GUITemperatureConsumer extends Agent implements ITemperatureService
 	public void onReceive(Temperature msg) {
 		Result result = new Result(msg.getRemoteAgent(), msg.value);
 		results.put(result.sender.id, result);
-		String text = "";
-		for(Result res : this.results.values()) {
-			text += resultLine(res);
-		}
-		this.textArea.setText(text);
+		updateGUI();
 	}
 
 	public void onWakeUp(Object obj) {
