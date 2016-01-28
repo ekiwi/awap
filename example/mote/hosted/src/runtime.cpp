@@ -105,6 +105,14 @@ void Runtime::registerTimeout(uint32_t milliseconds, uint32_t id)
 	}
 }
 
+void Runtime::setActorValue(int32_t value) {
+	XPCC_LOG_DEBUG << "setActorValue(" << value << ")" << xpcc::endl;
+}
+
+int32_t Runtime::getSensorValue() {
+	return 123;
+}
+
 // needs to be called periodically
 void updateRuntime() {
 	// check timeouts
