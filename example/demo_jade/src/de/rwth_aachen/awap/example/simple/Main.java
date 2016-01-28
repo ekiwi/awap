@@ -21,6 +21,7 @@ import jade.wrapper.ContainerController;
 public class Main {
 
 	public static void main(String[] args) throws Exception {
+
 		// Get a hold on JADE runtime
 		final Runtime rt = Runtime.instance();
 
@@ -45,7 +46,6 @@ public class Main {
 		temperatureAgent0.start();
 		AgentController temperatureConsumer0 = subscriberNode.createNewAgent(cc, "GUITemperatureConsumer0", "de.rwth_aachen.awap.example.agents.GUITemperatureConsumer");
 		temperatureConsumer0.start();
-
 
 		//Thread.sleep(2000);
 		//temperatureAgent0.kill();

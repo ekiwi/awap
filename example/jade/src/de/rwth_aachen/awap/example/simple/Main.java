@@ -47,11 +47,11 @@ public class Main {
 		temperatureConsumer0.start();
 
 
-		Thread.sleep(2000);
-		temperatureAgent0.kill();
+		//Thread.sleep(2000);
+		//temperatureAgent0.kill();
 
-		Thread.sleep(2000);
-		temperatureConsumer0.kill();
+		//Thread.sleep(2000);
+		//temperatureConsumer0.kill();
 
 	}
 }
