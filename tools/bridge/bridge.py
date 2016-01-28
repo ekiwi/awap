@@ -74,7 +74,9 @@ class AgentBridge(ACLCommunicator):
 		self.dispatcher = parent.dispatcher
 		self.ip = ip_addr
 		self.agent_id = agent_id
-		self.df = DF(self, parent.df_id)
+		# create separate agent for df interaction to avoid race conditions
+		df_communicator = ACLCommunicator('{}df@{}'.format(name, parent.platform_name), parent.mtp)
+		self.df = DF(df_communicator, parent.df_id)
 		self._rx_thread = threading.Thread(target=self._receiver)
 		self._rx_thread.start()
 
@@ -88,8 +90,8 @@ class AgentBridge(ACLCommunicator):
 	def sendBroadcast(self, data):
 		assert(isinstance(data, bytes))
 		dd = Awap.message_to_dict(data)
-		print("At: ", self.name)
-		print("Received: ", dd)
+		#print("At: ", self.name)
+		#print("Received: ", dd)
 		assert(dd['IsBroadcast'])
 		service_desc = Awap.service_desc_to_dict(data[1], data[dd['Length']:])
 		# find agents that offer service
@@ -99,15 +101,15 @@ class AgentBridge(ACLCommunicator):
 				service.add_property(name, value)
 		receivers = self.df.search(service)
 		# create broadcast message
-		msg = self.create_msg(dd['performative'], receivers)
-		msg.content = json.dumps(dd['content'])
+		msg = self.create_msg(dd['Performative'], receivers)
+		msg.content = json.dumps(dd['Content'])
 		self.send(msg)
 
 	def _receiver(self):
 		while True:
 			msg = self.receive()
-			print("AgentBridge ({}) received:".format(self.name))
-			print(msg.content)
+			#print("AgentBridge ({}) received:".format(self.name))
+			#print(msg.content)
 			# create message
 			dd = { 'IsBroadcast': False,
 				   'SourceAgent': self.parent.fipa_name_to_id(msg.sender),
@@ -185,11 +187,12 @@ class Bridge():
 				bridge.sendUnicast(self.id_to_fipa_name(dd['DestinationAgent']), data)
 
 
-# Fake Temperature Agent
+# Agents used for testing
 
 class FakeTemperatureAgent(FakeNode):
 	def __init__(self, dispatcher):
 		super().__init__(dispatcher, "123.45.67.8")
+		self.agent_id = 0
 
 	def receive(self, bb):
 		dd = Awap.message_to_dict(bb)
@@ -207,10 +210,37 @@ class FakeTemperatureAgent(FakeNode):
 		# apparently someone wants to know how hot we are ...
 		# answer!!!
 		content = {'service': 'TemperatureService', 'message': 'Temperature', 'value': 1993}
-		msg = {'IsBroadcast': False, 'SourceAgent': 0, 'DestinationAgent': dd['SourceAgent'], 'Content': content}
+		msg = {'IsBroadcast': False,
+		       'SourceAgent': self.agent_id,
+		       'DestinationAgent': dd['SourceAgent'],
+		       'Content': content}
 		self.send(Awap.message_to_bin(msg))
 		print("FakeTemperatureAgent: sent answer: ", msg)
 
+class FakeTemperatureConsumerAgent(FakeNode):
+	def __init__(self, dispatcher):
+		super().__init__(dispatcher, "123.45.67.8")
+		self.agent_id = 1
+
+	def wakeup(self):
+		content = {'service': 'TemperatureService', 'message': 'RequestTemperature'}
+		msg = {'IsBroadcast': True,
+		       'SourceAgent': self.agent_id,
+		       'Content': content}
+		desc = {'service': 'TemperatureService', 'building': 'Build1', 'room': 'R1'}
+		bb = Awap.message_to_bin(msg) + Awap.service_desc_to_bin(desc)
+		self.send(bb)
+
+	def receive(self, bb):
+		dd = Awap.message_to_dict(bb)
+
+		# check if this is a INFORM Temperature message
+		if dd['IsBroadcast']: return
+		if not dd['Content']['service'] == 'TemperatureService': return
+		if not dd['Content']['message'] == 'Temperature': return
+
+		print('Received Temperature: ', dd['Content']['value'])
+		print('From: ', dd['SourceAgent'])
 
 if __name__ == "__main__":
 	if len(sys.argv) < 2:
@@ -226,6 +256,7 @@ if __name__ == "__main__":
 	jade_url = sys.argv[1]
 	dispatcher = Dispatcher(("255.255.255.255", 5005), src_port=6006)
 	FakeTemperatureAgent(dispatcher)
+	consumer = FakeTemperatureConsumerAgent(dispatcher)
 	bridge = Bridge("http://localhost:9000/acc", dispatcher)
 	bridge.register(jade_url)
 
@@ -234,7 +265,10 @@ if __name__ == "__main__":
 	#print("msg ", msg)
 
 	import time
-	time.sleep(10)
+	time.sleep(1)
+	for ii in range(0,9):
+		consumer.wakeup()
+		time.sleep(1)
 
 	bridge.deregister()
 

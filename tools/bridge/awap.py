@@ -102,7 +102,8 @@ class Awap():
 		assert(isinstance(dd, dict))
 
 		bb0  = dd['SourceAgent'] & 0x7
-		bb0 |= (dd['DestinationAgent'] & 0x7) << 3
+		if not dd['IsBroadcast']:
+			bb0 |= (dd['DestinationAgent'] & 0x7) << 3
 		if dd['IsBroadcast']: bb0 |= (1<<7)
 		bb  = struct.pack("B", bb0)
 
