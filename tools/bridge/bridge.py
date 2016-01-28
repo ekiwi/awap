@@ -205,8 +205,6 @@ class FakeTemperatureAgent(FakeNode):
 		if not desc['building'] == 'Build1': return
 		if not desc['room'] == 'R1': return
 
-		print("FakeTemperatureAgent: received message: ", dd)
-
 		# apparently someone wants to know how hot we are ...
 		# answer!!!
 		content = {'service': 'TemperatureService', 'message': 'Temperature', 'value': 1993}
@@ -215,11 +213,11 @@ class FakeTemperatureAgent(FakeNode):
 		       'DestinationAgent': dd['SourceAgent'],
 		       'Content': content}
 		self.send(Awap.message_to_bin(msg))
-		print("FakeTemperatureAgent: sent answer: ", msg)
+		print("Sent Temperature: ", content['value'])
 
 class FakeTemperatureConsumerAgent(FakeNode):
 	def __init__(self, dispatcher):
-		super().__init__(dispatcher, "123.45.67.8")
+		super().__init__(dispatcher, "123.45.67.0")
 		self.agent_id = 1
 
 	def wakeup(self):
@@ -259,10 +257,6 @@ if __name__ == "__main__":
 	consumer = FakeTemperatureConsumerAgent(dispatcher)
 	bridge = Bridge("http://localhost:9000/acc", dispatcher)
 	bridge.register(jade_url)
-
-	#(serv, msg) = bridge.broadcasts.receiveBroadcast()
-	#print("serv ", serv)
-	#print("msg ", msg)
 
 	import time
 	time.sleep(1)
